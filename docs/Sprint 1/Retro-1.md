@@ -16,10 +16,10 @@ Doe de retrospective m.b.v. een van de manieren op https://www.funretrospectives
 | Well | Not Well | New Ideas |
 |-------|----------|-------------|
 | Everyone was easily reachable and responded quickly in the group chat | Sometimes we talk past each other, which makes agreements unclear | At the start of each meeting, give a short summary of what was agreed before |
-| We helped each other whenever someone got stuck | Not everyone always takes the same level of initiative to share ideas | Assign fixed roles during meetings (leader, note-taker, timekeeper) |
+| We helped each other whenever someone got stuck | Not everyone always takes the same level of initiative to share ideas | At the start of each meeting, give a short summary of who the group is and what was worked on |
 | Tasks were divided fairly | Deadlines were not always clearly agreed upon or met | At the end of each meeting, define clear to-do’s with responsible persons |
 | There was a positive and respectful atmosphere | Sometimes too many things are discussed at once, which makes it chaotic | Use a fixed agenda and limit the number of topics per meeting |
-| Everyone was open to feedback | Sometimes feedback is handled too quickly without proper discussion | Plan structured feedback moments at the end of each sprint |
+| Everyone was open to feedback | Sometimes feedback is handled too quickly without proper discussion | Plan checkup moments at the end of each sprint before delivering the work |
 
 
 ## Aandeel teamleden
