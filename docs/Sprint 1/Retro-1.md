@@ -76,23 +76,33 @@ Pay more attention to details in your work, and try to take breaks so you stay s
 ## Baran:
 Keep a closer eye on your planning, and try to ask for feedback from the team more often
 
-##### Eigen reflectie
+#### Personal Reflections  
 
-#### Davinio:
+### Davinio  
 
-Tijdens sprint 1 heb ik veel gewerkt aan het voorbereiden van de design, en het plannen van Sprint 2. Ik heb met mijn team een Figma design gemaakt die goedgekeurd was, en we zijn begonnen aan het opstellen van de UserStories die nog goedgekeurd moeten worden door onze PO. Aan de hand van mijn werk in sprint 1 heb ik ook feedback ontvangen van mijn team (zie "Feedback voor teamleden"). Als TOP heb ik gekregen: "Je bent er altijd en laat motivatie zien". Ik ben blij dat ik in de korte sprint dit heb kunnen laten zien. Ik zal op deze manier doorgaan in de komende sprints. Als TIP heb ik gekregen:"Let wat meer op details bij je werk, probeer soms ook rust te nemen zodat je scherp blijft". Ik heb op dit gereflecteerd, en heb besloten dat ik vanaf de komende sprint meer op de details ga letten, en ook niet te snel werk waardoor ik fouten verminder. 
+During Sprint 1 I worked a lot on preparing the design and planning Sprint 2. Together with my team I made a Figma design that was approved, and we started writing the User Stories that still need approval from our PO. Based on my work in Sprint 1, I also received feedback from my team (see “Feedback for Team Members”).  
 
-#### Zarko:
+**As a TOP I received:**  
+“You are always there and show motivation.”  
+I am happy that I was able to show this in such a short sprint. I will continue to keep this up in the next sprints.  
 
-Mijn ontwikkeldoel is om mijn communicatie en het delen van ideeën te verbeteren. Ik merk dat ik vaak efficiënt werk en anderen graag help, maar dat ik mijn eigen gedachten en voorstellen soms te weinig uitspreek.  
+**As a TIP I received:**  
+“Pay more attention to details in your work, and try to take breaks so you stay sharp.”  
+I reflected on this and decided that from the next sprint onward, I will pay more attention to details and avoid working too fast so that I reduce mistakes.  
 
-**Concreet ga ik hier in de komende sprint aan werken door:**
-- Minimaal een keer per week een idee of suggestie actief te delen tijdens het teamoverleg.  
-- Mijn updates en voortgang duidelijk te communiceren in onze groepschat.  
-- Aan het einde van elke week te vragen of mijn uitleg duidelijk genoeg was, zodat ik daar feedback op kan krijgen.  
+---
 
-**SMART doel:**  
-Aan het einde van deze sprint wil ik aantoonbaar minstens vier keer actief mijn ideeën hebben gedeeld in het teamoverleg en teruggekoppeld hebben gekregen dat mijn communicatie duidelijker is geworden. 
+### Zarko  
+
+My development goal is to improve my communication and the sharing of ideas. I notice that I often work efficiently and like to help others, but I sometimes express my own thoughts and suggestions too little.  
+
+**Concretely, in the next sprint I will work on this by:**  
+- Sharing at least one idea or suggestion each week during the team meeting.  
+- Communicating my updates and progress clearly in our group chat.  
+- Asking at the end of each week whether my explanations were clear enough, so I can get feedback.  
+
+**SMART Goal:**  
+By the end of this sprint, I want to have actively shared my ideas at least four times in team meetings and received feedback confirming that my communication has become clearer.  
 
 ->>>>> DLO, upload per persoon op de DLO een doc. 
 
