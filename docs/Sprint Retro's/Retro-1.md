@@ -98,7 +98,7 @@ Tijdens sprint 1 heb ik veel gewerkt aan het voorbereiden van de design, en het 
 Mijn ontwikkeldoel is om mijn communicatie en het delen van ideeën te verbeteren. Ik merk dat ik vaak efficiënt werk en anderen graag help, maar dat ik mijn eigen gedachten en voorstellen soms te weinig uitspreek.  
 
 **Concreet ga ik hier in de komende sprint aan werken door:**
-- Minimaal één keer per week een idee of suggestie actief te delen tijdens het teamoverleg.  
+- Minimaal een keer per week een idee of suggestie actief te delen tijdens het teamoverleg.  
 - Mijn updates en voortgang duidelijk te communiceren in onze groepschat.  
 - Aan het einde van elke week te vragen of mijn uitleg duidelijk genoeg was, zodat ik daar feedback op kan krijgen.  
 
