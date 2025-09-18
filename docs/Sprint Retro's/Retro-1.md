@@ -46,8 +46,6 @@ pie
 
 #### Tops
 
-// gezamenlijk zorg je per teamlid voor minimaal 2 complimenten.
-
 ## Suleyman:
 We kunnen op je bouwen, je brengt een fijne sfeer  
 
@@ -62,12 +60,17 @@ Je hebt een positieve energie, je bent een echte doorzetter
 
 ### Tips
 
-// gezamenlijk zorg je per teamlid voor minimaal 2 tips.
-Davinio: Je kan wat vaker actief zijn naast school, Je zou de projecten beter kunnen inlezen zodat je beter weet wat we moeten doen
-Baran: Betere planning
-Zarko: 
+## Suleyman:
+Je kan wat vaker actief zijn naast school, je zou de projecten beter kunnen inlezen zodat je beter weet wat we moeten doen  
 
+## Zarko:
+Probeer je ideeën vaker te delen, je kunt je communicatie nog duidelijker maken  
 
+## Davinio:
+Let wat meer op details bij je werk, probeer soms ook rust te nemen zodat je scherp blijft  
+
+## Baran:
+Je zou je planning iets beter kunnen bewaken, probeer ook vaker feedback te vragen aan het team  
 
 ##### Eigen reflectie
 
