@@ -36,17 +36,12 @@ Om de drie weken, dus elke sprint, zullen we wisselen van Scrum Master op alfabe
 
 Wie heeft/hebben welke verantwoordelijkheid voor het tot stand komen en monitoren van de sprintplanning? 
 
-Het gehele team stemt in wat er met de sprintplanning zal gebeuren. 
+Het gehele team en de PO stemt in wat er met de sprintplanning zal gebeuren. 
 
   
 
 ## Deadlines en Tijdsplanning 
 
-### Story points 
-
-Gebruik maken van story points. Minimaal 5 storypoints per week. (Kan veranderen aan de hand van het project)
-
-  
 
 ### Tijdsplanning 
 
@@ -60,7 +55,7 @@ Elke schooldag een daily standup (scrum master documenteert het).
 
 - Whatsapp 
 
-## Reactie tijd 
+### Reactie tijd 
 
 Tussen 9:00 tot 21:00 bereikbaar. 
 
@@ -73,12 +68,6 @@ Werkplek en -tijden ?
 Elke fysieke schooldag komen we bijeen. 
 
 Verder 7 dagen per week beschikbaar.   
-
-
-### Proces 
-
-Stand ups worden gehouden op schooldagen.
-
 
 
 ## Conflictsignalering en –oplossing 
@@ -127,11 +116,11 @@ JavaDoc in de code.
 
 ## Minimale eisen per persoon 
 
-  
-
 Ieder teamlid moet een: 
 
-Minimaal 2 verticale User Stories per sprint 
+Minimaal 2 verticale User Stories per sprint. 
+
+Gebruik maken van story points. Minimaal 5 storypoints per sprint. (Kan veranderen aan de hand van het project)
 
 Verticaal houdt in: HTML, CSS, Web Component, API en Database. 
 
@@ -145,16 +134,4 @@ Als het antwoord “Nee” is, dan is het een belangrijke functionaliteit.
  
 
 Je commit en pushed regelmatig en werkt in branches. Regelmatig is variabel en afhankelijk van veel zaken. 
-
- 
-
- 
-
-## Minimale eisen per team 
-
- 
-
-### Een functionele verkiezingswebsite  
-
-
  
