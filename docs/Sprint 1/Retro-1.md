@@ -15,18 +15,11 @@ Doe de retrospective m.b.v. een van de manieren op https://www.funretrospectives
 
 | Well | Not Well | New Ideas |
 |-------|----------|-------------|
-| Figma design ziet er goed uit | Speak as a team (not as individuals) | Must use WebSockets (current version is non-functional) |
-| Personas zien er professioneel uit | Always start with what the project is about and who the team is | Admin should have the ability to moderate chat (e.g., delete users) |
-| De requirements zijn voldaan | Think carefully about data storage structure | Chat accounts should be connected to login & register system (with CORS, WebSocket, JWT token, Spring Boot) |
-| | | Focus first on showing results we already have (since election dates are not yet available) |
-| | | Show stats that go up and down on multiple levels (province, national, and others) |
-| | | The product should be interactive |
-| | | Each user story should be vertical (from frontend to backend) |
-| | | Parse data from XML into the database |
-| | | Admin panel improvements: smaller panel, no adding parties/politicians, new button for election data |
-| | | Add moderation tools for the chat |
-| | | Channels: one big channel for now, multiple channels = "should have" |
-| | | Comparing a party with itself is the main focus |
+| Iedereen was goed bereikbaar en reageerde snel in de groepschat | Soms praten we langs elkaar heen waardoor afspraken onduidelijk zijn | Aan het begin van elke meeting een korte samenvatting van wat eerder is afgesproken |
+| We hebben elkaar geholpen als iemand vastliep | Niet iedereen neemt altijd evenveel initiatief om ideeën te delen | Een vaste rolverdeling tijdens meetings (leider, notulist, tijdsbewaker) |
+| Taken zijn redelijk eerlijk verdeeld | Deadlines zijn niet altijd duidelijk afgesproken of nagekomen | Aan het einde van elke meeting duidelijke to-do’s met wie verantwoordelijk is |
+| Er was een positieve en respectvolle sfeer | Soms wordt er te veel tegelijk besproken waardoor het chaotisch wordt | Gebruik maken van een vaste agenda en onderwerpen per meeting beperken |
+| Iedereen stond open voor feedback | Soms wordt feedback te snel afgehandeld zonder echt te bespreken | Feedbackmomenten structureel inplannen aan het einde van een sprint |
 
 
 ## Aandeel teamleden
