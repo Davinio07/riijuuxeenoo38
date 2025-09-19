@@ -1,11 +1,25 @@
-<script setup lang="ts"></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div id="app">
+    <header>
+      <nav>
+        <router-link to="/admin">Ga naar Admin</router-link>
+        </nav>
+    </header>
+    <main>
+      <router-view />
+    </main>
+  </div>
 </template>
 
-<style scoped></style>
+<style>
+/* Algemene stijlen voor je app */
+nav {
+  padding: 1rem;
+  background-color: #f1f5f9;
+  border-bottom: 1px solid #cbd5e1;
+}
+nav a {
+  margin-right: 1rem;
+  font-weight: bold;
+}
+</style>
