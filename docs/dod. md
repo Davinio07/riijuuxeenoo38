@@ -4,7 +4,7 @@ Any UX/UI adjustments needed for the feature are designed thoughtfully and docum
 
 The new functionality works as intended during normal use.
 
-Existing tests still pass, and new functionality is covered by at least basic tests.
+New functionality has been tested by someone else.
 
 The project builds without ESLint errors.
 
