@@ -10,8 +10,8 @@ import java.util.Map;
 @RequestMapping("/api/ScaledElectionResults")
 public class ScaledElectionResultsController {
 
-    @GetMapping("/ScaledResult")
+    @GetMapping("/Result")
     public Map<String, String> test() {
-        return Map.of("message", "Backend werkt 🎉");
+        return Map.of("message", "Backend werkt!");
     }
 }
