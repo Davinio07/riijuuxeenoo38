@@ -121,3 +121,16 @@ By the end of this sprint, I want to have actively shared my ideas at least four
 ->>>>> DLO, upload per persoon op de DLO een doc. 
 
 Noem deze retrospective sprint + nummer (zodat we weten waar het over gaat)
+
+### Suleyman
+
+During Sprint 1 I focused mostly on the preparing and designing of the election project. I try to get more involved into presenting the product during sprint reviews.
+
+**As a TOP I received:**
+“We can count on you, you bring a positive atmosphere.”
+It is nice to hear that this is the effect I have on others I would like to keep this going._
+
+**As a TIP I received:**
+“You could be more active outside of school, and read the projects more carefully so you know better what needs to be done”
+I have noticed this myself and want to try to get more invloved into the discusions that happen in the chat outside of school.
+
