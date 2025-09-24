@@ -1,11 +1,6 @@
 # Retrospective sprint 
 
 
-// Alle tekst met // weghalen voordat je het op DLO zet. Zorg dat het document er verzorgd uitziet.
-
-// De retrospective doe je met je team.
-
-
 Doe de retrospective m.b.v. een van de manieren op https://www.funretrospectives.com/category/retrospective/
 
 >> Formuleer op basis hiervan concrete verbeterpunten voor de komende sprint
@@ -24,8 +19,6 @@ Doe de retrospective m.b.v. een van de manieren op https://www.funretrospectives
 
 ## Aandeel teamleden
 
-// Geef per teamlid aan hoeveel storypoints of werk hij/zij deze sprint heeft kunnen realiseren. Vervang hieronder de namen van de teamleden en geef per teamlid het aantal storypoints. De mermaid code genereert vervolgens een pie-chart. 
-
 ```mermaid
 pie 
     title Storypoints per Teamlid   
@@ -36,15 +29,7 @@ pie
     "Teamlid 5" : 0
 ```
 
-// Geef onder de pie chart een korte toelichting: wat valt op?  Kunnen jullie de verschillen verklaren?
-
 ## Feedback voor teamleden
-
-// Geef hieronder zo specifiek mogelijke feedback voor elk teamlid.
-
-// tip: bereid de feedback op je teamleden eerst individueel voor en ga dan pas samen zitten.
-
-// herhaal onderstaande kopjes voor elk teamlid.
 
 ### Feedback teamlid
 
@@ -124,9 +109,7 @@ My development goal is to improve my communication and the sharing of ideas. I n
 **SMART Goal:**  
 By the end of this sprint, I want to have actively shared my ideas at least four times in team meetings and received feedback confirming that my communication has become clearer.  
 
-->>>>> DLO, upload per persoon op de DLO een doc. 
-
-Noem deze retrospective sprint + nummer (zodat we weten waar het over gaat)
+---
 
 ### Suleyman
 
