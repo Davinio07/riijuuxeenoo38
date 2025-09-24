@@ -1,13 +1,5 @@
 # Retrospective sprint 
 
-
-Doe de retrospective m.b.v. een van de manieren op https://www.funretrospectives.com/category/retrospective/
-
->> Formuleer op basis hiervan concrete verbeterpunten voor de komende sprint
-
->> Geef elkaar feedback op basis van gedrag in de afgelopen sprint.
-
-
 | Well | Not Well | New Ideas |
 |-------|----------|-------------|
 | Everyone was easily reachable and responded quickly in the group chat | Sometimes we talk past each other, which makes agreements unclear | At the start of each meeting, give a short summary of what was agreed before |
@@ -35,39 +27,39 @@ pie
 
 #### Tops
 
-## Suleyman:
+##### Suleyman:
 We can count on you, you bring a positive atmosphere
 
-## Zarko:
+##### Zarko:
 You work efficiently, you are eager to help
 
-## Davinio:
+##### Davinio:
 You are always there and show motivation
 
-## Baran:
+##### Baran:
 You bring positive energy, you are a real go-getter
 
-## Matin:
+##### Matin:
 You show strong technical insight and deliver reliable work
 
-### Tips
+#### Tips
 
-## Suleyman:
+##### Suleyman:
 You could be more active outside of school, and read the projects more carefully so you know better what needs to be done
 
-## Zarko:
+##### Zarko:
 Try to share your ideas more often, and make your communication clearer
 
-## Davinio:
+##### Davinio:
 Pay more attention to details in your work, and try to take breaks so you stay sharp
 
-## Baran:
+##### Baran:
 Keep a closer eye on your planning, and try to ask for feedback from the team more often
 
-## Matin:
+##### Matin:
 Try to communicate your progress more often, so the team knows what you are working on
 
-#### Personal Reflections  
+## Personal Reflections  
 
 ### Baran
 
