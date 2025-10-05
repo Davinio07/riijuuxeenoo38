@@ -1,4 +1,4 @@
-package nl.hva.ict.sm3.backend.model;
+package XMLParser.XMLParser.src.main.java.nl.hva.ict.sm3.backend.model;
 
 public class Candidate {
     private final String id;
@@ -6,7 +6,6 @@ public class Candidate {
     private String lastName;
     private String gender;
     private String locality;
-
 
 
     public Candidate(String id) {
