@@ -13,7 +13,7 @@ async function testBackend() {
 
 <template>
   <h1> Dit is een voorbeeld:</h1>
-  <button @click="testBackend"> Yooo </button>
+  <button @click="testBackend"> Test connection </button>
 
   <div v-if="results">
     <strong>Resultaat:</strong> {{ results }}
