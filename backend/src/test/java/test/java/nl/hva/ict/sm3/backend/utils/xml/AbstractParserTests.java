@@ -1,4 +1,4 @@
-package XMLParser.XMLParser.src.test.java.nl.hva.ict.sm3.backend.utils.xml;
+package test.java.nl.hva.ict.sm3.backend.utils.xml;
 
 import XMLParser.XMLParser.src.main.java.nl.hva.ict.sm3.backend.utils.xml.CandidateTransformer;
 import XMLParser.XMLParser.src.main.java.nl.hva.ict.sm3.backend.utils.xml.DefinitionTransformer;
