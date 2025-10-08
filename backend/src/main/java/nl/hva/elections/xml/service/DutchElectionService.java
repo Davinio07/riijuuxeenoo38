@@ -1,6 +1,7 @@
 package nl.hva.elections.xml.service;
 
 import nl.hva.elections.xml.model.Election;
+import nl.hva.elections.xml.model.NationalResult;
 import nl.hva.elections.xml.utils.PathUtils;
 import nl.hva.elections.xml.utils.xml.DutchElectionParser;
 import nl.hva.elections.xml.utils.xml.transformers.*;
@@ -10,6 +11,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * A demo service for demonstrating how an EML-XML parser can be used inside a backend application.<br/>
@@ -50,6 +52,7 @@ public class DutchElectionService {
             // Do what ever you like to do
             System.out.println("Dutch Election results: " + election);
             // Now is also the time to send the election information to a database for example.
+            System.out.println("National results: " + election.getNationalResults());
             System.out.println("Regions: " + election.getRegions());
 
             return election;
@@ -57,5 +60,10 @@ public class DutchElectionService {
             // Throw a runtime exception with a clear message to be handled by the controller advice or error handler.
             throw new RuntimeException("Failed to process the election results for electionId: " + electionId, e);
         }
+    }
+
+    public List<NationalResult> getNationalResults(String electionId) {
+        Election election = readResults(electionId, electionId);
+        return election.getNationalResults();
     }
 }

@@ -1,8 +1,10 @@
 package nl.hva.elections.xml.api;
 
 import nl.hva.elections.xml.model.Election;
+import nl.hva.elections.xml.model.NationalResult;
 import nl.hva.elections.xml.model.Region;
 import nl.hva.elections.xml.service.DutchElectionService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -63,5 +65,11 @@ public class ElectionController {
             e.printStackTrace();
             return Collections.emptyList();
         }
+    }
+
+    @GetMapping("{electionId}/national")
+    public ResponseEntity<List<NationalResult>> getNationalResults(@PathVariable String electionId) {
+        List<NationalResult> results = electionService.getNationalResults(electionId);
+        return ResponseEntity.ok(results);
     }
 }
