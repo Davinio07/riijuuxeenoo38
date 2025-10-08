@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import AdminDashboard from '@/features/admin/view/AdminDashboard.vue';
 import ScaledElectionResults from "@/features/admin/view/ScaledElectionResults.vue";
+import PartiesView from '@/features/admin/view/PartiesView.vue';
 
 const routes = [
   {
@@ -12,6 +13,11 @@ const routes = [
     path: '/ScaledElectionResults',
     name: 'ScaledElectionResults',
     component: ScaledElectionResults,
+  },
+  {
+    path: '/parties',
+    name: 'Parties',
+    component: PartiesView,
   },
 ];
 

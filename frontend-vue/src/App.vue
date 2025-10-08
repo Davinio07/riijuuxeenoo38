@@ -4,7 +4,9 @@
       <nav>
         <router-link to="/admin">Ga naar Admin</router-link>
         <router-link to="/ScaledElectionResults">ga naar Scaled election results</router-link>
-        </nav>
+        <router-link to="/parties">ga naar partijen</router-link>
+
+      </nav>
     </header>
     <main>
       <router-view />
@@ -23,3 +25,5 @@ nav a {
   font-weight: bold;
 }
 </style>
+<script setup lang="ts">
+</script>
