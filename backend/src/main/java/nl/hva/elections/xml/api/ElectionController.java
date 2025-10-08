@@ -89,14 +89,14 @@ public class ElectionController {
     public List<Candidate> getCandidates(@PathVariable String electionId,
                                          @RequestParam(required = false) String folderName) {
         try {
-            String effectiveFolderName = (folderName == null) ? "TK2023_HvA_UvA" : folderName;
-            if ("TK2023".equals(electionId)) effectiveFolderName = "TK2023_HvA_UvA";
-
-            Election election = electionService.readResults(electionId, effectiveFolderName);
+            Election election = (folderName == null)
+                    ? electionService.readResults(electionId, electionId)
+                    : electionService.readResults(electionId, folderName);
             return (election == null) ? Collections.emptyList() : election.getCandidates();
         } catch (Exception e) {
             e.printStackTrace();
             return Collections.emptyList();
         }
     }
+
 }
