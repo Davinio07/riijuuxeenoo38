@@ -85,8 +85,21 @@ public class DutchElectionParser {
     public void parseResults(String electionId, String folderName) throws IOException, XMLStreamException, ParserConfigurationException, SAXException {
         System.out.printf("Loading election data from %s\n", folderName);
 
-        // Parse definition and candidate files separately as they use different transformers.
-        parseFiles(folderName, "Verkiezingsdefinitie_%s".formatted(electionId), new EMLHandler(definitionTransformer));
+        // The first call to parseFiles needs to use all seven transformers
+        // to correctly load all the initial data, including regions and candidates.
+        parseFiles(folderName, "Verkiezingsdefinitie_%s".formatted(electionId),
+                new EMLHandler(
+                        definitionTransformer,
+                        candidateTransformer,
+                        regionTransformer,
+                        resultTransformer,
+                        nationalVotesTransformer,
+                        constituencyVotesTransformer,
+                        municipalityVotesTransformer
+                )
+        );
+
+        // These lines handle the remaining files and use the correct EMLHandler constructors.
         parseFiles(folderName, "Kandidatenlijsten_%s".formatted(electionId), new EMLHandler(candidateTransformer));
         parseFiles(folderName, "Resultaat_%s".formatted(electionId), new EMLHandler(resultTransformer));
 
