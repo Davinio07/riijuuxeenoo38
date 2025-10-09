@@ -30,8 +30,8 @@ function selectRegion(region: Region) {
   <h1>Regio's van de verkiezing</h1>
 
   <div class="buttons">
-    <button @click="() => fetchRegions('TK2023')">TK2023</button>
-    <button @click="() => fetchRegions('TK2024')">TK2024</button>
+    <button @click="() => fetchRegions('TK2023')">Verkiezingen 2023</button>
+    <button @click="() => fetchRegions('TK2024')">Verkiezingen 2024</button>
   </div>
 
   <div class="grid">
