@@ -23,7 +23,8 @@ public class DutchMunicipalityVotesTransformer implements VotesTransformer {
 
     @Override
     public void registerPartyVotes(boolean aggregated, Map<String, String> electionData) {
-        // This transformer should only handle municipality-level results, not aggregated ones.
+        // This is the key: The municipality data is NOT aggregated. National data is.
+        // This 'if' statement ensures we only process municipality results.
         if (aggregated) {
             return;
         }
@@ -35,28 +36,17 @@ public class DutchMunicipalityVotesTransformer implements VotesTransformer {
         if (municipalityName != null && !municipalityName.isBlank() && partyName != null) {
             int totalVotes = votesString != null ? Integer.parseInt(votesString) : 0;
             MunicipalityResult result = new MunicipalityResult(municipalityName, partyName, totalVotes);
-
-            // FIX: Manually check if an identical result already exists before adding it.
-            // This prevents the duplicate data issue without changing the Election model.
-            boolean alreadyExists = election.getMunicipalityResults().stream().anyMatch(existing ->
-                    existing.getMunicipalityName().equals(result.getMunicipalityName()) &&
-                    existing.getPartyName().equals(result.getPartyName()) &&
-                    existing.getValidVotes() == result.getValidVotes()
-            );
-
-            if (!alreadyExists) {
-                election.addMunicipalityResult(result);
-            }
+            election.addMunicipalityResult(result);
         }
     }
 
     @Override
     public void registerCandidateVotes(boolean aggregated, Map<String, String> electionData) {
-        // Deze methode kan leeg blijven als je geen kandidaat-specifieke data op gemeenteniveau nodig hebt.
+        // Not needed for this feature
     }
 
     @Override
     public void registerMetadata(boolean aggregated, Map<String, String> electionData) {
-        // Deze methode kan leeg blijven als je geen metadata op gemeenteniveau nodig hebt.
+        // Not needed for this feature
     }
 }
