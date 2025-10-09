@@ -19,14 +19,12 @@
     <table v-if="results.length > 0" class="results-table">
       <thead>
       <tr>
-        <th>Gemeente</th>
         <th>Partij</th>
         <th>Aantal Stemmen</th>
       </tr>
       </thead>
       <tbody>
       <tr v-for="(result, index) in results" :key="index">
-        <td>{{ result.municipalityName || 'N/A' }}</td>
         <td>{{ result.partyName }}</td>
         <td>{{ result.validVotes.toLocaleString() }}</td>
       </tr>
