@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import AdminDashboard from '@/features/admin/view/AdminDashboard.vue';
 import ScaledElectionResults from "@/features/admin/view/ScaledElectionResults.vue";
+import PartiesView from '@/features/admin/view/PartiesView.vue';
 import NationalElectionResults from "@/features/admin/view/NationalElectionResults.vue";
 import Candidates from '@/features/admin/view/Candidates.vue';
 import MunicipalityElectionResults from '@/features/admin/view/MunicipalityElectionResults.vue';
@@ -15,6 +16,11 @@ const routes = [
     path: '/ScaledElectionResults',
     name: 'ScaledElectionResults',
     component: ScaledElectionResults,
+  },
+  {
+    path: '/parties',
+    name: 'Parties',
+    component: PartiesView,
   },
   {
     path: '/NationalElectionResults',

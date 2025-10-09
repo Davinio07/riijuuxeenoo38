@@ -2,9 +2,11 @@ package nl.hva.elections.xml.api;
 
 import nl.hva.elections.xml.model.Candidate;
 import nl.hva.elections.xml.model.Election;
-import nl.hva.elections.xml.model.NationalResult;
+import nl.hva.elections.xml.model.PoliticalParty;
 import nl.hva.elections.xml.model.Region;
+import nl.hva.elections.xml.model.NationalResult;
 import nl.hva.elections.xml.service.DutchElectionService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
@@ -75,6 +77,7 @@ public class ElectionController {
         }
     }
 
+    }
     public void addRegion(Region region) {
         this.regions.add(region);
     }
@@ -114,6 +117,39 @@ public class ElectionController {
         return ResponseEntity.ok(results);
     }
 
+    /**
+     * Get all political parties for a specific election.
+     *
+     * @param electionId the election identifier (e.g., "TK2023")
+     * @param folderName optional folder name
+     * @return list of political parties
+     */
+    @GetMapping("{electionId}/parties")
+    public ResponseEntity<List<PoliticalParty>> getPoliticalParties(
+            @PathVariable String electionId,
+            @RequestParam(required = false) String folderName) {
+
+        try {
+            Election election = (folderName == null)
+                    ? electionService.readResults(electionId, electionId)
+                    : electionService.readResults(electionId, folderName);
+
+            List<PoliticalParty> parties = election.getPoliticalParties();
+
+            // Print to console
+            System.out.println("\n=== Political Parties for " + electionId + " ===");
+            parties.forEach(party ->
+                    System.out.println("- " + party.getRegisteredAppellation())
+            );
+            System.out.println("Total parties: " + parties.size() + "\n");
+
+            return ResponseEntity.ok(parties);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+    }
+
     @GetMapping("{electionId}/candidates")
     public List<Candidate> getCandidates(@PathVariable String electionId,
                                          @RequestParam(required = false) String folderName) {
@@ -125,6 +161,101 @@ public class ElectionController {
         } catch (Exception e) {
             e.printStackTrace();
             return Collections.emptyList();
+        }
+    }
+}
+    /**
+     * Get a specific political party by its name.
+     *
+     * @param electionId the election identifier
+     * @param partyName the party name to search for
+     * @param folderName optional folder name
+     * @return the political party if found
+     */
+    @GetMapping("{electionId}/parties/search")
+    public ResponseEntity<PoliticalParty> findPartyByName(
+            @PathVariable String electionId,
+            @RequestParam String partyName,
+            @RequestParam(required = false) String folderName) {
+
+        try {
+            Election election = (folderName == null)
+                    ? electionService.readResults(electionId, electionId)
+                    : electionService.readResults(electionId, folderName);
+
+            PoliticalParty foundParty = election.getPoliticalParties().stream()
+                    .filter(party -> party.getRegisteredAppellation()
+                            .toLowerCase()
+                            .contains(partyName.toLowerCase()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (foundParty != null) {
+                System.out.println("Found party: " + foundParty.getRegisteredAppellation());
+                return ResponseEntity.ok(foundParty);
+            } else {
+                System.out.println("Party not found: " + partyName);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Get the count of political parties.
+     *
+     * @param electionId the election identifier
+     * @param folderName optional folder name
+     * @return count of parties
+     */
+    @GetMapping("{electionId}/parties/count")
+    public ResponseEntity<Integer> getPartyCount(
+            @PathVariable String electionId,
+            @RequestParam(required = false) String folderName) {
+
+        try {
+            Election election = (folderName == null)
+                    ? electionService.readResults(electionId, electionId)
+                    : electionService.readResults(electionId, folderName);
+
+            int count = election.getPoliticalParties().size();
+            System.out.println("Total parties for " + electionId + ": " + count);
+
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(0);
+        }
+    }
+
+    /**
+     * Get all party names as a simple list of strings.
+     * Useful for dropdowns or autocomplete features.
+     *
+     * @param electionId the election identifier
+     * @param folderName optional folder name
+     * @return list of party names
+     */
+    @GetMapping("{electionId}/parties/names")
+    public ResponseEntity<List<String>> getPartyNames(
+            @PathVariable String electionId,
+            @RequestParam(required = false) String folderName) {
+
+        try {
+            Election election = (folderName == null)
+                    ? electionService.readResults(electionId, electionId)
+                    : electionService.readResults(electionId, folderName);
+
+            List<String> partyNames = election.getPoliticalParties().stream()
+                    .map(PoliticalParty::getRegisteredAppellation)
+                    .toList();
+
+            return ResponseEntity.ok(partyNames);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(Collections.emptyList());
         }
     }
 }
