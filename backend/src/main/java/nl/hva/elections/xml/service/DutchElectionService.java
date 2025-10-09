@@ -138,4 +138,18 @@ public class DutchElectionService {
                 .sorted()
                 .collect(Collectors.toList());
     }
+
+    /**
+     * MINIMAL FIX: This is the missing method that the ElectionController needs.
+     * It filters the election results for a specific municipality.
+     * @param election The fully loaded election object.
+     * @param municipalityName The name of the municipality to filter by.
+     * @return A list of MunicipalityResult objects for the specified municipality.
+     */
+    public List<MunicipalityResult> getResultsForMunicipality(Election election, String municipalityName) {
+        return election.getMunicipalityResults().stream()
+                .filter(result -> result.getMunicipalityName().equalsIgnoreCase(municipalityName))
+                .sorted(Comparator.comparing(MunicipalityResult::getValidVotes).reversed())
+                .collect(Collectors.toList());
+    }
 }

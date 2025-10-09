@@ -23,17 +23,31 @@ public class DutchMunicipalityVotesTransformer implements VotesTransformer {
 
     @Override
     public void registerPartyVotes(boolean aggregated, Map<String, String> electionData) {
-        // Haal de benodigde data uit de map. De gemeentenaam zit in "ReportingUnitIdentifier".
+        // This transformer should only handle municipality-level results, not aggregated ones.
+        if (aggregated) {
+            return;
+        }
+
         String municipalityName = electionData.get("ReportingUnitIdentifier");
         String partyName = electionData.get("RegisteredName");
         String votesString = electionData.get("ValidVotes");
-        
-        // Converteer het aantal stemmen naar een integer
-        int totalVotes = votesString != null ? Integer.parseInt(votesString) : 0;
 
-        // Maak een nieuw MunicipalityResult object aan en voeg het toe aan de lijst
-        MunicipalityResult result = new MunicipalityResult(municipalityName, partyName, totalVotes);
-        election.addMunicipalityResult(result);
+        if (municipalityName != null && !municipalityName.isBlank() && partyName != null) {
+            int totalVotes = votesString != null ? Integer.parseInt(votesString) : 0;
+            MunicipalityResult result = new MunicipalityResult(municipalityName, partyName, totalVotes);
+
+            // FIX: Manually check if an identical result already exists before adding it.
+            // This prevents the duplicate data issue without changing the Election model.
+            boolean alreadyExists = election.getMunicipalityResults().stream().anyMatch(existing ->
+                    existing.getMunicipalityName().equals(result.getMunicipalityName()) &&
+                    existing.getPartyName().equals(result.getPartyName()) &&
+                    existing.getValidVotes() == result.getValidVotes()
+            );
+
+            if (!alreadyExists) {
+                election.addMunicipalityResult(result);
+            }
+        }
     }
 
     @Override

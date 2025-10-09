@@ -1,12 +1,12 @@
 package nl.hva.elections.xml.model;
 
-/**
- * Represents the total number of votes for a political party at the municipal level.
- */
+import java.util.Objects;
+
 public class MunicipalityResult {
-    private final String municipalityName;
-    private final String partyName;
-    private final int validVotes;
+
+    private String municipalityName;
+    private String partyName;
+    private int validVotes;
 
     public MunicipalityResult(String municipalityName, String partyName, int validVotes) {
         this.municipalityName = municipalityName;
@@ -14,24 +14,44 @@ public class MunicipalityResult {
         this.validVotes = validVotes;
     }
 
+    // Getters en setters blijven hetzelfde...
+
     public String getMunicipalityName() {
         return municipalityName;
+    }
+
+    public void setMunicipalityName(String municipalityName) {
+        this.municipalityName = municipalityName;
     }
 
     public String getPartyName() {
         return partyName;
     }
 
+    public void setPartyName(String partyName) {
+        this.partyName = partyName;
+    }
+
     public int getValidVotes() {
         return validVotes;
     }
 
+    public void setValidVotes(int validVotes) {
+        this.validVotes = validVotes;
+    }
+
     @Override
-    public String toString() {
-        return "MunicipalityResult{" +
-                "municipalityName='" + municipalityName + '\'' +
-                ", partyName='" + partyName + '\'' +
-                ", validVotes=" + validVotes +
-                '}';
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MunicipalityResult that = (MunicipalityResult) o;
+        return validVotes == that.validVotes &&
+               Objects.equals(municipalityName, that.municipalityName) &&
+               Objects.equals(partyName, that.partyName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(municipalityName, partyName, validVotes);
     }
 }
