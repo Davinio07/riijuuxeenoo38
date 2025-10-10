@@ -6,11 +6,11 @@
 ```mermaid
 pie 
     title Storypoints per Teamlid   
-    "Teamlid 1" : 0
-    "Teamlid 2" : 0
-    "Teamlid 3" : 0
-    "Teamlid 4" : 0
-    "Teamlid 5" : 0
+    "Zarko" : 8
+    "Baran" : 8
+    "Davinio" : 8
+    "Matin" : 8
+    "Suleyman" : 8
 ```
 
 ## Feedback for team members
