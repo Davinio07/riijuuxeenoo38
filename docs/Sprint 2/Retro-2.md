@@ -54,9 +54,46 @@ Stick closer to the planning to avoid stress and last-minute conflicts. Start on
 
 ### Baran
 
+“You often offered to do open tasks.”
+I’m happy that my willingness to take initiative was noticed. I believe that helping the team move forward, especially when something is left open, contributes to a more efficient and supportive workflow.
+
+As a TIP I received:
+“Make sure to balance taking initiative with communicating your workload to the team.”
+Sometimes, by taking on extra tasks, I risk spreading myself too thin or not keeping others informed about my progress. In the next sprint, I want to focus more on communicating what I’m working on and making sure tasks are distributed evenly within the team, and making sure to let my team know when I need help.
+
+Reflection:
+During Sprint 2, I became more active and offered to take on open tasks to help the team stay on schedule. While this helped us move forward efficiently, I realized that it’s just as important to remain transparent about my workload. In the next sprint, I’ll focus on finding a better balance between initiative and communication. Continuing to contribute actively, but also ensuring that everyone stays aligned and aware of each other’s progress.
+
 ---
 
-### Davinio  
+### Davinio
+During **Sprint 2**, I focused more on the development side of our project. After finalizing the design in Sprint 1, my main goal was to start implementing the front-end based on our approved Figma. I worked on setting up the project structure, coding several components, and collaborating with my teammates to make sure our designs were correctly translated into the application.  
+ 
+I also made sure to apply the feedback I received from the first sprint. I took more time to double-check my work before submitting it for review, which helped me catch small mistakes earlier. I also tried to take short breaks during work sessions, and I noticed that it helped me stay more focused and productive.  
+ 
+**As a TOP I received:**  
+“You are reliable and communicate well with the team.”  
+I’m glad that my teammates noticed my effort in keeping communication clear and consistent. This motivated me to continue being a dependable team member and support others when needed.  
+ 
+**As a TIP I received:**  
+“Try to plan your time more efficiently to avoid last-minute stress.”  
+I agree with this feedback, and for the next sprint, I plan to use a more structured schedule to divide my tasks evenly throughout the week. This should help me stay on track and manage my time better, especially when multiple deadlines overlap.  
+ 
+### SMART Learning Goals  
+ 
+**1. Time Management & Planning**  
+- **Specific:** I want to manage my time better by creating a daily task plan at the start of each workday.  
+- **Measurable:** By the end of each week, I will have completed at least 90% of my planned tasks.  
+- **Achievable:** This goal is realistic within our sprint planning and supports better team performance.  
+- **Relevant:** It directly helps reduce last-minute stress and improves overall workflow.  
+- **Time-bound:** I will apply this approach consistently during the next two sprints.  
+ 
+**2. Quality & Attention to Detail**  
+- **Specific:** I want to reduce the number of corrections I receive during code reviews by paying more attention to details.  
+- **Measurable:** The number of requested corrections per review should decrease by at least 30% by the end of Sprint 3.  
+- **Achievable:** By reviewing my work carefully before submitting, this goal is realistic and within my control.  
+- **Relevant:** It contributes directly to improving project quality and efficiency.  
+- **Time-bound:** I aim to achieve this by the end of Sprint 3.  
 
 ---
 
