@@ -1,6 +1,6 @@
 # Retrospective sprint 1
 
-
+![Requirements](./images/plusDelta.png)
 
 ## Feedback for team members
 
@@ -10,10 +10,10 @@
 
 
 #### Zarko:
-
+You're an excellent motivator and very encouraging.
 
 #### Davinio:
-
+You often take the reins.
 
 #### Baran:
 
@@ -27,7 +27,7 @@
 
 
 #### Zarko:
-
+Stick closer to the planning to avoid stress and last-minute conflicts. Start on the work sooner.
 
 #### Davinio:
 
@@ -36,6 +36,7 @@
 
 
 #### Matin:
+Stick closer to the planning to avoid stress and last-minute conflicts. Start on the work sooner.
 
 
 ## Personal Reflections  
