@@ -121,3 +121,32 @@ By the end of this sprint, I want to have actively shared my ideas at least four
 ->>>>> DLO, upload per persoon op de DLO een doc. 
 
 Noem deze retrospective sprint + nummer (zodat we weten waar het over gaat)
+
+<br>
+<br>
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+### Reflectie Davinio
+
+In sprint 2 ive been busy working on a lot of technical aspects of the project, but i have definitely gotten allot of feedback on my workprocess in the team that i didn't pay enough attention to this sprint. 
+
+
+### Reflectie op vorige feedback
+    
+
+#### Feedback
+
+#### Tip
+    Give the team updates on your progress more frequently.
+
+#### Top
+    You often take the reins.
+ 
+
+This feeback also reflect what ive noticed myself. When it comes to teamwork, i often take the lead and initiative to help the team progress. On the otherhand i dont often enough give updates on how far along i am, resulting in the team being unaware of what ive done. 
