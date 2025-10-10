@@ -138,3 +138,40 @@ I completely agree with this feedback. Sometimes I start tasks later than planne
 
 **Reflection:**
 In Sprint 2, I worked hard on improving how I interact and coordinate with the team, which resulted in better teamwork and fewer misunderstandings. For the next sprint, I want to take that same focus and apply it to my personal time management. By starting tasks earlier and updating my progress more consistently, I can reduce last-minute stress and help the team stay on schedule. My goal is to stay just as communicative, but more structured in execution.
+
+
+Here are **3 SMART team learning goals** you can include in your retrospective for **Sprint 2** — focused on improving collaboration, planning, and communication across the whole team:
+
+---
+<br>
+<br>
+
+##  **SMART Learning Goals – Team Level**
+
+### **1. Improve Sprint Planning & Task Start Time**
+
+* **Specific:** The team will begin assigned tasks within 24 hours after the sprint planning meeting.
+* **Measurable:** At least **90% of tasks** will be moved to “In Progress or even "Done” within the first few day's of the sprint.
+* **Achievable:** By improving clarity in sprint planning and assigning tasks early, this is realistic.
+* **Relevant:** Early task initiation helps prevent last-minute stress and workload imbalance.
+* **Time-bound:** To be achieved consistently starting in **Sprint 3** and evaluated at the next retrospective.
+
+---
+
+### **2. Strengthen Communication & Transparency**
+
+* **Specific:** Each team member will **update the sprint board** and **post a short progress message** in the group chat **at least twice per week**.
+* **Measurable:** The board should reflect active updates from all five team members weekly.
+* **Achievable:** These updates require minimal time and can be done during stand-ups or at the end of the workday.
+* **Relevant:** Improves alignment, reduces misunderstandings, and supports teamwork.
+* **Time-bound:** Implemented for the duration of **Sprint 3** and reviewed during the next retrospective.
+
+---
+
+### **3. Enhance Time Management & Reliability**
+
+* **Specific:** The team will collectively ensure that all sprint tasks are completed **by 24 hours before the sprint review** to allow time for testing and adjustments.
+* **Measurable:** At least **90% of sprint tasks** will be marked as “Done” one day before the sprint review.
+* **Achievable:** With better planning and communication, this timeline is realistic.
+* **Relevant:** Reduces last-minute stress and improves the quality of deliverables.
+* **Time-bound:** To be achieved in **Sprint 3**, evaluated in the **Sprint 3 Retrospective**.
