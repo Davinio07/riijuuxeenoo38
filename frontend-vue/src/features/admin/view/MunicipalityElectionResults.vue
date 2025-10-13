@@ -4,7 +4,7 @@
 
     <div class="search-container" v-if="municipalityNames.length > 0">
       <label for="municipality-select">Kies een gemeente:</label>
-      <select id="municipality-select" v-model="selectedMunicipality">
+      <select id="municipality-select" v-model="selectedMunicipality" @change="fetchResultsForSelectedMunicipality">
         <option v-for="name in municipalityNames" :key="name" :value="name">
           {{ name }}
         </option>
@@ -32,12 +32,15 @@
       </tr>
       </tbody>
     </table>
+    <p v-if="!loading && results.length === 0 && !error">
+      Selecteer een gemeente om de resultaten te zien.
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { getMunicipalityNames, type MunicipalityResult } from '../service/MunicipalityElectionResults_api';
+import { getMunicipalityNames, getResultsForMunicipality, type MunicipalityResult } from '../service/MunicipalityElectionResults_api';
 
 const results = ref<MunicipalityResult[]>([]);
 const municipalityNames = ref<string[]>([]);
@@ -46,18 +49,41 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 
 /**
+ * Fetches results for the currently selected municipality and updates the UI.
+ */
+async function fetchResultsForSelectedMunicipality() {
+  if (!selectedMunicipality.value) return;
+
+  loading.value = true;
+  error.value = null;
+  try {
+    results.value = await getResultsForMunicipality(selectedMunicipality.value);
+  } catch (err) {
+    error.value = `Fout bij het ophalen van de uitslagen for ${selectedMunicipality.value}.`;
+    console.error(err);
+    results.value = []; // Clear old results on error
+  } finally {
+    loading.value = false;
+  }
+}
+
+/**
  * On component mount, fetch the list of all municipalities.
+ * If successful, select the first one and fetch its results.
  */
 onMounted(async () => {
   try {
     municipalityNames.value = await getMunicipalityNames();
     if (municipalityNames.value.length > 0) {
+      // Automatically select the first municipality and load its data
       selectedMunicipality.value = municipalityNames.value[0];
+      await fetchResultsForSelectedMunicipality();
+    } else {
+      loading.value = false;
     }
   } catch (err) {
     error.value = 'Fout bij het ophalen van de lijst met gemeenten.';
     console.error(err);
-  } finally {
     loading.value = false;
   }
 });
