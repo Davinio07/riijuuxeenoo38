@@ -138,4 +138,17 @@ public class DutchElectionService {
                 .sorted()
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Filters the election results for a single, specific municipality.
+     * @param election The fully loaded election object.
+     * @param municipalityName The name of the municipality to filter by.
+     * @return A list of MunicipalityResult objects, only for the requested municipality.
+     */
+    public List<MunicipalityResult> getResultsForMunicipality(Election election, String municipalityName) {
+        return election.getMunicipalityResults().stream()
+                .filter(result -> result.getMunicipalityName().equalsIgnoreCase(municipalityName))
+                .sorted(Comparator.comparing(MunicipalityResult::getValidVotes).reversed())
+                .collect(Collectors.toList());
+    }
 }
