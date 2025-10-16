@@ -1,11 +1,6 @@
 package nl.hva.elections.xml.api;
 
-import nl.hva.elections.xml.model.Candidate;
-import nl.hva.elections.xml.model.Election;
-import nl.hva.elections.xml.model.PoliticalParty;
-import nl.hva.elections.xml.model.Region;
-import nl.hva.elections.xml.model.MunicipalityResult;
-import nl.hva.elections.xml.model.NationalResult;
+import nl.hva.elections.xml.model.*;
 import nl.hva.elections.xml.service.DutchElectionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -73,16 +68,17 @@ public class ElectionController {
     /**
      * Get the election results for one specific municipality.
      * We get the name of the municipality from the URL path.
+     *
      * @param municipalityName The name of the city, like "Amsterdam".
      * @return A list of results for that specific city.
      */
     @GetMapping("/municipalities/{municipalityName}")
-    public ResponseEntity<List<MunicipalityResult>> getMunicipalityResultsByName(@PathVariable String municipalityName) {
+    public ResponseEntity<List<KiesKring>> getMunicipalityResultsByName(@PathVariable String municipalityName) {
         try {
             // Get all election data from our service
             Election electionData = electionService.loadAllElectionData();
             // Ask the service to find the results for the municipality we want
-            List<MunicipalityResult> municipalityResults = electionService.getResultsForMunicipality(electionData, municipalityName);
+            List<KiesKring> municipalityResults = electionService.getResultsForMunicipality(electionData, municipalityName);
             // Send back the results list with a 'success' status
             return ResponseEntity.ok(municipalityResults);
         } catch (Exception e) {

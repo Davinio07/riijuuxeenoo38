@@ -11,7 +11,7 @@ public class Election {
     private final List<PoliticalParty> politicalParties = new ArrayList<>();
 
     // START OF FIX: Add a List for MunicipalityResult objects
-    private final List<MunicipalityResult> municipalityResults = new ArrayList<>();
+    private final List<KiesKring> municipalityResults = new ArrayList<KiesKring>();
     // END OF FIX
 
     public Election(String id) {
@@ -56,12 +56,12 @@ public class Election {
         }
     }
 
-    public void addMunicipalityResult(MunicipalityResult result) {
+    public void addMunicipalityResult(KiesKring result) {
         this.municipalityResults.add(result);
     }
 
 
-    public List<MunicipalityResult> getMunicipalityResults() {
+    public List<KiesKring> getMunicipalityResults() {
         return municipalityResults;
     }
     // END OF FIX
