@@ -1,5 +1,3 @@
-// Logger and HttpError classes remain the same as the previous example
-
 const logger = {
   info: (message: string, context?: object) => console.log(`[INFO] ${message}`, context || ''),
   warn: (message: string, context?: object) => console.warn(`[WARN] ${message}`, context || ''),

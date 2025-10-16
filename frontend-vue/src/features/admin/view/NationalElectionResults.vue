@@ -1,26 +1,28 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { getNationalResults, getNationalSeats } from '@/features/admin/service/NationalElectionResults_api.ts'
-import { Bar } from 'vue-chartjs'
+import { Bar } from 'vue-chartjs' // <-- Aangepast van Pie naar Bar
 import {
   Chart as ChartJS,
   Title,
   Tooltip,
   Legend,
-  BarElement,
-  CategoryScale,
-  LinearScale
+  BarElement, // <-- Toegevoegd
+  CategoryScale, // X-as (categorieën)
+  LinearScale,   // Y-as (waarden) <-- Toegevoegd
+  type TooltipItem,
 } from 'chart.js'
 
-// Register chart.js components globally
+// Registreer de juiste Chart.js componenten voor een Bar Chart
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-interface NationalResult {
+// Changed interfaces to types to potentially bypass parsing issues in some environments
+type NationalResult = {
   partyName: string
   validVotes: number
 }
 
-interface NationalSeats {
+type NationalSeats = {
   [partyName: string]: number
 }
 
@@ -36,10 +38,14 @@ async function fetchElectionData(electionId: string) {
   nationalSeats.value = {}
 
   try {
-    nationalResults.value = await getNationalResults(electionId) as NationalResult[]
-    nationalSeats.value = await getNationalSeats(electionId) as NationalSeats
+    const results = await getNationalResults(electionId)
+    const seats = await getNationalSeats(electionId)
+
+    nationalResults.value = (results as NationalResult[]) || []
+    nationalSeats.value = (seats as NationalSeats) || {}
   } catch (err) {
-    error.value = (err instanceof Error) ? err.message : 'Er is een fout opgetreden.'
+    // Check if err has a message property, otherwise provide a fallback
+    error.value = (err instanceof Error) ? err.message : 'Er is een onbekende fout opgetreden.'
   } finally {
     loading.value = false
   }
@@ -47,60 +53,151 @@ async function fetchElectionData(electionId: string) {
 
 // Chart configuration
 const chartData = computed(() => {
-  const labels = nationalResults.value.map(r => r.partyName)
+  if (!nationalResults.value.length) return { labels: [], datasets: [] };
+
+  const totalVotes = nationalResults.value.reduce((sum, r) => sum + r.validVotes, 0)
+
+  // Sort results
+  const sortedResults = [...nationalResults.value].sort((a, b) => b.validVotes - a.validVotes);
+
+  const labels = sortedResults.map(r => r.partyName)
+
+  // Calculate percentage of valid votes for each party
+  const percentages = sortedResults.map(r =>
+    totalVotes > 0 ? parseFloat(((r.validVotes / totalVotes) * 100).toFixed(2)) : 0
+  )
+
+  // Get vote and seat count for each party
+  const votes = sortedResults.map(r => r.validVotes);
+  const seats = labels.map(party => nationalSeats.value[party] || 0)
+
+  // Define a set of 41 unique, highly contrasting colors.
+  const backgroundColors = [
+    '#FF6347', '#4682B4', '#3CB371', '#FFD700', '#DA70D6',
+    '#00CED1', '#FFA07A', '#9370DB', '#8B0000', '#00BFFF',
+    '#A0522D', '#7FFF00', '#BA55D3', '#BDB76B', '#1E90FF',
+    '#FF4500', '#20B2AA', '#800000', '#00FF00', '#DC143C',
+    '#008080', '#D2691E', '#48D1CC', '#8B4513', '#6A5ACD',
+    '#F08080', '#006400', '#C71585', '#556B2F', '#9932CC',
+    '#A9A9A9', '#FF8C00', '#B0E0E6', '#CD5C5C', '#696969',
+    '#2F4F4F', '#000080', '#FFB6C1', '#8FBC8F', '#4169E1',
+    '#B8860B'
+  ];
+
+  // Map parties to colors cyclically (If more than 41 parties, colors will repeat)
+  const partyColors = labels.map((_, index) => backgroundColors[index % backgroundColors.length]);
+
   return {
-    labels,
+    labels: labels,
     datasets: [
       {
-        label: 'Aantal geldige stemmen',
-        data: nationalResults.value.map(r => r.validVotes),
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        borderColor: 'rgba(54, 162, 235, 1)',
+        label: 'Stempercentage',
+        data: percentages, // De data voor de lengte van de staven
+        backgroundColor: partyColors,
+        borderColor: '#ffffff',
         borderWidth: 1,
-      },
-      {
-        label: 'Aantal zetels',
-        data: labels.map(party => nationalSeats.value[party] || 0),
-        backgroundColor: 'rgba(255, 99, 132, 0.6)',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 1,
+        votesData: votes,
+        seatsData: seats
       }
     ]
   }
 })
 
+// Chart options - Customized for a Horizontal Bar Chart
 const chartOptions = {
   responsive: true,
+  maintainAspectRatio: false,
+  indexAxis: 'y' as const, // <-- Zeer BELANGRIJK: Maakt het een horizontaal staafdiagram
   plugins: {
-    legend: { position: 'top' as const },
+    legend: {
+      display: false, // Legenda is overbodig bij een staafdiagram met 41 unieke kleuren
+    },
     title: {
       display: true,
-      text: 'Nationale verkiezingsresultaten: stemmen en zetels'
+      text: 'Nationale verkiezingsresultaten: Stempercentage & Zetels',
+      font: {
+        size: 18
+      }
+    },
+    tooltip: {
+      callbacks: {
+        // Custom label to display both percentage and seats. Context is now strongly typed.
+        label: function(context: TooltipItem<'bar'>) {
+          // De dataset is nu type 'bar', maar we gebruiken nog steeds de seatsData property
+          const dataset = context.dataset as unknown as { votesData: number[], seatsData: number[] };
+          const votes = dataset.votesData[context.dataIndex];
+          const seats = dataset.seatsData[context.dataIndex];
+          const percentage = context.formattedValue;
+
+          const formattedVotes = votes.toLocaleString('nl-NL');
+
+          return [
+            ` Stempercentage: ${percentage}%`,
+            ` Totaal Stemmen: ${formattedVotes}`,
+            ` Aantal Zetels: ${seats}`
+          ];
+        },
+        // Title callback context is an array of TooltipItems
+        title: function(context: TooltipItem<'bar'>[]) {
+          return context[0].label; // Party Name
+        }
+      }
     }
   },
   scales: {
-    x: { stacked: false, ticks: { color: '#333' } },
-    y: { beginAtZero: true }
+    x: { // De X-as toont nu de percentages
+      stacked: false,
+      title: {
+        display: true,
+        text: 'Stempercentage (%)'
+      },
+      ticks: {
+        // Zorgt ervoor dat percentages als zodanig worden weergegeven in de as
+        callback: function(value: any) {
+          return value + '%';
+        }
+      }
+    },
+    y: { // De Y-as toont nu de partijnamen
+      stacked: false
+    }
   }
 }
 </script>
 
 <template>
-  <h1 class="text-xl font-semibold mb-4">Nationale verkiezingsresultaten</h1>
+  <div class="p-6 bg-gray-50 min-h-screen">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Nationale Verkiezingsresultaten</h1>
 
-  <div class="mb-4 flex gap-2">
-    <button @click="() => fetchElectionData('TK2021')" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
-      TK2021
-    </button>
-    <button @click="() => fetchElectionData('TK2023')" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
-      TK2023
-    </button>
-  </div>
+    <div class="mb-6 flex gap-3">
+      <button @click="() => fetchElectionData('TK2021')" class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md">
+        TK2021 Ophalen
+      </button>
+      <button @click="() => fetchElectionData('TK2023')" class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md">
+        TK2023 Ophalen
+      </button>
+    </div>
 
-  <div v-if="loading">Bezig met laden...</div>
-  <div v-if="error" class="text-red-600">{{ error }}</div>
+    <div v-if="loading" class="text-xl text-indigo-600 font-semibold mt-8">
+      Bezig met laden...
+      <div class="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-indigo-600 rounded-full ml-2" role="status"></div>
+    </div>
 
-  <div v-if="nationalResults.length" class="w-full max-w-3xl mx-auto">
-    <Bar :data="chartData" :options="chartOptions" />
+    <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-8" role="alert">
+      <strong class="font-bold">Fout:</strong>
+      <span class="block sm:inline">{{ error }}</span>
+    </div>
+
+    <div v-if="nationalResults.length" class="w-full mx-auto mt-8 bg-white p-6 rounded-xl shadow-2xl h-[1200px]">
+      <Bar
+        :data="chartData"
+        :options="chartOptions"
+        class="h-full"
+      />
+    </div>
+
+    <div v-else-if="!loading && !error" class="mt-8 text-gray-500 text-lg">
+      Klik op een knop om verkiezingsdata op te halen.
+    </div>
   </div>
 </template>
