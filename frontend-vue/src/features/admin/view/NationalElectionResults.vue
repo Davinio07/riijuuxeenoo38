@@ -1,64 +1,88 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import {computed, ref} from 'vue'
 import { getNationalResults } from '@/features/admin/service/NationalElectionResults_api.ts'
+import { Bar } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale
+} from 'chart.js'
 
-/** Represents a party's national election result */
+// Register chart.js components globally
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+
 interface NationalResult {
   partyName: string
   validVotes: number
 }
 
-// Reactive state
 const nationalResults = ref<NationalResult[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 
-/**
- * Fetches the national election results for a given election ID.
- *
- * @param electionId - The unique ID of the election (e.g., "TK2023").
- */
 async function fetchNationalResults(electionId: string) {
   loading.value = true
   error.value = null
   nationalResults.value = []
-
   try {
-    nationalResults.value = await getNationalResults(electionId)
+    nationalResults.value = await getNationalResults(electionId) as NationalResult[];
   } catch (err) {
-    console.error(err)
-    // Cast to Error and show a message
-    error.value = err instanceof Error
-      ? err.message
-      : 'Er is een onbekende fout opgetreden bij het ophalen van de resultaten.'
+    error.value = (err instanceof Error) ? err.message : 'Er is een fout opgetreden.'
   } finally {
     loading.value = false
+  }
+}
+
+// Chart configuration
+const chartData = computed(() => ({
+  labels: nationalResults.value.map(r => r.partyName),
+  datasets: [
+    {
+      label: 'Aantal geldige stemmen',
+      data: nationalResults.value.map(r => r.validVotes),
+      backgroundColor: 'rgba(54, 162, 235, 0.6)',
+      borderColor: 'rgba(54, 162, 235, 1)',
+      borderWidth: 1,
+    }
+  ]
+}))
+
+const chartOptions = {
+  responsive: true,
+  plugins: {
+    legend: { position: 'top' as const },
+    title: {
+      display: true,
+      text: 'Nationale verkiezingsresultaten per partij'
+    }
+  },
+  scales: {
+    x: { ticks: { color: '#333' } },
+    y: { beginAtZero: true }
   }
 }
 </script>
 
 <template>
-  <h1>Nationale verkiezingsresultaten</h1>
+  <h1 class="text-xl font-semibold mb-4">Nationale verkiezingsresultaten</h1>
 
-  <div style="margin-bottom: 10px;">
-    <button @click="() => fetchNationalResults('TK2023')">TK2023</button>
+  <div class="mb-4 flex gap-2">
+    <button @click="() => fetchNationalResults('TK2021')" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+      TK2021
+    </button>
+    <button @click="() => fetchNationalResults('TK2023')" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+      TK2023
+    </button>
   </div>
 
   <div v-if="loading">Bezig met laden...</div>
-  <div v-if="error" style="color: red;">{{ error }}</div>
+  <div v-if="error" class="text-red-600">{{ error }}</div>
 
-  <table v-if="nationalResults.length" border="1" cellspacing="0" cellpadding="6">
-    <thead>
-    <tr>
-      <th>Partij</th>
-      <th>Stemmen</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr v-for="r in nationalResults" :key="r.partyName">
-      <td>{{ r.partyName }}</td>
-      <td>{{ r.validVotes.toLocaleString() }}</td>
-    </tr>
-    </tbody>
-  </table>
+  <div v-if="nationalResults.length" class="w-full max-w-3xl mx-auto">
+    <Bar :data="chartData" :options="chartOptions" />
+  </div>
 </template>
