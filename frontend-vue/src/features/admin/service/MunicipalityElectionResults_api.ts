@@ -6,6 +6,13 @@ export interface MunicipalityResult {
     validVotes: number;
 }
 
+interface Region {
+  id: string | null;
+  name: string;
+  category: string | null;
+  superiorCategory: string | null;
+}
+
 /**
  * Gets the election results for a single municipality.
  * @param municipalityName The name of the city you want to get results for.
@@ -20,6 +27,22 @@ export async function getResultsForMunicipality(municipalityName: string): Promi
     } catch (error) {
         // Show an error message if the call fails
         console.error('API Error when fetching results:', error);
+        throw error;
+    }
+}
+
+/**
+ * Gets a list of all the municipality names.
+ * @returns A promise that gives us an array of names.
+ */
+export async function getMunicipalityNames(): Promise<string[]> {
+    try {
+        const response = await apiClient<Region[]>('/elections/TK2023/regions/gemeenten');
+        const municipalityNames = response.map((item: Region) => item.name);
+        return municipalityNames;
+    } catch (error) {
+        // Show an error message if the call fails
+        console.error('API Error when fetching municipality names:', error);
         throw error;
     }
 }
