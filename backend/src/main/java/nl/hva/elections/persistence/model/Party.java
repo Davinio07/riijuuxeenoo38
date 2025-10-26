@@ -14,7 +14,7 @@ public class Party {
     @Column(unique = true, nullable = false)
     private String name;
     private String logoUrl;
-    private Number nationalSeats;
+    private Integer nationalSeats;
 
     // This links to the Candidate class
     // "mappedBy" tells JPA that the 'party' field in the Candidate class owns this relationship
@@ -51,10 +51,17 @@ public class Party {
     public void setLogoUrl(String logoUrl) {
         this.logoUrl = logoUrl;
     }
-    public Number getNationalSeats() {
+    public Integer getNationalSeats() {
         return nationalSeats;
     }
-    public void setNationalSeats(Number nationalSeats) {
+    public void setNationalSeats(Integer nationalSeats) {
         this.nationalSeats = nationalSeats;
+    }
+
+    public List<Candidate> getCandidates() {
+        return candidates;
+    }
+    public void setCandidates(List<Candidate> candidates) {
+        this.candidates = candidates;
     }
 }
