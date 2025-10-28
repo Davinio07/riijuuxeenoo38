@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { getNationalResults, getNationalSeats } from '@/features/admin/service/NationalElectionResults_api.ts'
 import { Bar } from 'vue-chartjs'
 import {
@@ -15,7 +15,6 @@ import {
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-// Changed interfaces to types to potentially bypass parsing issues in some environments
 type NationalResult = {
   partyName: string
   validVotes: number
@@ -25,12 +24,18 @@ type NationalSeats = {
   [partyName: string]: number
 }
 
+// New State for Election Selection
+const availableElections = ref(['TK2023', 'TK2021'])
+const selectedElection = ref(availableElections.value[0]) // Default to the first (latest) one
+
 const nationalResults = ref<NationalResult[]>([])
 const nationalSeats = ref<NationalSeats>({})
 const loading = ref(false)
 const error = ref<string | null>(null)
 
 async function fetchElectionData(electionId: string) {
+  if (!electionId) return
+
   loading.value = true
   error.value = null
   nationalResults.value = []
@@ -40,15 +45,25 @@ async function fetchElectionData(electionId: string) {
     const results = await getNationalResults(electionId)
     const seats = await getNationalSeats(electionId)
 
-    nationalResults.value = (results as NationalResult[]) || []
+    // Type casting the results, assuming the API returns the expected types
+    nationalResults.value = (results as NationalResult[]).filter(r => r.validVotes > 0) || []
     nationalSeats.value = (seats as NationalSeats) || {}
   } catch (err) {
     // Check if err has a message property, otherwise provide a fallback
-    error.value = (err instanceof Error) ? err.message : 'Er is een onbekende fout opgetreden.'
+    error.value = (err instanceof Error) ? err.message : 'Er is een onbekende fout opgetreden bij het ophalen van de data.'
   } finally {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  fetchElectionData(selectedElection.value)
+})
+
+watch(selectedElection, (newElectionId) => {
+  fetchElectionData(newElectionId)
+})
+
 
 // Chart configuration
 const chartData = computed(() => {
@@ -56,7 +71,7 @@ const chartData = computed(() => {
 
   const totalVotes = nationalResults.value.reduce((sum, r) => sum + r.validVotes, 0)
 
-  // Sort results
+  // Sort results by votes descending
   const sortedResults = [...nationalResults.value].sort((a, b) => b.validVotes - a.validVotes);
 
   const labels = sortedResults.map(r => r.partyName)
@@ -113,7 +128,7 @@ const chartOptions: ChartOptions<'bar'> = {
     },
     title: {
       display: true,
-      text: 'Nationale verkiezingsresultaten: Stempercentage & Zetels',
+      text: `Nationale verkiezingsresultaten: Stempercentage & Zetels (${selectedElection.value})`,
       font: {
         size: 18
       }
@@ -167,18 +182,27 @@ const chartOptions: ChartOptions<'bar'> = {
   <div class="p-6 bg-gray-50 min-h-screen">
     <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Nationale Verkiezingsresultaten</h1>
 
-    <div class="mb-6 flex gap-3">
-      <button @click="() => fetchElectionData('TK2021')" class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md">
-        TK2021 Ophalen
-      </button>
-      <button @click="() => fetchElectionData('TK2023')" class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md">
-        TK2023 Ophalen
-      </button>
-    </div>
+    <div class="mb-6 flex gap-3 items-center">
+      <label for="election-selector" class="font-medium text-gray-700">Selecteer Verkiezing:</label>
+      <select
+        id="election-selector"
+        v-model="selectedElection"
+        :disabled="loading"
+        class="px-5 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 cursor-pointer"
+      >
+        <option
+          v-for="electionId in availableElections"
+          :key="electionId"
+          :value="electionId"
+        >
+          {{ electionId }}
+        </option>
+      </select>
 
-    <div v-if="loading" class="text-xl text-indigo-600 font-semibold mt-8">
-      Bezig met laden...
-      <div class="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-indigo-600 rounded-full ml-2" role="status"></div>
+      <span v-if="loading" class="text-indigo-600 ml-3 flex items-center">
+        Bezig met laden...
+        <div class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-indigo-600 rounded-full ml-1" role="status"></div>
+      </span>
     </div>
 
     <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-8" role="alert">
@@ -187,6 +211,7 @@ const chartOptions: ChartOptions<'bar'> = {
     </div>
 
     <div v-if="nationalResults.length" class="w-full mx-auto mt-8 bg-white p-6 rounded-xl shadow-2xl h-[1200px]">
+      <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Resultaten voor {{ selectedElection }}</h2>
       <Bar
         :data="chartData"
         :options="chartOptions"
@@ -195,7 +220,7 @@ const chartOptions: ChartOptions<'bar'> = {
     </div>
 
     <div v-else-if="!loading && !error" class="mt-8 text-gray-500 text-lg">
-      Klik op een knop om verkiezingsdata op te halen.
+      Selecteer een verkiezing en bekijk de data.
     </div>
   </div>
 </template>
