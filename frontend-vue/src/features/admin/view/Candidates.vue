@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { getCandidates } from '@/features/admin/service/ScaledElectionResults_api.ts';
 
 interface Candidate {
@@ -19,6 +19,28 @@ const electionId = ref<'TK2023' | 'TK2024'>('TK2023');
 const loading = ref(false);
 const error = ref('');
 const candidates = ref<Candidate[]>([]);
+
+// --- NEW: modal state ---
+const showModal = ref(false);
+const activeCandidate = ref<Candidate | null>(null);
+
+function openCandidate(c: Candidate) {
+  activeCandidate.value = c;
+  showModal.value = true;
+  // nextTick(() => try to focus the close button) — optional
+}
+
+function closeModal() {
+  showModal.value = false;
+  activeCandidate.value = null;
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && showModal.value) {
+    e.preventDefault();
+    closeModal();
+  }
+}
 
 function folderFor(): string | undefined {
   return undefined;
@@ -61,7 +83,13 @@ function onElectionChange() {
   load();
 }
 
-onMounted(load);
+onMounted(() => {
+  load();
+  window.addEventListener('keydown', onKeydown);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeydown);
+});
 </script>
 
 <template>
@@ -99,9 +127,55 @@ onMounted(load);
           <li v-if="c.gender"><strong>Geslacht:</strong> {{ c.gender }}</li>
           <li v-if="c.id"><strong>ID:</strong> {{ c.id }}</li>
         </ul>
+
+        <!-- NEW: open modal button -->
+        <div class="actions">
+          <button class="linklike" @click="openCandidate(c)" aria-haspopup="dialog">
+            Meer info
+          </button>
+        </div>
       </article>
     </div>
   </section>
+
+  <!-- NEW: modal (teleported to body for stacking context) -->
+  <Teleport to="body">
+    <div
+      v-if="showModal"
+      class="modal-backdrop"
+      @click.self="closeModal"
+    >
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        :aria-labelledby="activeCandidate ? 'dlg-title' : undefined"
+      >
+        <header class="modal-header">
+          <h3 id="dlg-title" class="modal-title">
+            {{ activeCandidate ? displayName(activeCandidate) : '' }}
+          </h3>
+          <button class="icon-btn" @click="closeModal" aria-label="Sluiten">✕</button>
+        </header>
+
+        <div class="modal-body">
+          <ul class="details">
+            <li v-if="activeCandidate?.listName"><strong>Lijst:</strong> {{ activeCandidate?.listName }}</li>
+            <li v-if="activeCandidate?.listNumber"><strong>Lijstnummer:</strong> {{ activeCandidate?.listNumber }}</li>
+            <li v-if="activeCandidate?.numberOnList"><strong>Plaats op lijst:</strong> {{ activeCandidate?.numberOnList }}</li>
+            <li v-if="activeCandidate?.locality"><strong>Woonplaats:</strong> {{ activeCandidate?.locality }}</li>
+            <li v-if="activeCandidate?.gender"><strong>Geslacht:</strong> {{ activeCandidate?.gender }}</li>
+            <li v-if="activeCandidate?.id"><strong>ID:</strong> {{ activeCandidate?.id }}</li>
+            <!-- Voeg hier eenvoudig extra velden toe zodra beschikbaar -->
+          </ul>
+        </div>
+
+        <footer class="modal-footer">
+          <button class="primary" @click="closeModal">Sluiten</button>
+        </footer>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -128,4 +202,31 @@ onMounted(load);
 }
 .name { margin: 0; font-size: 1.1rem; }
 .meta { list-style: none; padding: 0; margin: .25rem 0 0 0; display: grid; gap: .25rem; color: #334155; font-size: .95rem; }
+.actions { margin-top: .5rem; }
+.linklike {
+  background: transparent; border: none; padding: 0; color: #0f172a; cursor: pointer; font-weight: 600;
+  text-decoration: underline;
+}
+
+/* --- NEW: modal styles --- */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, .5);
+  display: grid; place-items: center; z-index: 1000;
+}
+.modal {
+  width: min(640px, 92vw); background: #fff; border-radius: .9rem; border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25); display: grid; grid-template-rows: auto 1fr auto;
+  max-height: 85vh;
+}
+.modal-header, .modal-footer { padding: .9rem 1rem; display: flex; align-items: center; justify-content: space-between; }
+.modal-title { margin: 0; font-size: 1.15rem; }
+.modal-body { padding: 0 1rem 1rem 1rem; overflow: auto; }
+.icon-btn {
+  border: none; background: transparent; font-size: 1.15rem; cursor: pointer; line-height: 1;
+}
+.primary {
+  padding: .55rem .8rem; border-radius: .6rem; border: 1px solid #0f172a; background: #0f172a; color: #fff; cursor: pointer;
+}
+.details { list-style: none; padding: 0; margin: 0; display: grid; gap: .4rem; color: #334155; }
+.details strong { color: #0f172a; }
 </style>
