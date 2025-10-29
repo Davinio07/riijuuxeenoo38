@@ -42,10 +42,49 @@ export const getPartyColor = (partyName: string): string => {
 
 export const partyService = {
   async getParties(electionId: string): Promise<PoliticalParty[]> {
-    const response = await fetch(`${API_BASE_URL}/${electionId}/parties`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch parties');
+    try {
+      const response = await fetch(`${API_BASE_URL}/${electionId}/parties`);
+
+      // Check for non-successful HTTP responses (e.g., 404, 500)
+      if (!response.ok) {
+        // Try to get more info from the response, if possible
+        let errorBody = 'Unknown error';
+        try {
+          errorBody = await response.text();
+        } catch (textError) {
+          // Ignore if we can't read the body
+        }
+        console.error(`API Error: ${response.status} ${response.statusText}`, errorBody);
+        throw new Error(`Failed to fetch parties: ${response.status} ${response.statusText}`);
+      }
+
+      // Try to parse the JSON response
+      const data: PoliticalParty[] = await response.json();
+      return data;
+
+    } catch (error) {
+      // Log the specific error for debugging
+      console.error("Error in getParties service:", error);
+
+      // Handle different types of errors
+      if (error instanceof SyntaxError) {
+        // This occurs if response.json() fails (malformed JSON)
+        throw new Error('Failed to parse server response. Invalid JSON.');
+      }
+
+      if (error instanceof TypeError) {
+        // This often happens with network errors (e.g., fetch failed to send, CORS issue)
+        throw new Error('Network error: Could not connect to the API.');
+      }
+
+      // Re-throw the error we already processed (like the !response.ok)
+      // or any other unexpected error
+      if (error instanceof Error) {
+        throw error;
+      }
+
+      // Fallback for any other unexpected error type
+      throw new Error('An unknown error occurred while fetching parties.');
     }
-    return response.json();
   }
 };
