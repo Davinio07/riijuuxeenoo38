@@ -1,14 +1,16 @@
 package nl.hva.elections.xml.api;
 
-import nl.hva.elections.xml.model.*;
-import nl.hva.elections.xml.model.Candidate;
 import nl.hva.elections.xml.model.Election;
 import nl.hva.elections.xml.model.PoliticalParty;
 import nl.hva.elections.xml.model.Region;
 import nl.hva.elections.xml.model.NationalResult;
+import nl.hva.elections.xml.model.KiesKring; // Needed for getMunicipalityResultsByName
+
 import nl.hva.elections.xml.service.DutchElectionService;
-import nl.hva.elections.persistence.model.Candidate; // <-- JPA Candidate Model for database access
-import nl.hva.elections.repositories.CandidateRepository; // <-- JPA Repository
+
+// JPA/Database models (These are required for the new database endpoint)
+import nl.hva.elections.persistence.model.Candidate; // <-- RESOLVES AMBIGUITY, USES JPA MODEL
+import nl.hva.elections.repositories.CandidateRepository;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
