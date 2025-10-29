@@ -1,12 +1,22 @@
 // partyService.ts
 
+/**
+ * Interface representing a political party as returned by the API.
+ */
 interface PoliticalParty {
+  /** The officially registered name of the party. */
   registeredAppellation: string;
 }
 
+/**
+ * The base URL for the elections API.
+ */
 const API_BASE_URL = 'http://localhost:8080/api/elections';
 
-// Official party colors based on Dutch political parties
+/**
+ * A mapping of official party names to their designated hex color codes.
+ * Based on common colors for Dutch political parties.
+ */
 export const partyColors: Record<string, string> = {
   'VVD': '#FF6600',
   'D66': '#00A03E',
@@ -36,11 +46,28 @@ export const partyColors: Record<string, string> = {
   'Politieke Partij voor Basisinkomen': '#9370DB',
 };
 
+/**
+ * Retrieves the hex color code for a given party name.
+ *
+ * @param {string} partyName - The registered appellation of the party.
+ * @returns {string} The corresponding hex color code or a default gray if not found.
+ */
 export const getPartyColor = (partyName: string): string => {
   return partyColors[partyName] || '#6B7280'; // Default gray if not found
 };
 
+/**
+ * Service object for handling political party data.
+ */
 export const partyService = {
+  /**
+   * Fetches a list of political parties for a specific election.
+   *
+   * @param {string} electionId - The unique identifier for the election.
+   * @returns {Promise<PoliticalParty[]>} A promise that resolves to an array of PoliticalParty objects.
+   * @throws {Error} Throws an error if the network request fails, if the server
+   * responds with a non-OK status, or if the response is not valid JSON.
+   */
   async getParties(electionId: string): Promise<PoliticalParty[]> {
     try {
       const response = await fetch(`${API_BASE_URL}/${electionId}/parties`);
