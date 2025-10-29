@@ -7,6 +7,9 @@ import nl.hva.elections.xml.model.PoliticalParty;
 import nl.hva.elections.xml.model.Region;
 import nl.hva.elections.xml.model.NationalResult;
 import nl.hva.elections.xml.service.DutchElectionService;
+import nl.hva.elections.persistence.model.Candidate; // <-- JPA Candidate Model for database access
+import nl.hva.elections.repositories.CandidateRepository; // <-- JPA Repository
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
@@ -26,10 +29,13 @@ import java.util.Map;
 @RequestMapping("/api/elections")
 public class ElectionController {
     private final DutchElectionService electionService;
+    private final CandidateRepository candidateRepository; // <-- Used for new DB endpoint
     private List<Region> regions = new ArrayList<>();
 
-    public ElectionController(DutchElectionService electionService) {
+    // Constructor updated to inject CandidateRepository
+    public ElectionController(DutchElectionService electionService, CandidateRepository candidateRepository) {
         this.electionService = electionService;
+        this.candidateRepository = candidateRepository;
     }
 
     /**
@@ -124,19 +130,30 @@ public class ElectionController {
         return ResponseEntity.ok(results);
     }
 
-    @GetMapping("{electionId}/candidates")
-    public List<Candidate> getCandidates(@PathVariable String electionId,
-                                         @RequestParam(required = false) String folderName) {
+    /* * The old getCandidates method has been removed to resolve the incompatible types error.
+     * You should now use the new /candidates/db endpoint to read data from the database.
+     */
+    // @GetMapping("{electionId}/candidates") - OLD METHOD REMOVED!
+
+    /**
+     * Endpoint to get all candidates directly from the database (JPA model).
+     * This is the replacement for the old XML-based method and reads persisted data.
+     * Accessible via GET /api/elections/candidates/db
+     * @return A list of all persisted candidates.
+     */
+    @GetMapping("/candidates/db")
+    public ResponseEntity<List<Candidate>> getAllCandidatesFromDb() {
         try {
-            Election election = (folderName == null)
-                    ? electionService.readResults(electionId, electionId)
-                    : electionService.readResults(electionId, folderName);
-            return (election == null) ? Collections.emptyList() : election.getCandidates();
+            // Use the injected repository to fetch all candidates from the database
+            List<Candidate> candidates = candidateRepository.findAll();
+            System.out.println("Fetched " + candidates.size() + " candidates from DB.");
+            return ResponseEntity.ok(candidates);
         } catch (Exception e) {
             e.printStackTrace();
-            return Collections.emptyList();
+            return ResponseEntity.status(500).build();
         }
     }
+
 
     /**
      * Get all political parties for a specific election.
