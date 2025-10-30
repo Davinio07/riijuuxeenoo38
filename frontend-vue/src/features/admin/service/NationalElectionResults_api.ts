@@ -38,7 +38,7 @@ class HttpError extends Error {
  */
 export interface NationalResultDTO {
   partyName: string;
-  votes: number;
+  validVotes: number;
   percentage: number;
 }
 
