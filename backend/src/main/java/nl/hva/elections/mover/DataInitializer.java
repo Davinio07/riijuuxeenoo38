@@ -22,7 +22,11 @@ public class DataInitializer implements CommandLineRunner { // Tells Spring: "Ru
         this.partyRepository = partyRepository;
     }
 
-    // This 'run' method is the code that Spring will execute at startup.
+    /**
+     * 'run' method is the code that Spring will execute at startup.
+     * @param args
+     * @throws Exception
+     */
     @Override
     public void run(String... args) throws Exception {
 
@@ -33,25 +37,23 @@ public class DataInitializer implements CommandLineRunner { // Tells Spring: "Ru
         }
         System.out.println("Database is empty. Loading party data from XML...");
 
-        // Get all data from the XML parser (old service)
+        // Get all data from the XML parser
         Election electionData = xmlService.loadAllElectionData();
 
         // Loop through just the parties from that XML data
         for (PoliticalParty xmlParty : electionData.getPoliticalParties()) {
 
-            // We use the constructor you built in your Party entity
+            // constructor i built in Party entity
             Party newPartyEntity = new Party(
                     xmlParty.getRegisteredAppellation(), // The name
                     null, // TODO: Add the logo URL if you have it
                     0     // TODO: Add national seats if you have it
             );
 
-            // Note: If 'PoliticalParty' class has logo/seats, use its getters here!
-            // Example:
-            // newPartyEntity.setLogoUrl(xmlParty.getLogoUrl());
-            // newPartyEntity.setNationalSeats(xmlParty.getNationalSeats());
+            // TODO: newPartyEntity.setLogoUrl(xmlParty.getLogoUrl());
+            // TODO: newPartyEntity.setNationalSeats(xmlParty.getNationalSeats());
 
-            // D. Save the new, translated party into the H2 Database
+            // Save the new, translated party into the H2 Database
             partyRepository.save(newPartyEntity);
         }
         System.out.println("Finished loading party data. Total parties saved: " + partyRepository.count());

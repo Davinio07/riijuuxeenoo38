@@ -15,23 +15,31 @@ public class Party {
     private String name;
     private String logoUrl;
     private Integer nationalSeats;
+    private String regionName;
+    private String Seats_2023;
 
-    // This links to the Candidate class
-    // "mappedBy" tells JPA that the 'party' field in the Candidate class owns this relationship
+    /** This links to the Candidate class
+     * "mappedBy" tells JPA that the 'party' field in the Candidate class owns this relationship
+     */
     @OneToMany(mappedBy = "party")
     private List<Candidate> candidates;
 
     // A no-argument constructor is required by JPA
     public Party() {}
 
-    // A constructor to make it easy to create
+    /**
+     * A constructor to make it easy to create
+     * @param name
+     * @param logoUrl
+     * @param nationalSeats
+     */
     public Party(String name, String logoUrl, int nationalSeats) {
         this.name = name;
         this.logoUrl = logoUrl;
         this.nationalSeats = nationalSeats;
     }
 
-    // --- Getters and Setters ---
+    // Getters and Setters
 
     public Integer getId() {
         return id;
@@ -56,6 +64,20 @@ public class Party {
     }
     public void setNationalSeats(Integer nationalSeats) {
         this.nationalSeats = nationalSeats;
+    }
+
+    public String getRegionName() {
+        return regionName;
+    }
+    public void setRegionName(String Kieskring) {
+        this.regionName = Kieskring;
+    }
+
+    public String getSeats_2023() {
+        return Seats_2023;
+    }
+    public void setSeats_2023(String Seats_2023) {
+        this.Seats_2023 = Seats_2023;
     }
 
     public List<Candidate> getCandidates() {

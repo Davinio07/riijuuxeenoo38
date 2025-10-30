@@ -1,5 +1,6 @@
 package nl.hva.elections.xml.api;
 
+import nl.hva.elections.exceptions.ElectionNotFoundException;
 import nl.hva.elections.xml.model.*;
 import nl.hva.elections.xml.model.Candidate;
 import nl.hva.elections.xml.model.Election;
@@ -7,9 +8,13 @@ import nl.hva.elections.xml.model.PoliticalParty;
 import nl.hva.elections.xml.model.Region;
 import nl.hva.elections.xml.model.NationalResult;
 import nl.hva.elections.xml.service.DutchElectionService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
@@ -69,14 +74,12 @@ public class ElectionController {
         }
     }
 
-    public void addRegion(Region region) {
-        this.regions.add(region);
-    }
-
-    public List<Region> getRegions() {
-        return regions;
-    }
-
+    /**
+     *
+     * @param electionId
+     * @param folderName
+     * @return
+     */
     @GetMapping("{electionId}/regions")
     public List<Region> getRegions(@PathVariable String electionId,
                                    @RequestParam(required = false) String folderName) {
@@ -92,14 +95,46 @@ public class ElectionController {
         }
     }
 
-    @GetMapping("{electionId}/regions/kieskringen")
-    public List<Region> getKieskringen(@PathVariable String electionId,
-                                       @RequestParam(required = false) String folderName) {
-        Election election = (folderName == null)
-                ? electionService.readResults(electionId, electionId)
-                : electionService.readResults(electionId, folderName);
 
-        return electionService.getKieskringen(election);
+    /**
+     * Retrieves all "kieskringen" (regions) for a specific election.
+     *
+     * @param electionId The unique identifier for the election.
+     * @param folderName An optional folder name to specify a different data source.
+     * @return A list of regions for the election.
+     */
+    @GetMapping("{electionId}/regions/kieskringen")
+    public ResponseEntity<?> getKieskringen(@PathVariable String electionId,
+                                            @RequestParam(required = false) String folderName) {
+        try {
+            // Happy Path (200 OK)
+            Election election = (folderName == null)
+                    ? electionService.readResults(electionId, electionId)
+                    : electionService.readResults(electionId, folderName);
+
+            List<Region> regions = electionService.getKieskringen(election);
+
+            // returns the list with a 200 OK status
+            return ResponseEntity.ok(regions);
+
+        } catch (ElectionNotFoundException ex) {
+            // Not Found (404)
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND) // Sets status to 404
+                    .body(ex.getMessage());       // Puts the error message in the body
+
+        } catch (IllegalArgumentException ex) {
+            // Bad Request (400)
+            return ResponseEntity
+                    .badRequest()                 // Sets status to 400
+                    .body(ex.getMessage());       // Puts the error message in the body
+
+        } catch (Exception ex) {
+            // Server Error (500)
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR) // Sets status to 500
+                    .body("An unexpected internal error occurred.");
+        }
     }
 
     /**
