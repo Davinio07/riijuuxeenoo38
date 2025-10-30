@@ -9,6 +9,8 @@ import {
   BarElement,
   CategoryScale,
   LinearScale,
+  type ChartOptions,
+  type TooltipItem,
 } from 'chart.js';
 import type { PropType } from 'vue';
 import type { NationalResult } from '../service/partyService';
@@ -54,9 +56,10 @@ const chartData = computed(() => {
 });
 
 // Configure chart options
-const chartOptions = computed(() => ({
+const chartOptions = computed<ChartOptions<'bar'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
+  indexAxis: 'y', // <-- THIS MAKES IT HORIZONTAL
   plugins: {
     legend: {
       display: false, // Hide legend, colors are in the bars
@@ -74,13 +77,13 @@ const chartOptions = computed(() => ({
     tooltip: {
       callbacks: {
         // Format tooltip to use commas for thousands
-        label: function (context: any) {
+        label: function (context: TooltipItem<'bar'>) {
           let label = context.dataset.label || '';
           if (label) {
             label += ': ';
           }
-          if (context.parsed.y !== null) {
-            label += new Intl.NumberFormat('nl-NL').format(context.parsed.y);
+          if (context.parsed.x !== null) { // Use 'x' for horizontal chart
+            label += new Intl.NumberFormat('nl-NL').format(context.parsed.x);
           }
           return label;
         },
@@ -88,7 +91,7 @@ const chartOptions = computed(() => ({
     },
   },
   scales: {
-    y: {
+    x: { // <-- X-axis is now the value
       beginAtZero: true,
       ticks: {
         // Format Y-axis to use commas
@@ -97,6 +100,11 @@ const chartOptions = computed(() => ({
         }
       }
     },
+    y: { // <-- Y-axis is now the category (party name)
+      grid: {
+        display: false,
+      }
+    }
   },
 }));
 </script>
@@ -110,11 +118,20 @@ const chartOptions = computed(() => ({
 <style scoped>
 .chart-container {
   position: relative;
-  height: 300px; /* Give the chart a defined height */
+  /* Adjust height as needed for horizontal bars */
+  height: 200px;
   width: 100%;
   padding: 1rem;
   background: #fdfdfd;
   border: 1px solid #f0f0f0;
   border-radius: 8px;
 }
+
+/* Add more height if only one party is selected */
+.chart-container:has(canvas[height="100"]) {
+  height: 150px;
+}
+
 </style>
+
+

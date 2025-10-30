@@ -1,11 +1,9 @@
+
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { partyService, getPartyColor, type NationalResult } from '../service/partyService';
-import ComparisonChart from '../components/ComparisonChart.vue'; // Import the chart component
-
-interface PoliticalParty {
-  registeredAppellation: string;
-}
+// We now import `getParties` again
+import { partyService, getPartyColor, type NationalResult, type PoliticalParty } from '../service/partyService';
+import ComparisonChart from '../components/ComparisonChart.vue'; // Import the new horizontal chart
 
 // --- Component State ---
 const parties = ref<PoliticalParty[]>([]);
@@ -107,14 +105,18 @@ const toggleParty = (party: PoliticalParty) => {
     </div>
 
     <div v-else>
+      <!-- === COMPARISON PANEL === -->
       <div class="comparison-panel">
         <p class="panel-title">Your Comparison ({{ selectedPartyCount }} / {{ MAX_PARTIES }})</p>
 
+        <!-- Default state (no parties selected) -->
         <div v-if="selectedPartyCount === 0" class="default-state">
           Select two parties from the list below to compare their national results.
         </div>
 
+        <!-- Charts (parties selected) -->
         <div v-else class="comparison-charts-grid">
+          <!-- The new horizontal chart component is used here -->
           <ComparisonChart
             :parties="comparisonData"
             metric="seats"
@@ -127,6 +129,8 @@ const toggleParty = (party: PoliticalParty) => {
           />
         </div>
       </div>
+      <!-- === END COMPARISON PANEL === -->
+
       <p class="party-count">{{ parties.length }} parties registered for TK2023</p>
 
       <div class="party-grid">
@@ -136,7 +140,7 @@ const toggleParty = (party: PoliticalParty) => {
           class="party-card"
           :class="{
             selected: isSelected(party),
-            'selection-disabled': !isSelected(party) && selectedPartyCount >= MAX_PARTIES
+            'selection-disabled': !isSelected(party) && selectedPartyCount >= MAX_POSTIES
           }"
           :style="{ borderLeftColor: getPartyColor(party.registeredAppellation) }"
           @click="toggleParty(party)"

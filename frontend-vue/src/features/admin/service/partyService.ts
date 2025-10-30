@@ -10,8 +10,7 @@ export interface PoliticalParty {
 
 /**
  * Interface representing a party's national result.
- * NOTE: Ensure these property names (partyName, seats, votes, percentage)
- * match the JSON response from your `NationalResult` Java class.
+ * NOTE: This single interface contains all data from the API.
  */
 export interface NationalResult {
   partyName: string;
@@ -117,7 +116,7 @@ export const partyService = {
   },
 
   /**
-   * Fetches the national results (seats, votes) for all parties in an election.
+   * Fetches the national results (seats, votes, percentage) for all parties in an election.
    *
    * @param {string} electionId - The unique identifier for the election.
    * @returns {Promise<NationalResult[]>} A promise that resolves to an array of NationalResult objects.
@@ -126,3 +125,4 @@ export const partyService = {
     return fetchFromAPI<NationalResult[]>(`/${electionId}/national`);
   }
 };
+
