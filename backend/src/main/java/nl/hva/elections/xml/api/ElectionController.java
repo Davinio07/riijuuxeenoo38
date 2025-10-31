@@ -12,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,7 +19,6 @@ import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -121,13 +118,13 @@ public class ElectionController {
             // Not Found (404)
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND) // Sets status to 404
-                    .body(ex.getMessage());       // Puts the error message in the body
+                    .body(ex.getMessage());
 
         } catch (IllegalArgumentException ex) {
             // Bad Request (400)
             return ResponseEntity
                     .badRequest()                 // Sets status to 400
-                    .body(ex.getMessage());       // Puts the error message in the body
+                    .body(ex.getMessage());
 
         } catch (Exception ex) {
             // Server Error (500)
