@@ -1,24 +1,27 @@
 package nl.hva.elections.xml.api;
 
-import nl.hva.elections.exceptions.ElectionNotFoundException;
-import nl.hva.elections.xml.model.*;
-import nl.hva.elections.xml.model.Candidate;
 import nl.hva.elections.xml.model.Election;
 import nl.hva.elections.xml.model.PoliticalParty;
 import nl.hva.elections.xml.model.Region;
 import nl.hva.elections.xml.model.NationalResult;
+import nl.hva.elections.xml.model.KiesKring; // Needed for getMunicipalityResultsByName
+
 import nl.hva.elections.xml.service.DutchElectionService;
-import org.springframework.http.HttpStatus;
+
+// JPA/Database models (These are required for the new database endpoint)
+import nl.hva.elections.persistence.model.Candidate; // <-- RESOLVES AMBIGUITY, USES JPA MODEL
+import nl.hva.elections.repositories.CandidateRepository;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
-import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,10 +31,13 @@ import java.util.Map;
 @RequestMapping("/api/elections")
 public class ElectionController {
     private final DutchElectionService electionService;
+    private final CandidateRepository candidateRepository; // <-- Used for new DB endpoint
     private List<Region> regions = new ArrayList<>();
 
-    public ElectionController(DutchElectionService electionService) {
+    // Constructor updated to inject CandidateRepository
+    public ElectionController(DutchElectionService electionService, CandidateRepository candidateRepository) {
         this.electionService = electionService;
+        this.candidateRepository = candidateRepository;
     }
 
     /**
@@ -71,12 +77,14 @@ public class ElectionController {
         }
     }
 
-    /**
-     *
-     * @param electionId
-     * @param folderName
-     * @return
-     */
+    public void addRegion(Region region) {
+        this.regions.add(region);
+    }
+
+    public List<Region> getRegions() {
+        return regions;
+    }
+
     @GetMapping("{electionId}/regions")
     public List<Region> getRegions(@PathVariable String electionId,
                                    @RequestParam(required = false) String folderName) {
@@ -92,46 +100,14 @@ public class ElectionController {
         }
     }
 
-
-    /**
-     * Retrieves all "kieskringen" (regions) for a specific election.
-     *
-     * @param electionId The unique identifier for the election.
-     * @param folderName An optional folder name to specify a different data source.
-     * @return A list of regions for the election.
-     */
     @GetMapping("{electionId}/regions/kieskringen")
-    public ResponseEntity<?> getKieskringen(@PathVariable String electionId,
-                                            @RequestParam(required = false) String folderName) {
-        try {
-            // Happy Path (200 OK)
-            Election election = (folderName == null)
-                    ? electionService.readResults(electionId, electionId)
-                    : electionService.readResults(electionId, folderName);
+    public List<Region> getKieskringen(@PathVariable String electionId,
+                                       @RequestParam(required = false) String folderName) {
+        Election election = (folderName == null)
+                ? electionService.readResults(electionId, electionId)
+                : electionService.readResults(electionId, folderName);
 
-            List<Region> regions = electionService.getKieskringen(election);
-
-            // returns the list with a 200 OK status
-            return ResponseEntity.ok(regions);
-
-        } catch (ElectionNotFoundException ex) {
-            // Not Found (404)
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND) // Sets status to 404
-                    .body(ex.getMessage());
-
-        } catch (IllegalArgumentException ex) {
-            // Bad Request (400)
-            return ResponseEntity
-                    .badRequest()                 // Sets status to 400
-                    .body(ex.getMessage());
-
-        } catch (Exception ex) {
-            // Server Error (500)
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR) // Sets status to 500
-                    .body("An unexpected internal error occurred.");
-        }
+        return electionService.getKieskringen(election);
     }
 
     /**
@@ -156,19 +132,30 @@ public class ElectionController {
         return ResponseEntity.ok(results);
     }
 
-    @GetMapping("{electionId}/candidates")
-    public List<Candidate> getCandidates(@PathVariable String electionId,
-                                         @RequestParam(required = false) String folderName) {
+    /* * The old getCandidates method has been removed to resolve the incompatible types error.
+     * You should now use the new /candidates/db endpoint to read data from the database.
+     */
+    // @GetMapping("{electionId}/candidates") - OLD METHOD REMOVED!
+
+    /**
+     * Endpoint to get all candidates directly from the database (JPA model).
+     * This is the replacement for the old XML-based method and reads persisted data.
+     * Accessible via GET /api/elections/candidates/db
+     * @return A list of all persisted candidates.
+     */
+    @GetMapping("/candidates/db")
+    public ResponseEntity<List<Candidate>> getAllCandidatesFromDb() {
         try {
-            Election election = (folderName == null)
-                    ? electionService.readResults(electionId, electionId)
-                    : electionService.readResults(electionId, folderName);
-            return (election == null) ? Collections.emptyList() : election.getCandidates();
+            // Use the injected repository to fetch all candidates from the database
+            List<Candidate> candidates = candidateRepository.findAll();
+            System.out.println("Fetched " + candidates.size() + " candidates from DB.");
+            return ResponseEntity.ok(candidates);
         } catch (Exception e) {
             e.printStackTrace();
-            return Collections.emptyList();
+            return ResponseEntity.status(500).build();
         }
     }
+
 
     /**
      * Get all political parties for a specific election.
