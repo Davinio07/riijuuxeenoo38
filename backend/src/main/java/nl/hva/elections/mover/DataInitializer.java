@@ -42,17 +42,33 @@ public class DataInitializer implements CommandLineRunner {
         Election electionData = xmlService.loadAllElectionData();
 
         // 1. Save Parties (MUST run first, candidates need the Party IDs)
+        // --- Load parties first ---
         if (partyRepository.count() == 0) {
             System.out.println("Loading party data from XML...");
             for (PoliticalParty xmlParty : electionData.getPoliticalParties()) {
-                Party newPartyEntity = new Party(
+                Party newParty = new Party(
                         xmlParty.getRegisteredAppellation(),
                         null,
-                        0
+                        0,
+                        0L,
+                        0.0
                 );
-                partyRepository.save(newPartyEntity);
+                partyRepository.save(newParty);
             }
             System.out.println("Finished loading party data. Total parties saved: " + partyRepository.count());
+        }
+
+        // --- Update parties with national results (votes + seats) ---
+        for (var nationalResult : electionData.getNationalResults()) {
+            String partyName = nationalResult.getPartyName();
+            partyRepository.findByName(partyName).ifPresentOrElse(jpaParty -> {
+                jpaParty.setTotalVotes((long) nationalResult.getValidVotes());
+                jpaParty.setNationalSeats(nationalResult.getSeats());
+                optionally: jpaParty.setVotePercentage(nationalResult.getVotePercentage());
+                partyRepository.save(jpaParty);
+            }, () -> {
+                System.err.println("No DB party found for: " + partyName);
+            });
         }
 
 

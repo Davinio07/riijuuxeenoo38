@@ -2,7 +2,7 @@ package nl.hva.elections.persistence.model;
 
 import jakarta.persistence.*;
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonIgnore; // <--- ADD THIS IMPORT
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Party {
@@ -15,21 +15,25 @@ public class Party {
     private String name;
     private String logoUrl;
     private Integer nationalSeats;
+    private Long totalVotes;
+    private Double votePercentage;
 
     // This links to the Candidate class
     // "mappedBy" tells JPA that the 'party' field in the Candidate class owns this relationship
     @OneToMany(mappedBy = "party")
-    @JsonIgnore // <--- ADD THIS ANNOTATION
+    @JsonIgnore
     private List<Candidate> candidates;
 
     // A no-argument constructor is required by JPA
     public Party() {}
 
     // A constructor to make it easy to create
-    public Party(String name, String logoUrl, int nationalSeats) {
+    public Party(String name, String logoUrl, int nationalSeats, long totalVotes, double votePercentage) {
         this.name = name;
         this.logoUrl = logoUrl;
         this.nationalSeats = nationalSeats;
+        this.totalVotes = totalVotes;
+        this.votePercentage = votePercentage;
     }
 
     // --- Getters and Setters ---
@@ -58,6 +62,10 @@ public class Party {
     public void setNationalSeats(Integer nationalSeats) {
         this.nationalSeats = nationalSeats;
     }
+    public Long getTotalVotes() { return totalVotes; }
+    public void setTotalVotes(Long totalVotes) { this.totalVotes = totalVotes; }
+    public Double getVotePercentage() { return votePercentage; }
+    public void setVotePercentage(Double votePercentage) { this.votePercentage = votePercentage; }
 
     public List<Candidate> getCandidates() {
         return candidates;
