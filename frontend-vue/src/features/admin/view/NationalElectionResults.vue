@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue'
-import { getNationalResults, getNationalSeats } from '@/features/admin/service/NationalElectionResults_api.ts'
+import { getPartiesFromDb } from '@/features/admin/service/NationalElectionResults_api.ts'
 import { Bar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -39,27 +39,29 @@ const error = ref<string | null>(null)
  * @param electionId the selected election year
  */
 async function fetchElectionData(electionId: string) {
-  if (!electionId) return
-
   loading.value = true
   error.value = null
   nationalResults.value = []
   nationalSeats.value = {}
 
   try {
-    const results = await getNationalResults(electionId)
-    const seats = await getNationalSeats(electionId)
+    const parties = await getPartiesFromDb(electionId)
 
-    // Type casting the results, assuming the API returns the expected types
-    nationalResults.value = (results as NationalResult[]).filter(r => r.validVotes > 0) || []
-    nationalSeats.value = (seats as NationalSeats) || {}
+    nationalResults.value = parties.map(p => ({
+      partyName: p.name,
+      validVotes: p.totalVotes,
+    }))
+
+    nationalSeats.value = Object.fromEntries(
+      parties.map(p => [p.name, p.nationalSeats])
+    )
   } catch (err) {
-    // Check if err has a message property, otherwise provide a fallback
-    error.value = (err instanceof Error) ? err.message : ' Er is een onbekende fout opgetreden bij het ophalen van de data.'
+    error.value = err instanceof Error ? err.message : 'Onbekende fout bij ophalen van partijdata.'
   } finally {
     loading.value = false
   }
 }
+
 
 onMounted(() => {
   fetchElectionData(selectedElection.value)
@@ -275,7 +277,7 @@ const chartOptions: ChartOptions<'bar'> = {
 </script>
 
 <template>
-  <div class="p-6 bg-gray-200 min-h-screen">
+  <div class="p-6 bg-gray-200 rounded min-h-screen">
     <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Nationale Verkiezingsresultaten</h1>
 
     <div class="mb-6 flex gap-3 items-center">
