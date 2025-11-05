@@ -1,90 +1,52 @@
 package nl.hva.elections.persistence.model;
 
-import jakarta.persistence.*;
-import java.util.List;
-import com.fasterxml.jackson.annotation.JsonIgnore; // <--- ADD THIS IMPORT
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
 @Entity
 public class Party {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "party_id")
-    private Integer id;
+    private Long id;
 
-    @Column(unique = true, nullable = false)
+    private String electionId; // e.g., "TK2021", "TK2023"
     private String name;
-    private String logoUrl;
-    private Integer nationalSeats;
-    private String regionName;
-    private String Seats_2023;
 
-    /** This links to the Candidate class
-     * "mappedBy" tells JPA that the 'party' field in the Candidate class owns this relationship
-     */
-    @OneToMany(mappedBy = "party")
-    @JsonIgnore
-    private List<Candidate> candidates;
+    @JsonProperty("totalVotes")
+    private int votes;
 
-    // A no-argument constructor is required by JPA
-    public Party() {}
+    @JsonProperty("nationalSeats")
+    private int seats;
+
+    @JsonProperty("votePercentage")
+    private double percentage;
 
     /**
-     * A constructor to make it easy to create
-     * @param name
-     * @param logoUrl
-     * @param nationalSeats
+     * Required default constructor for JPA/Hibernate.
      */
-    public Party(String name, String logoUrl, int nationalSeats) {
-        this.name = name;
-        this.logoUrl = logoUrl;
-        this.nationalSeats = nationalSeats;
+    public Party() {
     }
 
-    // Getters and Setters
+    // Getters & Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Integer getId() {
-        return id;
-    }
-    public void setId(Integer id) {
-        this.id = id;
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getLogoUrl() {
-        return logoUrl;
-    }
-    public void setLogoUrl(String logoUrl) {
-        this.logoUrl = logoUrl;
-    }
-    public Integer getNationalSeats() {
-        return nationalSeats;
-    }
-    public void setNationalSeats(Integer nationalSeats) {
-        this.nationalSeats = nationalSeats;
-    }
+    public String getElectionId() { return electionId; }
+    public void setElectionId(String electionId) { this.electionId = electionId; }
 
-    public String getRegionName() {
-        return regionName;
-    }
-    public void setRegionName(String Kieskring) {
-        this.regionName = Kieskring;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getSeats_2023() {
-        return Seats_2023;
-    }
-    public void setSeats_2023(String Seats_2023) {
-        this.Seats_2023 = Seats_2023;
-    }
+    public int getSeats() { return seats; }
+    public void setSeats(int seats) { this.seats = seats; }
 
-    public List<Candidate> getCandidates() {
-        return candidates;
-    }
-    public void setCandidates(List<Candidate> candidates) {
-        this.candidates = candidates;
-    }
+    public int getVotes() { return votes; }
+    public void setVotes(int votes) { this.votes = votes; }
+
+    public double getPercentage() { return percentage; }
+    public void setPercentage(double percentage) { this.percentage = percentage; }
 }
