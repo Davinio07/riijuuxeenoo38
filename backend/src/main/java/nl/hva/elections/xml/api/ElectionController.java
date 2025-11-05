@@ -1,6 +1,5 @@
 package nl.hva.elections.xml.api;
 
-import nl.hva.elections.services.dbPartyService;
 import nl.hva.elections.xml.model.Election;
 import nl.hva.elections.xml.model.PoliticalParty;
 import nl.hva.elections.xml.model.Region;
@@ -14,6 +13,7 @@ import org.slf4j.LoggerFactory;
 // JPA/Database models (These are required for the new database endpoint)
 import nl.hva.elections.persistence.model.Candidate;
 import nl.hva.elections.repositories.CandidateRepository;
+import nl.hva.elections.repositories.PartyRepository;
 import nl.hva.elections.persistence.model.Party;
 
 import org.springframework.http.HttpStatus;
@@ -50,8 +50,8 @@ public class ElectionController {
     }
 
     /**
-     * Haalt alle verkiezingsdata in één keer op.
-     * Dit is de endpoint die je frontend gebruikt.
+     * Retrieves all election data in one fell swoop.
+     * This is the endpoint used by the front end.
      */
     @GetMapping("/results")
     public ResponseEntity<Election> getElectionResults() throws IOException, XMLStreamException, ParserConfigurationException, SAXException {
@@ -146,17 +146,30 @@ public class ElectionController {
     // @GetMapping("{electionId}/candidates") - OLD METHOD REMOVED!
 
     /**
-     * Endpoint to get all candidates directly from the database (JPA model).
-     * This is the replacement for the old XML-based method and reads persisted data.
-     * Accessible via GET /api/elections/candidates/db
-     * @return A list of all persisted candidates.
+     * Endpoint to get all candidates directly from the database (JPA model), with optional filters.
+     * This replaces the previous /candidates/db method.
      */
     @GetMapping("/candidates/db")
-    public ResponseEntity<List<Candidate>> getAllCandidatesFromDb() {
+    public ResponseEntity<List<Candidate>> getAllCandidatesFromDb(
+            @RequestParam(required = false) Integer partyId,
+            @RequestParam(required = false) String gender) { // <-- NEW PARAMETERS
         try {
-            // Use the injected repository to fetch all candidates from the database
-            List<Candidate> candidates = candidateRepository.findAll();
-            System.out.println("Fetched " + candidates.size() + " candidates from DB.");
+            List<Candidate> candidates;
+
+            // Logic to select the correct JPA repository method based on presence of filters
+            if (partyId != null && gender != null) {
+                candidates = candidateRepository.findByPartyIdAndGender(partyId, gender);
+            } else if (partyId != null) {
+                candidates = candidateRepository.findByPartyId(partyId);
+            } else if (gender != null) {
+                candidates = candidateRepository.findByGender(gender);
+            } else {
+                // No filters applied, return all
+                candidates = candidateRepository.findAll();
+            }
+
+            System.out.printf("Fetched %d candidates from DB with filters (partyId: %s, gender: %s).\n",
+                    candidates.size(), partyId, gender);
             return ResponseEntity.ok(candidates);
         } catch (Exception e) {
             e.printStackTrace();
