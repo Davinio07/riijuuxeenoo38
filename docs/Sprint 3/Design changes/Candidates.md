@@ -1,3 +1,4 @@
+![](candidates.jpg)
 # Kandidaten Pagina Documentatie
 
 Dit document beschrijft de functionaliteit en het ontwerp van de **Kandidatenpagina**, met nadruk op de filtermogelijkheden en de weergave van kandidaten.
