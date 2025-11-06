@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 // JPA/Database models (These are required for the new database endpoint)
 import nl.hva.elections.persistence.model.Candidate;
 import nl.hva.elections.repositories.CandidateRepository;
-import nl.hva.elections.repositories.PartyRepository;
 import nl.hva.elections.persistence.model.Party;
 
 import org.springframework.http.HttpStatus;
@@ -41,7 +40,7 @@ public class ElectionController {
     private final DutchElectionService electionService;
     private final CandidateRepository candidateRepository; // <-- Used for new DB endpoint
     private final dbPartyService dbPartyService;
-    private List<Region> regions = new ArrayList<>();
+    private final List<Region> regions = new ArrayList<>();
 
     // Constructor updated to inject CandidateRepository
     public ElectionController(DutchElectionService electionService, CandidateRepository candidateRepository, dbPartyService dbPartyService) {
@@ -152,7 +151,7 @@ public class ElectionController {
      */
     @GetMapping("/candidates/db")
     public ResponseEntity<List<Candidate>> getAllCandidatesFromDb(
-            @RequestParam(required = false) Integer partyId,
+            @RequestParam(required = false) Long partyId,
             @RequestParam(required = false) String gender) { // <-- NEW PARAMETERS
         try {
             List<Candidate> candidates;
