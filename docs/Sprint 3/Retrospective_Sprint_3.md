@@ -90,6 +90,32 @@ This sprint also helped me become more confident in handling tasks independently
 * Continue refining time management by breaking tasks into smaller steps to stay ahead of deadlines.
 
 ---
-# Reflections
+
+## Zarko’s Reflection
+
+During this sprint, I kept bringing positive energy to the team. I’m glad that my enthusiasm helped keep everyone motivated and working well together. Staying positive is one of my strengths, and it really helps the team when we face challenges.
+
+My goal for this sprint was to follow my plan more closely by checking my tasks during each stand-up meeting. I did this regularly, which helped me stay more organized and finish my work on time. Because of that, I didn’t have as many last-minute changes as before.
+
+I think I’ve improved in managing my time and tasks while still supporting my teammates. I was able to keep my positive attitude and also stay more focused on my own goals.
+
+**SMART Goal for the Next Sprint:**  
+I want to make commits more often, at least a few times each day, to keep the workflow smooth and the project more organized. I will track this by checking at the end of each day if I’ve made regular commits and shared my progress with the team.  
+By doing this, I hope to make teamwork easier, keep everyone updated, and help us avoid confusion with code changes.
+
+**TOP**
+
+- I stayed positive and motivated the team during the sprint.  
+- I improved how I plan and follow my tasks each day.  
+- I helped keep the team spirit high and supported others when needed.  
+- I became more organized and had fewer last-minute issues.
+
+**TIP**
+
+- Keep improving planning by keeping a clear daily focus.  
+- Try to communicate small updates more often during the day.  
+- Make multiple commits daily to keep progress visible and the workflow smoother.  
+- Keep balancing teamwork with personal task management.
+
 
 
