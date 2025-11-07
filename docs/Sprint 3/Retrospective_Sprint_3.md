@@ -117,5 +117,27 @@ By doing this, I hope to make teamwork easier, keep everyone updated, and help u
 - Make multiple commits daily to keep progress visible and the workflow smoother.  
 - Keep balancing teamwork with personal task management.
 
+---
 
+# Matin - Sprint Reflection
+ 
+## Last Sprint
+Last sprint, my tip was to share blockers earlier so the team can help faster.  
+I improved by updating the sprint board more often and joining team discussions,  
+but I can still get better at sharing updates quickly when I face problems.
+ 
+## Top
+**You kept the sprint board updated and improved team transparency.**  
+I’m happy with this feedback and will keep giving regular updates.
+ 
+## Tip
+**Share blockers or challenges as soon as they happen.**  
+This helps the team react faster and keeps progress steady.
+ 
+## SMART Learning Goal
+By the end of the next sprint (in three weeks):  
+- I will post **at least two progress or blocker updates per week** in the group chat.  
+- I will update my sprint board **after every major progress step**.  
+ 
+This will make communication clearer and help the team work more smoothly together.
 
