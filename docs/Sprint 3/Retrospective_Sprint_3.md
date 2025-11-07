@@ -153,3 +153,26 @@ I agree, frequent commits help the team follow along and make collaboration smoo
  
 **SMART Learning Goal:**  
 By the end of the next sprint (in three weeks), I will commit to **GitLab at least five times per day** and keep the sprint board updated regularly to maintain transparency and consistent progress.
+
+---
+
+## Baran - Sprint Reflection
+
+Last sprint, my goal was to communicate more clearly about my workload and progress.  
+I made an effort to be more transparent about what I was working on and how much I could take on, which helped the team coordinate better and made it easier to share updates or ask for support when needed.  
+
+**TOP:**  
+**You communicated more clearly about your workload and progress this sprint.**  
+I’m proud of this improvement — it helped build trust and made collaboration smoother across the team.  
+
+**TIP:**  
+**Continue improving how you prioritize tasks so you can maintain a steady balance between initiative and focus.**  
+While my communication improved, I sometimes found myself taking on too many smaller tasks. For the next sprint, I’ll focus on prioritizing high-impact work and finishing tasks fully before moving on.  
+
+**SMART Learning Goal:**  
+By the end of the next sprint (in three weeks):  
+- I will **identify and prioritize my top three impact tasks** at the start of each week.  
+- I will **finish or hand off one key task before starting a new one** to maintain focus.  
+- I will **continue sharing workload updates twice a week** to keep communication strong.  
+
+This will help me balance initiative with focus, ensuring steady and meaningful progress throughout the sprint.
