@@ -1,4 +1,4 @@
-![ss](./images/Screenshot%202025-11-07%20130603.jpg)
+![ss](./images/retro-pic.jpg)
 
 
 | Well                                                                                             | Not Well                                                                | New Ideas |
