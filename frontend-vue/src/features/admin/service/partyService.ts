@@ -3,7 +3,7 @@
  */
 export interface PoliticalParty {
   /** The officially registered name of the party. */
-  registeredAppellation: string;
+  name: string;
 
 }
 
@@ -19,7 +19,7 @@ export interface NationalResult {
 /**
  * The base URL for the elections API.
  */
-const API_BASE_URL = 'http://localhost:8080/api/elections';
+const API_BASE_URL = 'http://localhost:8080/api/nationalResult';
 
 /**
  * A mapping of official party names to their designated hex color codes.
@@ -110,7 +110,7 @@ export const partyService = {
    * @returns {Promise<PoliticalParty[]>} A promise that resolves to an array of PoliticalParty objects.
    */
   async getParties(electionId: string): Promise<PoliticalParty[]> {
-    return fetchFromAPI<PoliticalParty[]>(`/${electionId}/parties`);
+    return fetchFromAPI<PoliticalParty[]>(`/${electionId}/parties/db`);
   },
 
   /**

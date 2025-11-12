@@ -4,6 +4,7 @@ import nl.hva.elections.persistence.model.Candidate;
 import nl.hva.elections.persistence.model.Party;
 import nl.hva.elections.repositories.CandidateRepository;
 import nl.hva.elections.repositories.PartyRepository;
+import nl.hva.elections.xml.service.NationalResultService;
 import nl.hva.elections.xml.model.Election;
 import nl.hva.elections.xml.model.NationalResult;
 import nl.hva.elections.xml.service.DutchElectionService;
@@ -30,6 +31,7 @@ import java.util.Map;
 public class DataInitializer implements CommandLineRunner {
 
     private final DutchElectionService xmlService;
+    private final NationalResultService nationalResultService;
     private final PartyRepository partyRepository;
     private final CandidateRepository candidateRepository;
 
@@ -50,10 +52,11 @@ public class DataInitializer implements CommandLineRunner {
      * @param partyRepository     The repository for party data.
      * @param candidateRepository The repository for candidate data.
      */
-    public DataInitializer(DutchElectionService xmlService, PartyRepository partyRepository, CandidateRepository candidateRepository) {
+    public DataInitializer(DutchElectionService xmlService, PartyRepository partyRepository, CandidateRepository candidateRepository, NationalResultService nationalResultService) {
         this.xmlService = xmlService;
         this.partyRepository = partyRepository;
         this.candidateRepository = candidateRepository;
+        this.nationalResultService = nationalResultService;
     }
 
     /**
@@ -76,7 +79,11 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("--- Loading data for: " + electionId + " ---");
 
             // Load all XML data for this specific election
-            Election electionData = xmlService.readResults(electionId, electionId);
+            Election electionData = xmlService.getElectionData(electionId);
+            if (electionData == null) {
+                System.err.println("CRITICAL: No cached data found for " + electionId + ". Skipping.");
+                continue;
+            }
 
             // --- 1. Process and Save Parties ---
             List<NationalResult> rawResults = electionData.getNationalResults();
@@ -84,7 +91,7 @@ public class DataInitializer implements CommandLineRunner {
                 System.err.println("No national results found for " + electionId + ". Skipping party load.");
             } else {
                 // Step 1: Calculate seat distribution (D'Hondt)
-                Map<String, Integer> calculatedSeatsMap = xmlService.calculateSeats(rawResults, totalSeats);
+                Map<String, Integer> calculatedSeatsMap = nationalResultService.calculateSeats(rawResults, totalSeats);
 
                 // Step 2: Calculate total votes for percentage calculation
                 double totalVotes = rawResults.stream()

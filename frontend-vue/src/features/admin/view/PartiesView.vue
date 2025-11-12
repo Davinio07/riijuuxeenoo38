@@ -41,7 +41,7 @@ const selectedPartyCount = computed(() => selectedParties.value.length);
 
 // Get the full NationalResult data for the selected parties
 const comparisonData = computed<NationalResult[]>(() => {
-  const selectedAppellations = selectedParties.value.map(p => p.registeredAppellation);
+  const selectedAppellations = selectedParties.value.map(p => p.name);
 
 
   return nationalResults.value
@@ -66,12 +66,12 @@ const getInitials = (name: string): string => {
 };
 
 const isSelected = (party: PoliticalParty): boolean => {
-  return selectedParties.value.some(p => p.registeredAppellation === party.registeredAppellation);
+  return selectedParties.value.some(p => p.name === party.name);
 };
 
 const toggleParty = (party: PoliticalParty) => {
   const index = selectedParties.value.findIndex(
-    p => p.registeredAppellation === party.registeredAppellation
+    p => p.name === party.name
   );
 
   if (index === -1) {
@@ -124,25 +124,25 @@ const toggleParty = (party: PoliticalParty) => {
       <div class="grid gap-4 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] md:gap-6 md:grid-cols-[repeat(auto-fill,minmax(250px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] animate-fadeIn">
         <div
           v-for="party in parties"
-          :key="party.registeredAppellation"
+          :key="party.name"
           class="flex flex-col items-center gap-4 p-6 bg-white rounded-xl shadow-md transition-all duration-300 ease-in-out cursor-pointer border-l-4 hover:-translate-y-1 hover:shadow-lg"
           :class="{
             'ring-4 scale-102': isSelected(party),
             'opacity-60 cursor-not-allowed shadow-none hover:transform-none hover:shadow-md': !isSelected(party) && selectedPartyCount >= MAX_PARTIES
           }"
           :style="{
-            'border-left-color': getPartyColor(party.registeredAppellation),
-            'ring-color': getPartyColor(party.registeredAppellation)
+            'border-left-color': getPartyColor(party.name),
+            'ring-color': getPartyColor(party.name)
           }"
           @click="toggleParty(party)"
         >
           <div
             class="w-[70px] h-[70px] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md"
-            :style="{ 'background-color': getPartyColor(party.registeredAppellation) }"
+            :style="{ 'background-color': getPartyColor(party.name) }"
           >
-            {{ getInitials(party.registeredAppellation) }}
+            {{ getInitials(party.name) }}
           </div>
-          <h3 class="text-base text-gray-900 text-center leading-snug break-words w-full">{{ party.registeredAppellation }}</h3>
+          <h3 class="text-base text-gray-900 text-center leading-snug break-words w-full">{{ party.name }}</h3>
         </div>
       </div>
     </div>
