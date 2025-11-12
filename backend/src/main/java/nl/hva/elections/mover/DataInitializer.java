@@ -123,7 +123,7 @@ public class DataInitializer implements CommandLineRunner {
 
             // 2. Save Candidates
             if (candidateRepository.count() == 0) {
-                // System.out.println("Loading candidate data from XML...");
+                System.out.println("Loading candidate data from XML...");
 
                 final AtomicInteger candidatesSaved = new AtomicInteger(0);
 
@@ -132,7 +132,7 @@ public class DataInitializer implements CommandLineRunner {
                     String partyName = xmlCandidate.getPartyName();
 
                     if (partyName == null || partyName.isBlank()) {
-                        // System.err.println("Skipping candidate " + xmlCandidate.getId() + " because party name is missing or empty.");
+                        System.err.println("Skipping candidate " + xmlCandidate.getId() + " because party name is missing or empty.");
                         continue;
                     }
 
@@ -147,7 +147,7 @@ public class DataInitializer implements CommandLineRunner {
 
                         // --- 2. CHECK FOR DUPLICATES BEFORE SAVING ---
                         if (candidateRepository.existsByNameAndPartyId(candidateFullName, jpaParty.getId())) {
-                            // System.out.println("SKIPPING DUPLICATE: Candidate '" + candidateFullName + "' already exists for party " + jpaParty.getName());
+                            System.out.println("SKIPPING DUPLICATE: Candidate '" + candidateFullName + "' already exists for party " + jpaParty.getName());
                             return; // Skip to the next iteration
                         }
                         // ---------------------------------------------
@@ -164,7 +164,7 @@ public class DataInitializer implements CommandLineRunner {
                         candidatesSaved.incrementAndGet();
 
                     }, () -> {
-                        // System.err.println("Lookup failed! No Party found in DB with name: [" + cleanedPartyName + "]");
+                        System.err.println("Lookup failed! No Party found in DB with name: [" + cleanedPartyName + "]");
                     });
                 }
                 System.out.println("Finished loading candidate data. Total candidates saved: " + candidatesSaved.get());
