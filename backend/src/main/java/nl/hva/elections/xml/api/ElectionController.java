@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import nl.hva.elections.persistence.model.Candidate;
 import nl.hva.elections.repositories.CandidateRepository;
 import nl.hva.elections.repositories.PartyRepository;
-import nl.hva.elections.persistence.model.Party;
+import nl.hva.elections.xml.model.Party;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -40,16 +40,15 @@ onMounted(() => {
 const selectedPartyCount = computed(() => selectedParties.value.length);
 
 // Get the full NationalResult data for the selected parties
-const comparisonData = computed<NationalResult[]>(() => {
-  const selectedAppellations = selectedParties.value.map(p => p.name);
-
-
+const comparisonData = computed(() => {
+  const selectedNames = selectedParties.value.map(p => p.name);
   return nationalResults.value
-    .filter(result => {
-      return selectedAppellations.some(appName => appName.startsWith(result.partyName));
-    })
-    .sort((a, b) => b.validVotes - a.validVotes);
+    .filter(p => selectedNames.includes(p.name))
+    .map(p => ({ name: p.name, totalVotes: p.totalVotes }));
 });
+
+
+
 
 // --- Helper Functions ---
 
@@ -112,7 +111,7 @@ const toggleParty = (party: PoliticalParty) => {
         <div v-else class="grid grid-cols-1 gap-6 max-w-2xl mx-auto md:max-w-none">
           <ComparisonChart
             :parties="comparisonData"
-            metric="validVotes"
+            metric="totalVotes"
             title="Stemmen"
           />
         </div>

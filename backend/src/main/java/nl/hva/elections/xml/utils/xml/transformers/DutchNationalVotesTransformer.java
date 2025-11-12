@@ -1,7 +1,7 @@
 package nl.hva.elections.xml.utils.xml.transformers;
 
 import nl.hva.elections.xml.model.Election;
-import nl.hva.elections.xml.model.NationalResult;
+import nl.hva.elections.xml.model.Party;
 import nl.hva.elections.xml.utils.xml.VotesTransformer;
 
 import java.util.Map;
@@ -38,7 +38,7 @@ public class DutchNationalVotesTransformer implements VotesTransformer {
 
         int totalVotes = votesString != null ? Integer.parseInt(votesString) : 0;
 
-        NationalResult result = new NationalResult(partyName, totalVotes);
+        Party result = new Party(partyName, totalVotes);
         election.addNationalResult(result);
 
         // System.out.printf("%s party votes: %s%n", aggregated ? "National" : "Constituency", electionData);

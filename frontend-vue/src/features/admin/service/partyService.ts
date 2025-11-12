@@ -12,8 +12,8 @@ export interface PoliticalParty {
  * This matches the Java model provided.
  */
 export interface NationalResult {
-  partyName: string;
-  validVotes: number;
+  name: string;
+  totalVotes: number;
 }
 
 /**

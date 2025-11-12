@@ -1,8 +1,7 @@
 package nl.hva.elections.xml.api;
 
-import nl.hva.elections.persistence.model.Party;
+import nl.hva.elections.xml.model.Party;
 import nl.hva.elections.services.dbPartyService;
-import nl.hva.elections.xml.model.NationalResult;
 import nl.hva.elections.xml.service.NationalResultService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,10 +34,10 @@ public class NationalResultController {
      * Retrieves the raw national results (votes) from the cached XML data.
      */
     @GetMapping("/{electionId}/national") // Becomes: /api/nationalResult/{electionId}/national
-    public ResponseEntity<List<NationalResult>> getNationalResults(@PathVariable String electionId) {
+    public ResponseEntity<List<Party>> getNationalResults(@PathVariable String electionId) {
         try {
             logger.info("Fetching national results for election: {}", electionId);
-            List<NationalResult> results = nationalResultService.getNationalResults(electionId);
+            List<Party> results = nationalResultService.getNationalResults(electionId);
             return ResponseEntity.ok(results);
         } catch (Exception e) {
             logger.error("Error fetching national results for electionId: {}. {}", electionId, e.getMessage());
@@ -52,7 +51,7 @@ public class NationalResultController {
     @GetMapping("/{electionId}/seats") // Becomes: /api/nationalResult/{electionId}/seats
     public ResponseEntity<Map<String, Integer>> getSeats(@PathVariable String electionId) {
         try {
-            List<NationalResult> results = nationalResultService.getNationalResults(electionId);
+            List<Party> results = nationalResultService.getNationalResults(electionId);
             Map<String, Integer> seats = nationalResultService.calculateSeats(results, 150);
             return ResponseEntity.ok(seats);
         } catch (Exception e) {
