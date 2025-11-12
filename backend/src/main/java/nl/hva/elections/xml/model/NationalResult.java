@@ -12,25 +12,15 @@ public class NationalResult {
     /** The total number of valid votes received by the party. */
     private final int validVotes;
 
-    /** The number of seats the party obtained. */
-    private final int seats;
-
-    /** The percentage of total votes. */
-    private final double votePercentage;
-
     /**
      * Creates a new national result for a political party.
      *
      * @param partyName      the name of the party
      * @param validVotes     the number of valid votes the party received
-     * @param seats          the number of seats the party obtained
-     * @param votePercentage the percentage of total votes
      */
-    public NationalResult(String partyName, int validVotes, int seats, double votePercentage) {
+    public NationalResult(String partyName, int validVotes) {
         this.partyName = partyName;
         this.validVotes = validVotes;
-        this.seats = seats;
-        this.votePercentage = votePercentage;
     }
 
     /**
@@ -52,24 +42,6 @@ public class NationalResult {
     }
 
     /**
-     * Gets the total number of seats obtained by the party.
-     *
-     * @return the number of seats
-     */
-    public int getSeats() {
-        return seats;
-    }
-
-    /**
-     * Gets the percentage of total votes obtained by the party.
-     *
-     * @return the vote percentage
-     */
-    public double getVotePercentage() {
-        return votePercentage;
-    }
-
-    /**
      * Returns a string representation of this result.
      *
      * @return a string with the party name, vote count, seats, and percentage
@@ -79,8 +51,6 @@ public class NationalResult {
         return "NationalResult{" +
                 "partyName='" + partyName + '\'' +
                 ", validVotes=" + validVotes +
-                ", seats=" + seats +
-                ", votePercentage=" + votePercentage +
                 '}';
     }
 }

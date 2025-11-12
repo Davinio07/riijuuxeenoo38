@@ -4,6 +4,7 @@ import nl.hva.elections.persistence.model.Candidate;
 import nl.hva.elections.persistence.model.Party;
 import nl.hva.elections.repositories.CandidateRepository;
 import nl.hva.elections.repositories.PartyRepository;
+import nl.hva.elections.xml.service.NationalResultService;
 import nl.hva.elections.xml.model.Election;
 import nl.hva.elections.xml.model.NationalResult;
 import nl.hva.elections.xml.service.DutchElectionService;
@@ -30,6 +31,7 @@ import java.util.Map;
 public class DataInitializer implements CommandLineRunner {
 
     private final DutchElectionService xmlService;
+    private final NationalResultService nationalResultService;
     private final PartyRepository partyRepository;
     private final CandidateRepository candidateRepository;
 
@@ -50,10 +52,11 @@ public class DataInitializer implements CommandLineRunner {
      * @param partyRepository     The repository for party data.
      * @param candidateRepository The repository for candidate data.
      */
-    public DataInitializer(DutchElectionService xmlService, PartyRepository partyRepository, CandidateRepository candidateRepository) {
+    public DataInitializer(DutchElectionService xmlService, PartyRepository partyRepository, CandidateRepository candidateRepository, NationalResultService nationalResultService) {
         this.xmlService = xmlService;
         this.partyRepository = partyRepository;
         this.candidateRepository = candidateRepository;
+        this.nationalResultService = nationalResultService;
     }
 
     /**
@@ -76,7 +79,11 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("--- Loading data for: " + electionId + " ---");
 
             // Load all XML data for this specific election
-            Election electionData = xmlService.readResults(electionId, electionId);
+            Election electionData = xmlService.getElectionData(electionId);
+            if (electionData == null) {
+                System.err.println("CRITICAL: No cached data found for " + electionId + ". Skipping.");
+                continue;
+            }
 
             // --- 1. Process and Save Parties ---
             List<NationalResult> rawResults = electionData.getNationalResults();
@@ -84,7 +91,7 @@ public class DataInitializer implements CommandLineRunner {
                 System.err.println("No national results found for " + electionId + ". Skipping party load.");
             } else {
                 // Step 1: Calculate seat distribution (D'Hondt)
-                Map<String, Integer> calculatedSeatsMap = xmlService.calculateSeats(rawResults, totalSeats);
+                Map<String, Integer> calculatedSeatsMap = nationalResultService.calculateSeats(rawResults, totalSeats);
 
                 // Step 2: Calculate total votes for percentage calculation
                 double totalVotes = rawResults.stream()
@@ -116,7 +123,7 @@ public class DataInitializer implements CommandLineRunner {
 
             // 2. Save Candidates
             if (candidateRepository.count() == 0) {
-                System.out.println("Loading candidate data from XML...");
+                // System.out.println("Loading candidate data from XML...");
 
                 final AtomicInteger candidatesSaved = new AtomicInteger(0);
 
@@ -125,7 +132,7 @@ public class DataInitializer implements CommandLineRunner {
                     String partyName = xmlCandidate.getPartyName();
 
                     if (partyName == null || partyName.isBlank()) {
-                        System.err.println("Skipping candidate " + xmlCandidate.getId() + " because party name is missing or empty.");
+                        // System.err.println("Skipping candidate " + xmlCandidate.getId() + " because party name is missing or empty.");
                         continue;
                     }
 
@@ -140,7 +147,7 @@ public class DataInitializer implements CommandLineRunner {
 
                         // --- 2. CHECK FOR DUPLICATES BEFORE SAVING ---
                         if (candidateRepository.existsByNameAndPartyId(candidateFullName, jpaParty.getId())) {
-                            System.out.println("SKIPPING DUPLICATE: Candidate '" + candidateFullName + "' already exists for party " + jpaParty.getName());
+                            // System.out.println("SKIPPING DUPLICATE: Candidate '" + candidateFullName + "' already exists for party " + jpaParty.getName());
                             return; // Skip to the next iteration
                         }
                         // ---------------------------------------------
@@ -157,7 +164,7 @@ public class DataInitializer implements CommandLineRunner {
                         candidatesSaved.incrementAndGet();
 
                     }, () -> {
-                        System.err.println("Lookup failed! No Party found in DB with name: [" + cleanedPartyName + "]");
+                        // System.err.println("Lookup failed! No Party found in DB with name: [" + cleanedPartyName + "]");
                     });
                 }
                 System.out.println("Finished loading candidate data. Total candidates saved: " + candidatesSaved.get());
