@@ -1,6 +1,6 @@
 package nl.hva.elections.xml.service;
 
-import nl.hva.elections.xml.model.NationalResult;
+import nl.hva.elections.xml.model.Party;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -37,7 +37,7 @@ public class NationalResultService {
      * @param electionId The identifier of the election (e.g., "TK2023").
      * @return A list of NationalResult objects.
      */
-    public List<NationalResult> getNationalResults(String electionId) {
+    public List<Party> getNationalResults(String electionId) {
         return electionService.getElectionData(electionId).getNationalResults();
     }
 
@@ -49,10 +49,10 @@ public class NationalResultService {
      * @param totalSeats The total number of seats to be allocated.
      * @return A {@code Map<String, Integer>} mapping party names to allocated seats.
      */
-    public Map<String, Integer> calculateSeats(List<NationalResult> results, int totalSeats) {
+    public Map<String, Integer> calculateSeats(List<Party> results, int totalSeats) {
         Map<String, Integer> seats = new HashMap<>();
         Map<String, Integer> voteCounts = results.stream()
-                .collect(Collectors.toMap(NationalResult::getPartyName, NationalResult::getValidVotes));
+                .collect(Collectors.toMap(Party::getName, Party::getVotes));
 
         for (String party : voteCounts.keySet()) {
             seats.put(party, 0); // initialize seats

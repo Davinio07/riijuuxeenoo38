@@ -1,6 +1,7 @@
 package nl.hva.elections.persistence.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import nl.hva.elections.xml.model.Party;
 import jakarta.persistence.*;
 
 @Entity

@@ -1,12 +1,11 @@
 package nl.hva.elections.mover;
 
 import nl.hva.elections.persistence.model.Candidate;
-import nl.hva.elections.persistence.model.Party;
+import nl.hva.elections.xml.model.Party;
 import nl.hva.elections.repositories.CandidateRepository;
 import nl.hva.elections.repositories.PartyRepository;
 import nl.hva.elections.xml.service.NationalResultService;
 import nl.hva.elections.xml.model.Election;
-import nl.hva.elections.xml.model.NationalResult;
 import nl.hva.elections.xml.service.DutchElectionService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -86,7 +85,7 @@ public class DataInitializer implements CommandLineRunner {
             }
 
             // --- 1. Process and Save Parties ---
-            List<NationalResult> rawResults = electionData.getNationalResults();
+            List<Party> rawResults = electionData.getNationalResults();
             if (rawResults == null || rawResults.isEmpty()) {
                 System.err.println("No national results found for " + electionId + ". Skipping party load.");
             } else {
@@ -95,13 +94,13 @@ public class DataInitializer implements CommandLineRunner {
 
                 // Step 2: Calculate total votes for percentage calculation
                 double totalVotes = rawResults.stream()
-                        .mapToDouble(NationalResult::getValidVotes)
+                        .mapToDouble(Party::getVotes)
                         .sum();
 
                 // Step 3: Iterate, combine calculated data, and save Party entities
-                for (NationalResult rawResult : rawResults) {
-                    String partyName = rawResult.getPartyName();
-                    int votes = rawResult.getValidVotes();
+                for (Party rawResult : rawResults) {
+                    String partyName = rawResult.getName();
+                    int votes = rawResult.getVotes();
 
                     // Retrieve calculated values
                     int calculatedSeats = calculatedSeatsMap.getOrDefault(partyName, 0);
