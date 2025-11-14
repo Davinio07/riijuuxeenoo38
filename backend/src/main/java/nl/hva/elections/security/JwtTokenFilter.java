@@ -47,6 +47,19 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         // 1. Try to get the token from the request's "Authorization" header.
         String token = jwtTokenProvider.resolveToken(request);
 
+        // 2. EXTRA CHECK: Probeer token uit de query parameter te halen (gebruikt door STOMP/WebSocket)
+        if (token == null && request.getQueryString() != null) {
+            String queryString = request.getQueryString();
+            if (queryString.contains("token=")) {
+                // Vind de waarde na "token=" en stop bij het volgende '&'
+                token = queryString.substring(queryString.indexOf("token=") + 6);
+                int end = token.indexOf('&');
+                if (end != -1) {
+                    token = token.substring(0, end);
+                }
+            }
+        }
+
         // 2. Check if we found a token AND if it's valid.
         if (token != null && jwtTokenProvider.validateToken(token)) {
             
