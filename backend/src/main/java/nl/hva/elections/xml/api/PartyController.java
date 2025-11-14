@@ -2,8 +2,7 @@ package nl.hva.elections.xml.api;
 
 import nl.hva.elections.xml.model.PoliticalParty;
 import nl.hva.elections.xml.service.PartyService;
-// (Hypothetical) Import your custom not-found exception
-import nl.hva.elections.xml.exception.ElectionNotFoundException;
+import nl.hva.elections.exception.ElectionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
