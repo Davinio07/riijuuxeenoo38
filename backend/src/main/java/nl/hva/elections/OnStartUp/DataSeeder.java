@@ -1,7 +1,7 @@
 package nl.hva.elections.OnStartUp;
 
 import nl.hva.elections.repositories.ProvinceRepository;
-import nl.hva.elections.xml.model.Province;
+import nl.hva.elections.persistence.model.Province;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;

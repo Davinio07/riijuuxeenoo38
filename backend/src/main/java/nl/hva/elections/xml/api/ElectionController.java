@@ -1,5 +1,8 @@
 package nl.hva.elections.xml.api;
 
+import nl.hva.elections.persistence.model.Kieskring;
+import nl.hva.elections.persistence.model.Province;
+import nl.hva.elections.repositories.KieskringRepository;
 import nl.hva.elections.repositories.ProvinceRepository;
 import nl.hva.elections.xml.model.*;
 
@@ -16,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/elections")
@@ -26,12 +30,14 @@ public class ElectionController {
     private final CandidateRepository candidateRepository;
     private final PartyRepository partyRepository;
     private final ProvinceRepository provinceRepository;
+    private final KieskringRepository kieskringRepository;
 
-    public ElectionController(DutchElectionService electionService, CandidateRepository candidateRepository, PartyRepository partyRepository,  ProvinceRepository provinceRepository) {
+    public ElectionController(DutchElectionService electionService, CandidateRepository candidateRepository, PartyRepository partyRepository,  ProvinceRepository provinceRepository,  KieskringRepository kieskringRepository) {
         this.electionService = electionService;
         this.candidateRepository = candidateRepository;
         this.partyRepository = partyRepository;
         this.provinceRepository = provinceRepository;
+        this.kieskringRepository = kieskringRepository;
     }
 
     /**
@@ -198,15 +204,30 @@ public class ElectionController {
     /**
      * Haalt alle gemeentenamen op voor de STANDAARD verkiezing.
      */
-    @GetMapping("/municipalities/names")
-    public ResponseEntity<List<String>> getMunicipalityNames() {
+    @GetMapping("/kieskirng/names")
+    public ResponseEntity<List<String>> getKieskringNames() {
         try {
             logger.info("Fetching all municipality names for default election.");
             // We gebruiken de standaard (bv. TK2023)
-            List<String> names = electionService.getMunicipalityNames(electionService.loadAllElectionData().getId());
+            List<String> names = electionService.getKiekringName(electionService.loadAllElectionData().getId());
             return ResponseEntity.ok(names);
         } catch (Exception e) {
             logger.error("Error fetching municipality names: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/kieskring/namesDB")
+    public ResponseEntity<List<String>> getKieskringNamesOnly() {
+        try {
+            logger.info("Fetching all Kieskring names from database.");
+            // Get the full objects, then map them to a list of names
+            List<String> names = kieskringRepository.findAllByOrderByNameAsc().stream()
+                    .map(Kieskring::getName)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(names);
+        } catch (Exception e) {
+            logger.error("Error fetching Kieskring names: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -256,7 +277,7 @@ public class ElectionController {
             String electionId = election.getId(); // bv. "TK2023"
 
             // 2. Haal de lijst met namen op (gebruikt ook de cache)
-            List<String> municipalityNames = electionService.getMunicipalityNames(electionId);
+            List<String> municipalityNames = electionService.getKiekringName(electionId);
 
             List<KieskringDataDto> allKieskringData = new ArrayList<>();
 

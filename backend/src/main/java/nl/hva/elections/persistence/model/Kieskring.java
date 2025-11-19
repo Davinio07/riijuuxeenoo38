@@ -1,14 +1,10 @@
 package nl.hva.elections.persistence.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
-import java.util.Objects;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 @Entity
 @Table(name = "KIESKRING")
@@ -17,11 +13,19 @@ import java.util.Objects;
 public class Kieskring {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "kieskring_id")
     private Integer kieskring_id;
 
     @Column(name = "name", nullable = false, unique = true)
     private String name;
+
+    // --- RELATIONSHIP ---
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "province_id") // This creates the foreign key column
+    @XmlTransient // Prevents XML circular reference issues
+    private Province province;
+    // --- END RELATIONSHIP ---
 
     /**
      * JPA requires a no-argument constructor.
@@ -31,15 +35,13 @@ public class Kieskring {
 
     /**
      * Constructor used for seeding the data.
-     * @param kieskring_id The manual ID
      * @param name The name of the kieskring
      */
-    public Kieskring(Integer kieskring_id, String name) {
-        this.kieskring_id = kieskring_id;
+    public Kieskring(String name) {
         this.name = name;
     }
 
-    // Getters and Setters
+    // --- GETTERS AND SETTERS (INCLUDING THE MISSING ONES) ---
 
     public Integer getKieskring_id() {
         return kieskring_id;
@@ -57,10 +59,19 @@ public class Kieskring {
         this.name = name;
     }
 
-    // toString
+    public Province getProvince() {
+        return province;
+    }
+
+    public void setProvince(Province province) {
+        this.province = province;
+    }
+
+    // --- END GETTERS AND SETTERS ---
 
     @Override
     public String toString() {
+        // IMPORTANT: Do not include 'province' in toString() to avoid infinite loops
         return "Kieskring{" +
                 "kieskring_id=" + kieskring_id +
                 ", name='" + name + '\'' +

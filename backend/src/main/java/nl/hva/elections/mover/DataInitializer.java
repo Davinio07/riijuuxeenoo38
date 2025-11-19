@@ -1,11 +1,20 @@
 package nl.hva.elections.mover;
 
+import io.swagger.v3.oas.models.links.Link;
 import nl.hva.elections.persistence.model.Candidate;
+// Import the new JPA entity
+import nl.hva.elections.persistence.model.Kieskring;
+import nl.hva.elections.repositories.GemeenteRepository;
+import nl.hva.elections.xml.model.Gemeente;
 import nl.hva.elections.xml.model.Party;
 import nl.hva.elections.repositories.CandidateRepository;
 import nl.hva.elections.repositories.PartyRepository;
+// Import the new repository
+import nl.hva.elections.repositories.KieskringRepository;
+
 import nl.hva.elections.xml.service.NationalResultService;
 import nl.hva.elections.xml.model.Election;
+// Import the XML model
 import nl.hva.elections.xml.model.KiesKring;
 import nl.hva.elections.xml.service.DutchElectionService;
 import org.springframework.boot.CommandLineRunner;
@@ -17,6 +26,7 @@ import java.util.stream.Collectors;
 
 /**
  * DataInitializer that:
+ * - Persists Kieskring reference data
  * - Builds correct national totals by choosing the best source (nationalResults when clean, otherwise summing municipality results)
  * - Aggregates duplicate party entries (summing votes) to avoid inflated totals
  * - Calculates seats & percentages and upserts Party entities
@@ -29,24 +39,32 @@ public class DataInitializer implements CommandLineRunner {
     private final NationalResultService nationalResultService;
     private final PartyRepository partyRepository;
     private final CandidateRepository candidateRepository;
+    private final GemeenteRepository gemeenteRepository;
+    // 1. Define the new repository
+    private final KieskringRepository kieskringRepository;
 
     private static final List<String> ELECTION_LIST = List.of("TK2023", "TK2021");
     private static final int TOTAL_SEATS = 150;
 
+    // 2. Add the repository to the constructor
     public DataInitializer(DutchElectionService xmlService,
                            PartyRepository partyRepository,
                            CandidateRepository candidateRepository,
-                           NationalResultService nationalResultService) {
+                           NationalResultService nationalResultService,
+                           GemeenteRepository gemeenteRepository,
+                           KieskringRepository kieskringRepository) {
         this.xmlService = xmlService;
         this.partyRepository = partyRepository;
         this.candidateRepository = candidateRepository;
         this.nationalResultService = nationalResultService;
+        this.kieskringRepository = kieskringRepository;
+        this.gemeenteRepository = gemeenteRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        // If DB already seeded, skip
-        if (partyRepository.count() > 0 || candidateRepository.count() > 0) {
+        // 3. Add the repository to the "skip" check
+        if (partyRepository.count() > 0 || candidateRepository.count() > 0 || kieskringRepository.count() > 0) {
             System.out.println("Database already contains data. Skipping data load.");
             return;
         }
@@ -62,18 +80,58 @@ public class DataInitializer implements CommandLineRunner {
                 continue;
             }
 
-            // ---------------------------
-            // 1) Build reliable national totals
-            // ---------------------------
-            // Sources:
-            // - electionData.getNationalResults() may contain the official national totals (preferred if clean)
-            // - electionData.getMunicipalityResults() can be summed to derive national totals (fallback)
+            // Get the list of XML KiesKring objects
+            List<KiesKring> municipalityResults = electionData.getKieskringResults();
+
+            // ------------------------------------------------------------------
+            // 4. THIS IS THE CORRECTED SECTION
+            //    This logic uses the auto-incremented ID and checks for duplicates by name.
+            // ------------------------------------------------------------------
+            System.out.println("Syncing Kieskring data for " + electionId + "...");
+            AtomicInteger newKieskringsSaved = new AtomicInteger(0);
+
+            if (municipalityResults != null && !municipalityResults.isEmpty()) {
+
+                // 1. Get a list of unique names from the XML data
+                List<String> uniqueNames = municipalityResults.stream()
+                        .map(KiesKring::getMunicipalityName) // <-- USES THE CORRECT METHOD
+                        .distinct()
+                        .sorted()
+                        .collect(Collectors.toList());
+
+                // 2. Loop through the names and save new ones
+                for (String name : uniqueNames) {
+                    if (name == null || name.isBlank()) {
+                        continue; // Skip empty names
+                    }
+
+                    // 3. Use the repository to check for existence by name
+                    //    (This requires `existsByName` in your KieskringRepository)
+                    if (!kieskringRepository.existsByName(name)) {
+                        // It doesn't exist, create the new JPA entity and save it.
+                        // We use the constructor that only takes a name.
+                        Kieskring newKieskring = new Kieskring(name); // <-- USES new(name)
+                        kieskringRepository.save(newKieskring);
+                        newKieskringsSaved.incrementAndGet();
+                    }
+                    // If it *does* exist, we do nothing.
+                }
+            }
+            System.out.println("Kieskring sync complete. New saved: " + newKieskringsSaved.get());
+
+            List<Gemeente> GemeenteResults = electionData.getGemeenteResults();
+            System.out.println("Syncing Gemeente data for " + electionId + "...");
+            AtomicInteger newGemeente = new AtomicInteger(0);
+
+
             List<Party> nationalResults = electionData.getNationalResults();
-            List<KiesKring> municipalityResults = electionData.getMunicipalityResults();
+            // List<KiesKring> municipalityResults = electionData.getKieskringResults(); // Already defined above
 
             Map<String, Integer> aggregatedVotes = new HashMap<>();
 
             boolean useNationalResultsDirectly = false;
+            // ... (rest of your file continues as normal) ...
+
             if (nationalResults != null && !nationalResults.isEmpty()) {
                 long distinctNames = nationalResults.stream()
                         .map(Party::getName)

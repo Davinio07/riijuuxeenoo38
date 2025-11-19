@@ -1,44 +1,36 @@
 package nl.hva.elections.repositories;
 
-import nl.hva.elections.xml.model.Gemeente;
+import nl.hva.elections.persistence.model.Gemeente;
+import nl.hva.elections.persistence.model.Kieskring;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Spring Data JPA repository for the Gemeente entity.
+ * Spring Data JPA repository for the Kieskring entity.
+ * The primary key is of type Integer.
  */
 @Repository
-public interface GemeenteRepository extends JpaRepository<Gemeente, Integer> {
+public interface GemeenteRepository extends JpaRepository<Kieskring, Integer> {
 
     /**
-     * Finds all Gemeente entities that belong to a specific province.
-     * Spring Data JPA will auto-generate this query based on the method name.
-     */
-    List<Gemeente> findByProvinceId(Integer provinceId);
-
-    /**
-     * Finds all Gemeente entities that belong to a specific kieskring.
-     */
-    List<Gemeente> findByKieskringId(Integer kieskringId);
-
-    /**
-     * Finds a Gemeente by its name.
-     */
-    Gemeente findByName(String name);
-
-    /**
-     * This is the key query for your new flow.
-     * It uses the GEMEENTE table as a "bridge" to find all
-     * KIESKRING IDs that are associated with a given PROVINCE ID.
+     * Checks if a Kieskring with the given name already exists.
+     * Used by the DataInitializer.
      *
-     * @param provinceId The ID of the province
-     * @return A List of Kieskring IDs (Integer)
+     * @return true if an entry exists, false otherwise
      */
-    @Query("SELECT DISTINCT g.kieskring_id FROM Gemeente g WHERE g.province_id = :provinceId")
-    List<Integer> findDistinctKieskringIdsByProvinceId(@Param("provinceId") Integer provinceId);
+    List<Kieskring> findAll();
+    Optional<Gemeente> findByName(String name);
 
+    /**
+     * Finds all Kieskring entities and orders them by name ascending.
+     *
+     * @return a sorted list of Kieskring objects
+     */
+    List<Gemeente> findAllByOrderByNameAsc();
+
+    // Note: findAll(), findById(), save(), etc. are
+    // already included from JpaRepository.
 }

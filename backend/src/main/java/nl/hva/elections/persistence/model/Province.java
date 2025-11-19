@@ -1,14 +1,12 @@
-package nl.hva.elections.xml.model;
+package nl.hva.elections.persistence.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "PROVINCE")
@@ -16,12 +14,18 @@ import java.util.Objects;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Province {
 
-    @Id // Marks this field as the primary key
+    @Id
     @Column(name = "province_id")
     private Integer province_id;
 
     @Column(name = "name", nullable = false, unique = true)
     private String name;
+
+    // --- RELATIONSHIP ---
+    // mappedBy="province" refers to the private variable name in the Kieskring class
+    @OneToMany(mappedBy = "province", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Kieskring> kieskringen = new ArrayList<>();
+    // --- END RELATIONSHIP ---
 
     /**
      * JPA requires a no-argument constructor.
@@ -39,8 +43,7 @@ public class Province {
         this.name = name;
     }
 
-    // Getters and Setters
-    // TODO: Split the getters and setters into a seperate file
+    // --- GETTERS AND SETTERS (INCLUDING THE MISSING ONES) ---
 
     public Integer getProvince_id() {
         return province_id;
@@ -58,10 +61,20 @@ public class Province {
         this.name = name;
     }
 
-    // toString
+    public List<Kieskring> getKieskringen() {
+        return kieskringen;
+    }
+
+    public void setKieskringen(List<Kieskring> kieskringen) {
+        this.kieskringen = kieskringen;
+    }
+
+    // --- END GETTERS AND SETTERS ---
 
     @Override
     public String toString() {
+        // IMPORTANT: Do NOT include the 'kieskringen' list in toString()
+        // or you will trigger an infinite loop / stack overflow
         return "Province{" +
                 "province_id=" + province_id +
                 ", name='" + name + '\'' +
