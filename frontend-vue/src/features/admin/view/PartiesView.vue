@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
+import { useRoute } from 'vue-router'; // NEW IMPORT
 import {
   partyService,
   getPartyColor,
-  getPartyLogo, // <-- Import the new helper
+  getPartyLogo,
   type NationalResult,
   type PoliticalParty
 } from '../service/partyService';
@@ -16,6 +17,7 @@ import { getAllKieskringResults } from '../service/KieskringDetails_api';
 import { getProvinces } from '../service/ScaledElectionResults_api';
 
 // --- Component State ---
+const route = useRoute(); // NEW
 const parties = ref<PoliticalParty[]>([]);
 const currentResults = ref<NationalResult[]>([]);
 const loading = ref(true);
@@ -27,7 +29,7 @@ const MAX_PARTIES = 5;
 
 // --- Search & Sort State ---
 const searchQuery = ref('');
-const sortBy = ref('name-asc'); // Default sorting
+const sortBy = ref('name-asc');
 
 // --- New Level & Instance State ---
 const LEVELS = ['Nationaal', 'Kieskringen', 'Provincies', 'Gemeentes', 'Stembussen'];
@@ -37,6 +39,7 @@ const selectedLevel = ref(LEVELS[0]);
 const subItems = ref<string[]>([]);
 const selectedSubItem = ref<string | null>(null);
 const subItemLoading = ref(false);
+const pendingSubItem = ref<string | null>(null); // NEW: To store the item we want to select after loading
 
 // --- Data Loading Logic ---
 
@@ -80,6 +83,13 @@ const prepareLevelData = async (level: string) => {
     console.error(`Error loading list for ${level}:`, err);
   } finally {
     subItemLoading.value = false;
+    // NEW: Check if we have a pending item to select
+    if (pendingSubItem.value) {
+      if (subItems.value.includes(pendingSubItem.value)) {
+        selectedSubItem.value = pendingSubItem.value;
+      }
+      pendingSubItem.value = null; // Reset
+    }
   }
 };
 
@@ -109,9 +119,22 @@ const loadResultsForInstance = async (instanceName: string | null) => {
   }
 };
 
-// --- Watchers ---
+// --- Watchers & Mounted ---
 onMounted(() => {
   loadParties();
+
+  // NEW: Handle Deep Linking (e.g. ?level=Kieskringen&name=Amsterdam)
+  const qLevel = route.query.level as string;
+  const qName = route.query.name as string;
+
+  if (qLevel && LEVELS.includes(qLevel)) {
+    if (qName) {
+      pendingSubItem.value = qName;
+    }
+    // Setting this triggers the watcher below, which calls prepareLevelData,
+    // which uses pendingSubItem to restore the selection.
+    selectedLevel.value = qLevel;
+  }
 });
 
 watch(selectedLevel, (newLevel) => {
