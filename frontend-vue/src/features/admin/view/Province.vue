@@ -85,7 +85,14 @@
                         @click.stop="goToResults(kieskring.name)"
                         class="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors flex items-center gap-1"
                       >
-                        <span></span> Kieskring results
+                        Kieskring results
+                      </button>
+
+                      <button
+                        @click.stop="goToParties(kieskring.name)"
+                        class="px-3 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-md transition-colors flex items-center gap-1"
+                      >
+                        Partijen
                       </button>
 
                       <svg
@@ -145,7 +152,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router'; // Import useRouter
+import { useRouter } from 'vue-router';
 import {
   getProvinces,
   getKieskringenForProvince,
@@ -155,9 +162,8 @@ import {
   type GemeenteDto
 } from "@/features/admin/service/ProvinceService";
 
-const router = useRouter(); // Initialize router
+const router = useRouter();
 
-// ... (Interfaces and State remain the same) ...
 interface KieskringUI extends KieskringDto {
   isOpen: boolean;
   isLoadingGemeentes?: boolean;
@@ -173,16 +179,21 @@ const provinces = ref<ProvinceUI[]>([]);
 const isLoading = ref<boolean>(true);
 const error = ref<Error | null>(null);
 
-// --- NEW FUNCTION: Navigate to results ---
+// Navigate to kieskring details
 function goToResults(kieskringName: string) {
-  // Navigate to the details page with the name as a query parameter
   router.push({
     path: '/kieskring-details',
     query: { name: kieskringName }
   });
 }
 
-// ... (The rest of your toggle functions and animations remain exactly the same) ...
+// NEW: Navigate to parties view with pre-selected kieskring
+function goToParties(kieskringName: string) {
+  router.push({
+    path: '/parties',
+    query: { level: 'Kieskringen', name: kieskringName }
+  });
+}
 
 onMounted(async () => {
   try {
