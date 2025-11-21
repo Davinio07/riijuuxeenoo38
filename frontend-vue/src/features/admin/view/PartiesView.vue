@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
-import { useRoute } from 'vue-router'; // NEW IMPORT
+import { useRoute } from 'vue-router';
 import {
   partyService,
   getPartyColor,
@@ -17,7 +17,7 @@ import { getAllKieskringResults } from '../service/KieskringDetails_api';
 import { getProvinces } from '../service/ScaledElectionResults_api';
 
 // --- Component State ---
-const route = useRoute(); // NEW
+const route = useRoute();
 const parties = ref<PoliticalParty[]>([]);
 const currentResults = ref<NationalResult[]>([]);
 const loading = ref(true);
@@ -29,7 +29,7 @@ const MAX_PARTIES = 5;
 
 // --- Search & Sort State ---
 const searchQuery = ref('');
-const sortBy = ref('name-asc');
+const sortBy = ref('name-asc'); // Default sorting
 
 // --- New Level & Instance State ---
 const LEVELS = ['Nationaal', 'Kieskringen', 'Provincies', 'Gemeentes', 'Stembussen'];
@@ -39,7 +39,7 @@ const selectedLevel = ref(LEVELS[0]);
 const subItems = ref<string[]>([]);
 const selectedSubItem = ref<string | null>(null);
 const subItemLoading = ref(false);
-const pendingSubItem = ref<string | null>(null); // NEW: To store the item we want to select after loading
+const pendingSubItem = ref<string | null>(null); // Store the item we want to select after loading
 
 // --- Data Loading Logic ---
 
@@ -83,12 +83,25 @@ const prepareLevelData = async (level: string) => {
     console.error(`Error loading list for ${level}:`, err);
   } finally {
     subItemLoading.value = false;
-    // NEW: Check if we have a pending item to select
-    if (pendingSubItem.value) {
-      if (subItems.value.includes(pendingSubItem.value)) {
-        selectedSubItem.value = pendingSubItem.value;
+
+    // --- NEW: Robust matching logic for auto-selection ---
+    if (pendingSubItem.value && subItems.value.length > 0) {
+      const target = pendingSubItem.value.trim().toLowerCase();
+
+      // Find a match: exact, or if one contains the other
+      const match = subItems.value.find(item => {
+        const val = item.trim().toLowerCase();
+        return val === target || val.includes(target) || target.includes(val);
+      });
+
+      if (match) {
+        selectedSubItem.value = match;
+        console.log(`✅ Auto-selected: ${match}`);
+      } else {
+        console.warn(`⚠️ Could not find '${pendingSubItem.value}' in list. Available:`, subItems.value.slice(0, 3), '...');
       }
-      pendingSubItem.value = null; // Reset
+
+      pendingSubItem.value = null; // Clear pending item
     }
   }
 };
@@ -119,11 +132,11 @@ const loadResultsForInstance = async (instanceName: string | null) => {
   }
 };
 
-// --- Watchers & Mounted ---
+// --- Watchers ---
 onMounted(() => {
   loadParties();
 
-  // NEW: Handle Deep Linking (e.g. ?level=Kieskringen&name=Amsterdam)
+  // Check for query params to auto-select level and item
   const qLevel = route.query.level as string;
   const qName = route.query.name as string;
 
@@ -131,8 +144,7 @@ onMounted(() => {
     if (qName) {
       pendingSubItem.value = qName;
     }
-    // Setting this triggers the watcher below, which calls prepareLevelData,
-    // which uses pendingSubItem to restore the selection.
+    // Setting this triggers the watcher below
     selectedLevel.value = qLevel;
   }
 });
