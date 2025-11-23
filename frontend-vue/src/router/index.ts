@@ -68,6 +68,13 @@ const routes = [
     name: 'MunicipalityElectionResults',
     component: MunicipalityElectionResults,
   },
+  {
+    // Dynamic route parameter :name catches "Amsterdam", "Urk", etc.
+    path: '/municipality-results/:name',
+    name: 'MunicipalityDetails',
+    component: () => import('@/features/admin/view/MunicipalityResultDetails.vue'),
+    props: true, // Passes :name as a prop to the component
+  },
 ];
 
 const router = createRouter({
