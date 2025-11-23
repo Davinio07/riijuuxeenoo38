@@ -1,217 +1,165 @@
-{
-type: file_content
-fileName: src/features/admin/view/MunicipalityElectionResults.vue
-fullContent:
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import {
-  getMunicipalityNames,
-  getResultsForMunicipality,
-  type MunicipalityResult
+  getAllMunicipalityResults,
+  type MunicipalityDataDto,
+  type MunicipalityResultDto
 } from '../service/MunicipalityElectionResults_api';
 
-// State variables
-const allMunicipalities = ref<string[]>([]);
-const searchQuery = ref('');
-const selectedMunicipality = ref<string | null>(null);
-const results = ref<MunicipalityResult[]>([]);
+const router = useRouter();
 
-// UI State
-const loadingNames = ref(true);
-const loadingResults = ref(false);
+// State
+const municipalities = ref<MunicipalityDataDto[]>([]);
+const loading = ref(true);
 const error = ref<string | null>(null);
+const searchQuery = ref('');
 
-/**
- * Filters the list of municipalities based on the user's search query.
- * Case-insensitive.
- */
+// Computed: Filter logic based on search input
 const filteredMunicipalities = computed(() => {
-  if (!searchQuery.value) {
-    return allMunicipalities.value;
-  }
+  if (!searchQuery.value) return municipalities.value;
   const query = searchQuery.value.toLowerCase();
-  return allMunicipalities.value.filter(m => m.toLowerCase().includes(query));
+  return municipalities.value.filter(m =>
+    m.name.toLowerCase().includes(query)
+  );
 });
 
-/**
- * Calculates the total number of votes in the current result set.
- * Used to calculate percentages per party.
- */
-const totalVotes = computed(() => {
-  return results.value.reduce((sum, item) => sum + item.validVotes, 0);
-});
+// Helper: Calculate total votes for a municipality
+const getTotalVotes = (results: MunicipalityResultDto[]) => {
+  return results.reduce((sum, r) => sum + r.validVotes, 0);
+};
 
-/**
- * Calculates the percentage of votes for a specific party.
- */
-function calculatePercentage(votes: number): string {
-  if (totalVotes.value === 0) return '0.0%';
-  return ((votes / totalVotes.value) * 100).toFixed(1) + '%';
-}
+// Helper: Get top 3 parties sorted by votes
+const getTop3 = (results: MunicipalityResultDto[]) => {
+  // Creating a copy with [...results] to prevent mutating the original array while sorting
+  return [...results].sort((a, b) => b.validVotes - a.validVotes).slice(0, 3);
+};
 
-/**
- * Fetches the results for a specific municipality when clicked.
- */
-async function selectMunicipality(name: string) {
-  selectedMunicipality.value = name;
-  loadingResults.value = true;
-  error.value = null;
-  results.value = []; // clear old results
+// Helper: Calculate percentage
+const getPercentage = (votes: number, allResults: MunicipalityResultDto[]) => {
+  const total = getTotalVotes(allResults);
+  if (total === 0) return '0.0';
+  return ((votes / total) * 100).toFixed(1);
+};
 
-  try {
-    // Call the API endpoint we verified earlier
-    results.value = await getResultsForMunicipality(name);
+// Helper: Format number (1000 -> 1.000)
+const formatNumber = (num: number) => {
+  return new Intl.NumberFormat('nl-NL').format(num);
+};
 
-    // Sort results by votes (highest first) for better readability
-    results.value.sort((a, b) => b.validVotes - a.validVotes);
-  } catch (err) {
-    console.error(err);
-    error.value = `Kon de resultaten voor ${name} niet ophalen.`;
-  } finally {
-    loadingResults.value = false;
-  }
-}
+// Helper: Give the top 3 distinct colors (Gold, Silver, Bronze-ish styles)
+const getBarColor = (index: number) => {
+  const colors = [
+    '#3b82f6', // Blue-500 (Winner)
+    '#9ca3af', // Gray-400 (2nd)
+    '#d1d5db'  // Gray-300 (3rd)
+  ];
+  return colors[index] || '#e5e7eb';
+};
 
-/**
- * Resets the view to the selection list.
- */
-function clearSelection() {
-  selectedMunicipality.value = null;
-  searchQuery.value = '';
-  results.value = [];
-}
+// Navigation
+const goToDetail = (name: string) => {
+  // Using encodeURIComponent to handle names with spaces safely
+  router.push(`/municipality-results/${encodeURIComponent(name)}`);
+};
 
+// Fetch Data
 onMounted(async () => {
   try {
-    // Fetch all unique municipality names on load
-    allMunicipalities.value = await getMunicipalityNames();
-    // Sort alphabetically for the dropdown/list
-    allMunicipalities.value.sort();
+    loading.value = true;
+    // We use the new API function that fetches the aggregated data from the backend
+    const data = await getAllMunicipalityResults();
+
+    // Sort municipalities alphabetically by default
+    municipalities.value = data.sort((a, b) => a.name.localeCompare(b.name));
+
   } catch (err) {
-    error.value = 'Fout bij het laden van de gemeentelijst.';
     console.error(err);
+    error.value = 'Kon de gemeente resultaten niet ophalen. Probeer het later opnieuw.';
   } finally {
-    loadingNames.value = false;
+    loading.value = false;
   }
 });
 </script>
 
 <template>
-  <div class="p-6 max-w-6xl mx-auto min-h-screen">
+  <div class="space-y-6 p-6">
+    <div class="flex flex-col md:flex-row justify-between items-center">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Gemeente Uitslagen</h1>
+        <p v-if="!searchQuery" class="text-gray-600 mt-1">
+          Overzicht van de verkiezingsuitslagen per gemeente.
+        </p>
+        <p v-else class="text-gray-600 mt-1">
+          Resultaten gefilterd voor: <span class="font-bold text-blue-600">{{ searchQuery }}</span>
+        </p>
+      </div>
 
-    <div class="mb-8 text-center">
-      <h1 class="text-3xl font-bold text-gray-800 mb-2">Gemeentelijke Uitslagen</h1>
-      <p class="text-gray-600">
-        Bekijk de verkiezingsresultaten per gemeente.
-      </p>
+      <div class="mt-4 md:mt-0 relative">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Zoek een gemeente..."
+          class="pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none w-full md:w-64"
+        />
+        <span class="absolute right-3 top-2.5 text-gray-400">🔍</span>
+      </div>
     </div>
 
-    <div v-if="loadingNames" class="flex justify-center py-12">
-      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+    <p v-if="loading" class="text-gray-500 text-center py-10">
+      Gemeente data wordt geladen...
+    </p>
+
+    <div v-if="error" class="text-red-600 font-semibold bg-red-50 p-4 rounded border border-red-200">
+      {{ error }}
     </div>
 
-    <div v-else-if="error" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-      <p class="font-bold">Foutmelding</p>
-      <p>{{ error }}</p>
-      <button @click="clearSelection" class="underline mt-2">Terug naar overzicht</button>
-    </div>
-
-    <div v-else>
-
-      <div v-if="!selectedMunicipality" class="space-y-6">
-        <div class="max-w-md mx-auto relative">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Zoek een gemeente (bijv. Amsterdam)..."
-            class="w-full p-4 pl-12 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-          />
-          <span class="absolute left-4 top-4 text-gray-400">🔍</span>
+    <div v-if="!loading && filteredMunicipalities.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        v-for="(muni, index) in filteredMunicipalities"
+        :key="index"
+        class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition-shadow duration-200 border border-gray-100 cursor-pointer flex flex-col justify-between"
+        @click="goToDetail(muni.name)"
+      >
+        <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+          <h2 class="text-lg font-bold text-gray-800 truncate" :title="muni.name">
+            {{ muni.name }}
+          </h2>
+          <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium whitespace-nowrap">
+            {{ formatNumber(getTotalVotes(muni.results)) }} stemmen
+          </span>
         </div>
 
-        <div v-if="filteredMunicipalities.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
-          <button
-            v-for="city in filteredMunicipalities"
-            :key="city"
-            @click="selectMunicipality(city)"
-            class="p-3 bg-white border border-gray-200 rounded hover:bg-blue-50 hover:border-blue-300 hover:shadow-md transition-all text-left truncate"
+        <div class="space-y-3">
+          <div
+            v-for="(result, rIndex) in getTop3(muni.results)"
+            :key="rIndex"
+            class="flex flex-col"
           >
-            {{ city }}
-          </button>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="font-semibold text-gray-700 truncate w-32">{{ result.partyName }}</span>
+              <span class="text-gray-900 font-bold">
+                {{ getPercentage(result.validVotes, muni.results) }}%
+              </span>
+            </div>
+
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div
+                class="h-2 rounded-full transition-all duration-500"
+                :style="{ width: getPercentage(result.validVotes, muni.results) + '%', backgroundColor: getBarColor(rIndex) }"
+              ></div>
+            </div>
+          </div>
         </div>
-        <div v-else class="text-center text-gray-500 mt-8">
-          Geen gemeenten gevonden die matchen met "{{ searchQuery }}".
-        </div>
-      </div>
 
-      <div v-else class="animate-fadeIn">
-        <button
-          @click="clearSelection"
-          class="mb-6 flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors"
-        >
-          ← Terug naar alle gemeenten
-        </button>
-
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-          <div class="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <h2 class="text-2xl font-bold text-gray-800">{{ selectedMunicipality }}</h2>
-            <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm font-semibold">
-              Totaal stemmen: {{ totalVotes.toLocaleString('nl-NL') }}
-            </span>
-          </div>
-
-          <div v-if="loadingResults" class="p-12 text-center text-gray-500">
-            Resultaten ophalen...
-          </div>
-
-          <div v-else>
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Partij</th>
-                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Stemmen</th>
-                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">Grafiek</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="(row, index) in results" :key="row.partyName" class="hover:bg-gray-50 transition-colors">
-                  <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                    {{ index + 1 }}. {{ row.partyName }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-gray-700">
-                    {{ row.validVotes.toLocaleString('nl-NL') }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-gray-900 font-bold">
-                    {{ calculatePercentage(row.validVotes) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap align-middle">
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                      <div
-                        class="bg-blue-600 h-2.5 rounded-full"
-                        :style="{ width: calculatePercentage(row.validVotes) }"
-                      ></div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="mt-4 text-right">
+            <span class="text-xs text-blue-500 font-medium group-hover:underline">Bekijk details →</span>
         </div>
       </div>
+    </div>
 
+    <div v-else-if="!loading && filteredMunicipalities.length === 0" class="text-center py-10 text-gray-500">
+      Geen gemeente gevonden met de naam "{{ searchQuery }}".
     </div>
   </div>
 </template>
-
-<style scoped>
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
-}

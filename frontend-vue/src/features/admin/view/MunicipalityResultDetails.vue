@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { getResultsForMunicipality, type MunicipalityResult } from '../service/MunicipalityElectionResults_api';
-// Import the new Chart component
+import { getResultsForMunicipality, type MunicipalityResultDto } from '../service/MunicipalityElectionResults_api';
 import MunicipalityChart from '@/features/admin/components/MunicipalityChart.vue';
 
 // 1. Get the municipality name from the URL
@@ -10,12 +9,13 @@ const route = useRoute();
 const municipalityName = route.params.name as string;
 
 // 2. Page State
-const results = ref<MunicipalityResult[]>([]);
+// Updated the type here to match the new DTO name
+const results = ref<MunicipalityResultDto[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
-// 3. Helper to calculate total votes (for table display)
-const totalVotes = (data: MunicipalityResult[]) => {
+// 3. Helper to calculate total votes
+const totalVotes = (data: MunicipalityResultDto[]) => {
   return data.reduce((sum, r) => sum + r.validVotes, 0);
 };
 
@@ -28,6 +28,7 @@ onMounted(async () => {
     results.value = await getResultsForMunicipality(municipalityName);
 
     // Sort by votes (highest first)
+    // TypeScript now knows 'a' and 'b' are MunicipalityResultDto because of the ref type above
     results.value.sort((a, b) => b.validVotes - a.validVotes);
 
     if (results.value.length === 0) {

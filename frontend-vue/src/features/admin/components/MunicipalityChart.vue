@@ -12,14 +12,14 @@ import {
   type ChartOptions
 } from 'chart.js';
 import { getPartyColor } from '../service/partyService';
-import type { MunicipalityResult } from '../service/MunicipalityElectionResults_api';
+import type { MunicipalityResultDto } from '../service/MunicipalityElectionResults_api';
 
 // 1. Register the Chart.js components we need
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 // 2. Define the props this component expects
 const props = defineProps<{
-  results: MunicipalityResult[];
+  results: MunicipalityResultDto[];
 }>();
 
 // 3. Prepare the data for the chart
