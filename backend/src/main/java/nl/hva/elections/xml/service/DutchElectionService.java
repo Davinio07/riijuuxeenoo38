@@ -9,10 +9,7 @@ import nl.hva.elections.xml.utils.xml.transformers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -38,11 +35,6 @@ public class DutchElectionService {
 
     // De cache waar alle geparste data in komt
     private final Map<String, Election> electionCache = new ConcurrentHashMap<>();
-    private final PartyRepository partyRepository;
-
-    public DutchElectionService(PartyRepository partyRepository) {
-        this.partyRepository = partyRepository;
-    }
 
     /**
      * Deze methode wordt automatisch aangeroepen nadat de service is gemaakt.
@@ -79,7 +71,7 @@ public class DutchElectionService {
                 new DutchCandidateTransformer(election),
                 new DutchRegionTransformer(election),
                 new DutchResultTransformer(election),
-                new DutchNationalVotesTransformer(election, partyRepository),
+                new DutchNationalVotesTransformer(election),
                 new DutchConstituencyVotesTransformer(election),
                 new DutchKiesKringenTransformer(election)
         );
