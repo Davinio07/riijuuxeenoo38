@@ -1,47 +1,90 @@
 package nl.hva.elections.xml.model;
 
-/**
- * Model class representing a political party, adapted to be more compatible
- * with XML parsing frameworks (like JAXB) which typically require
- * a default constructor and mutable fields (non-final).
- */
-public class Party {
-    private String id;
-    private String name;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+import jakarta.xml.bind.annotation.*;
+import nl.hva.elections.persistence.model.Candidate;
 
-    /**
-     * Default constructor required for many persistence/serialization frameworks.
-     */
-    public Party() {
-        // Initialize fields if necessary, or leave for setters
-    }
+import java.util.List;
+
+@Entity
+@XmlRootElement(name = "Party")
+@XmlAccessorType(XmlAccessType.FIELD)
+public class Party {
 
     public Party(String id, String name) {
-        this.id = id;
+        this.electionId = id;
         this.name = name;
     }
 
-    public String getId() {
-        return id;
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "party_id")
+    private Long id;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    @XmlElement(name = "ElectionId")
+    private String electionId;
 
-    public String getName() {
-        return name;
-    }
+    @XmlElement(name = "Name")
+    private String name;
 
-    public void setName(String name) {
+    @XmlElement(name = "TotalVotes")
+    @JsonProperty("totalVotes")
+    private int votes;
+
+    @XmlElement(name = "NationalSeats")
+    @JsonProperty("nationalSeats")
+    private int seats;
+
+    @XmlElement(name = "VotePercentage")
+    @JsonProperty("votePercentage")
+    private double percentage;
+
+    @OneToMany(mappedBy = "party", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Candidate> candidates;
+
+    /** Default constructor for JPA and JAXB. */
+    public Party() {}
+
+    // Optionally keep a constructor for XML-based creation
+    public Party(String name, int votes) {
         this.name = name;
+        this.votes = votes;
     }
+
+    // Getters and setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getElectionId() { return electionId; }
+    public void setElectionId(String electionId) { this.electionId = electionId; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public int getVotes() { return votes; }
+    public void setVotes(int votes) { this.votes = votes; }
+
+    public int getSeats() { return seats; }
+    public void setSeats(int seats) { this.seats = seats; }
+
+    public double getPercentage() { return percentage; }
+    public void setPercentage(double percentage) { this.percentage = percentage; }
+
+    public List<Candidate> getCandidates() { return candidates; }
+    public void setCandidates(List<Candidate> candidates) { this.candidates = candidates; }
 
     @Override
     public String toString() {
         return "Party{" +
-                "id='" + id + '\'' +
+                "id=" + id +
+                ", electionId='" + electionId + '\'' +
                 ", name='" + name + '\'' +
+                ", votes=" + votes +
+                ", seats=" + seats +
+                ", percentage=" + percentage +
                 '}';
     }
 }

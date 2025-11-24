@@ -7,12 +7,11 @@ public class Election {
     private final String id;
     private final List<Candidate> candidates = new ArrayList<>();
     private final List<Region> regions = new ArrayList<>();
-    private final List<NationalResult> nationalResults = new ArrayList<>();
+    private final List<Party> nationalResults = new ArrayList<>();
     private final List<PoliticalParty> politicalParties = new ArrayList<>();
 
-    // START OF FIX: Add a List for MunicipalityResult objects
-    private final List<KiesKring> municipalityResults = new ArrayList<KiesKring>();
-    // END OF FIX
+    // We renamed this list to strictly reflect that it holds municipality results.
+    private final List<MunicipalityResult> municipalityResults = new ArrayList<>();
 
     public Election(String id) {
         this.id = id;
@@ -41,18 +40,18 @@ public class Election {
     /**
      * Returns the list of national election results.
      *
-     * @return a list of {@link NationalResult} objects
+     * @return a list of {@link Party} objects
      */
-    public List<NationalResult> getNationalResults() {
+    public List<Party> getNationalResults() {
         return nationalResults;
     }
 
     /**
      * Adds a new national result to the list.
      *
-     * @param result the {@link NationalResult} to add
+     * @param result the {@link Party} to add
      */
-    public void addNationalResult(NationalResult result) {
+    public void addNationalResult(Party result) {
         nationalResults.add(result);
     }
 
@@ -66,13 +65,12 @@ public class Election {
         }
     }
 
-    public void addMunicipalityResult(KiesKring result) {
+    // We updated the method signature to accept our new MunicipalityResult class
+    public void addMunicipalityResult(MunicipalityResult result) {
         this.municipalityResults.add(result);
     }
 
-
-    public List<KiesKring> getMunicipalityResults() {
+    public List<MunicipalityResult> getMunicipalityResults() {
         return municipalityResults;
     }
-    // END OF FIX
 }
