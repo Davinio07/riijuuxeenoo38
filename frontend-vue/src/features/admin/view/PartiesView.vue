@@ -11,15 +11,9 @@ import {
 import ComparisonChart from '../components/ComparisonChart.vue';
 import LevelSelector from '../components/LevelSelector.vue';
 
-// --- API Imports for the 5 Levels ---
+// --- API Imports for the Levels ---
 import { getMunicipalityNames, getResultsForMunicipality } from '../service/MunicipalityElectionResults_api';
 import { getAllConstituencyResults, type ConstituencyDataDto } from '../service/ConstituencyDetails_api';
-import { getProvinces } from '../service/ScaledElectionResults_api';
-
-// --- Interfaces for Typing ---
-interface ProvinceItem {
-  name: string;
-}
 
 // Extend PoliticalParty for sorting if needed (seats are dynamic)
 interface SortableParty extends PoliticalParty {
@@ -41,7 +35,8 @@ const searchQuery = ref('');
 const sortBy = ref('name-asc'); // Default sorting
 
 // --- New Level & Instance State ---
-const LEVELS = ['Nationaal', 'Kieskringen', 'Provincies', 'Gemeentes', 'Stembussen'];
+// Removed 'Provincies' and 'Stembussen'
+const LEVELS = ['Nationaal', 'Kieskringen', 'Gemeentes'];
 const selectedLevel = ref(LEVELS[0]);
 
 // "SubItems" are the specific options (e.g. "Amsterdam", "Utrecht")
@@ -83,12 +78,6 @@ const prepareLevelData = async (level: string) => {
       const data = await getAllConstituencyResults();
       // Typed: k is ConstituencyDataDto
       subItems.value = data.map((k: ConstituencyDataDto) => k.name);
-    } else if (level === 'Provincies') {
-      const data = await getProvinces('TK2023');
-      // Typed: p is implicitly any from service, so we define ProvinceItem
-      subItems.value = data.map((p: ProvinceItem) => p.name);
-    } else if (level === 'Stembussen') {
-      subItems.value = ['Stembureau A', 'Stembureau B']; // Mock
     }
   } catch (err) {
     console.error(`Error loading list for ${level}:`, err);
