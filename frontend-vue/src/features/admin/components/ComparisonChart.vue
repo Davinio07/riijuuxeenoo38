@@ -12,8 +12,6 @@ import {
   type ChartOptions,
   type TooltipItem,
 } from 'chart.js';
-// FIX 1: Import our *new* NationalResult type
-import type { NationalResult } from '../service/partyService';
 import { getPartyColor } from '../service/partyService';
 import type { PropType } from 'vue';
 
@@ -21,51 +19,42 @@ import type { PropType } from 'vue';
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 // Define component props
+// Use a looser type
+type PartyChartData = { name: string; totalVotes: number };
+
 const props = defineProps({
   parties: {
-    // Use the updated NationalResult type
-    type: Array as PropType<NationalResult[]>,
+    type: Array as PropType<PartyChartData[]>,
     required: true,
   },
   metric: {
-    // FIX 2: Allow 'validVotes' as a valid metric
-    type: String as PropType<'seats' | 'votes' | 'validVotes'>,
+    type: String as PropType<'totalVotes' | 'seats' | 'percentage'>,
     required: true,
   },
-  title: {
-    type: String,
-    required: true,
-  }
+  title: { type: String, required: true },
 });
+
 
 // Create chart-compatible data
 const chartData = computed(() => {
-  // FIX 3: Use p.partyName from the NationalResult for labels
-  const labels = props.parties.map(p => p.partyName);
-
-  // FIX 4: Update data mapping logic to use 'validVotes'
+  // FIX 3: Use p.name from the NationalResult for labels
+  const labels = props.parties.map(p => p.name);
   const data = props.parties.map(p => {
-    if (props.metric === 'validVotes') {
-      return p.validVotes; // Use the correct field from the API
-    }
-    // Kept old logic just in case, but it won't be used with current view
-    if (props.metric === 'seats') {
-      return (p as any).seats; // This will be undefined
-    }
-    if (props.metric === 'votes') {
-      return (p as any).votes; // This will be undefined
-    }
+    if (props.metric === 'totalVotes') return p.totalVotes;
+    if (props.metric === 'seats') return (p as any).seats;
+    if (props.metric === 'percentage') return (p as any).votePercentage;
     return 0;
   });
 
-  // FIX 5: Use p.partyName for getting colors
-  const backgroundColors = props.parties.map(p => getPartyColor(p.partyName));
+
+  // FIX 5: Use p.name for getting colors
+  const backgroundColors = props.parties.map(p => getPartyColor(p.name));
 
   return {
     labels,
     datasets: [
       {
-        label: props.metric === 'validVotes' ? 'Votes' : props.metric, // Clean up label
+        label: props.metric === 'totalVotes' ? 'Votes' : props.metric, // Clean up label
         data,
         backgroundColor: backgroundColors,
         borderRadius: 4,

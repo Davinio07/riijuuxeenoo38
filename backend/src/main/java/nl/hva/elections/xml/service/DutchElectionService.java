@@ -1,5 +1,6 @@
 package nl.hva.elections.xml.service;
 
+import jakarta.annotation.PostConstruct;
 import nl.hva.elections.xml.model.*;
 import nl.hva.elections.xml.utils.PathUtils;
 import nl.hva.elections.xml.utils.xml.DutchElectionParser;
@@ -12,78 +13,59 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 /**
- * A demo service for demonstrating how an EML-XML parser can be used inside a backend application.<br/>
- * <br/>
- * <i><b>NOTE: </b>There are some TODO's and FIXME's present that need fixing!</i>
+ * A service for handling election data.
+ * All XML data is eagerly loaded into a cache at application startup.
  */
 @Service
 public class DutchElectionService {
 
-    // Added a logger here, just like in the controller.
     private static final Logger logger = LoggerFactory.getLogger(DutchElectionService.class);
 
-    private static final String ELECTION_ID = "TK2023";
-    private static final String ELECTION_DATA_FOLDER = "/TK2023_HvA_UvA";
+    // List of elections to load at startup
+    private static final List<String> ELECTION_IDS_TO_LOAD = List.of("TK2023", "TK2021");
 
+    // The default ID
+    private static final String DEFAULT_ELECTION_ID = "TK2023";
+
+    // The cache for the parsed data
+    private final Map<String, Election> electionCache = new ConcurrentHashMap<>();
 
     /**
-     * Loads and parses all election data from the resources folder.
-     * This method is used by the frontend to get all data at once.
+     * Loads the specified elections into the cache when the app starts.
      */
-    public Election loadAllElectionData() throws IOException, XMLStreamException, ParserConfigurationException, SAXException {
-        logger.info("Starting to load all election data for election ID: {}", ELECTION_ID);
-        Election election = new Election(ELECTION_ID);
-
-        // Instantiate all the required transformers
-        DutchDefinitionTransformer definitionTransformer = new DutchDefinitionTransformer(election);
-        DutchCandidateTransformer candidateTransformer = new DutchCandidateTransformer(election);
-        DutchRegionTransformer regionTransformer = new DutchRegionTransformer(election);
-        DutchNationalVotesTransformer nationalVotesTransformer = new DutchNationalVotesTransformer(election);
-        DutchConstituencyVotesTransformer constituencyVotesTransformer = new DutchConstituencyVotesTransformer(election);
-        DutchKiesKringenTransformer municipalityVotesTransformer = new DutchKiesKringenTransformer(election);
-        DutchResultTransformer resultTransformer = new DutchResultTransformer(election);
-
-        // Create the parser with all the transformers in the correct order
-        DutchElectionParser parser = new DutchElectionParser(
-                definitionTransformer,
-                candidateTransformer,
-                regionTransformer,
-                resultTransformer,
-                nationalVotesTransformer,
-                constituencyVotesTransformer,
-                municipalityVotesTransformer
-        );
-
-        // Use PathUtils to find the root folder of the election data
-        String resourcePath = PathUtils.getResourcePath(ELECTION_DATA_FOLDER);
-
-        // Let the parser handle finding and parsing all the files
-        if (resourcePath != null) {
-            logger.info("Found election data folder at: {}", resourcePath);
-            parser.parseResults(ELECTION_ID, resourcePath);
-        } else {
-            // We need to throw an exception if the data isn't there.
-            throw new IOException("Resource folder not found in classpath: " + ELECTION_DATA_FOLDER);
+    @PostConstruct
+    public void initializeElectionDataCache() {
+        logger.info("Starting eager parsing of XML data for {} elections...", ELECTION_IDS_TO_LOAD.size());
+        for (String electionId : ELECTION_IDS_TO_LOAD) {
+            try {
+                // Use the private parse method
+                Election parsedElection = parseXmlData(electionId, electionId);
+                this.electionCache.put(electionId, parsedElection);
+                logger.info("Successfully parsed and cached XML data for {}", electionId);
+            } catch (Exception e) {
+                logger.error("CRITICAL STARTUP FAILURE: Failed to parse XML data for {}. Error: {}",
+                        electionId, e.getMessage(), e);
+            }
         }
-
-        logger.info("Finished loading all election data for election ID: {}", ELECTION_ID);
-        return election;
+        logger.info("Finished caching all XML election data.");
     }
 
-
-
-    public Election readResults(String electionId, String folderName) {
-        logger.info("Processing files for electionId: {} from folder: {}", electionId, folderName);
+    /**
+     * Parses the XML data using the DutchElectionParser.
+     */
+    private Election parseXmlData(String electionId, String folderName) throws IOException, XMLStreamException, ParserConfigurationException, SAXException {
+        logger.info("Parsing files for electionId: {} from folder: {}", electionId, folderName);
 
         Election election = new Election(electionId);
-        // TODO This lengthy construction of the parser should be replaced with a fitting design pattern!
-        //  And refactoring the constructor while your at it is also a good idea.
+        
+        // We instantiate the parser with all the necessary transformers
         DutchElectionParser electionParser = new DutchElectionParser(
                 new DutchDefinitionTransformer(election),
                 new DutchCandidateTransformer(election),
@@ -91,136 +73,170 @@ public class DutchElectionService {
                 new DutchResultTransformer(election),
                 new DutchNationalVotesTransformer(election),
                 new DutchConstituencyVotesTransformer(election),
-                new DutchKiesKringenTransformer(election)
+                new DutchMunicipalityTransformer(election)
         );
-
-        try {
-            // Assuming the election data is somewhere on the class-path it should be found.
-            // Please note that you can also specify an absolute path to the folder!
-            String resourcePath = PathUtils.getResourcePath("/%s".formatted(folderName));
-
-            // Check if the resource path is found. If not, throw an exception.
-            if (resourcePath == null) {
-                throw new IOException("Resource folder not found in classpath: " + folderName);
-            }
-
-            electionParser.parseResults(electionId, resourcePath);
-
-            // Let's log some details after parsing. I'm using DEBUG level because this is pretty verbose
-            // and not something we want to see in production logs unless we are debugging.
-            logger.debug("Dutch Election results: {}", election);
-            // Now is also the time to send the election information to a database for example.
-            logger.debug("National results count: {}", election.getNationalResults().size());
-            logger.debug("Regions count: {}", election.getRegions().size());
-
-            return election;
-        } catch (IOException | XMLStreamException | ParserConfigurationException | SAXException e) {
-            // Good practice: log the exception here before we re-throw it.
-            // This way, we know exactly where the error started.
-            logger.error("Failed to process the election results for electionId: {}", electionId, e);
-            // Throw a runtime exception with a clear message to be handled by the controller advice or error handler.
-            throw new RuntimeException("Failed to process the election results for electionId: " + electionId, e);
+            logger.debug("Parsing XML files for {}", electionId);
+        String resourcePath = PathUtils.getResourcePath("/%s".formatted(folderName));
+        if (resourcePath == null) {
+            logger.error("Resource folder not found in classpath: {}", folderName);
+            throw new IOException("Resource folder not found in classpath: " + folderName);
         }
+
+        Files.walk(Paths.get(resourcePath))
+                .filter(Files::isRegularFile)
+                .filter(p -> p.toString().endsWith(".xml"))
+                .forEach(p -> {
+                    try {
+                        electionParser.parseResults(electionId, p.toString());
+                    } catch (Exception e) {
+                        logger.warn("Failed to parse XML file {}: {}", p, e.getMessage());
+                    }
+                });
+        
+        logger.debug("Finished parsing for {}", electionId);
+        return election;
     }
 
-    // Only real KIESKRINGs
-    public List<Region> getKieskringen(Election election) {
-        return election.getRegions().stream()
+    /**
+     * Retrieves a cached Election object.
+     * * @param electionId The ID of the election (e.g. "TK2023")
+     * @return The cached Election object
+     * @throws RuntimeException if no data is found (returns empty object actually)
+     */
+    public Election getElectionData(String electionId) {
+        Election election = electionCache.get(electionId);
+        if (election == null) {
+            logger.warn("No cached election data found for ID: {}. Returning empty Election.", electionId);
+            return new Election(electionId);
+        }
+        return election;
+    }
+
+    /**
+     * Loads the default election data.
+     */
+    public Election loadAllElectionData() {
+        logger.debug("Request received for 'loadAllElectionData'. Retrieving from cache...");
+        return getElectionData(DEFAULT_ELECTION_ID);
+    }
+
+    public Election readResults(String electionId, String folderName) {
+        return getElectionData(electionId);
+    }
+
+    public List<Region> getRegions(String electionId) {
+        return getElectionData(electionId).getRegions();
+    }
+
+    public List<Region> getConstituencies(String electionId) {
+        return getElectionData(electionId).getRegions().stream()
                 .filter(r -> "KIESKRING".equals(r.getCategory()))
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Gets a list of all municipalities from the election data.
-     * @param election The fully loaded election object.
-     * @return A list of Region objects filtered to only include municipalities.
-     */
-    public List<Region> getGemeenten(Election election) {
-        return election.getRegions().stream()
+    // Used by Controller for "Kieskringen" endpoint that actually returns regions
+    public List<Region> getKieskringen(String electionId) {
+        return getConstituencies(electionId);
+    }
+
+    public List<Region> getGemeenten(String electionId) {
+        return getElectionData(electionId).getRegions().stream()
                 .filter(r -> "GEMEENTE".equals(r.getCategory()))
                 .collect(Collectors.toList());
     }
 
-    public List<NationalResult> getNationalResults(String electionId) {
-        Election election = readResults(electionId, electionId);
-        return election.getNationalResults();
+    public List<PoliticalParty> getPoliticalParties(String electionId) {
+        return getElectionData(electionId).getPoliticalParties();
     }
 
     /**
-     * Gets a unique and sorted list of all municipality names.
-     * This is used to populate the search dropdown in the frontend.
-     * @param election The fully loaded election object.
-     * @return A list of strings, where each string is a unique municipality name.
+     * Returns a list of unique municipality names found in the results.
      */
-    public List<String> getMunicipalityNames(Election election) {
-        return election.getMunicipalityResults().stream()
-                .map(KiesKring::getMunicipalityName)
+    public List<String> getMunicipalityNames(String electionId) {
+        return getElectionData(electionId).getMunicipalityResults().stream()
+                .map(MunicipalityResult::getMunicipalityName)
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
     }
 
-    /**
-     * This method finds the election results for a specific municipality.
-     * @param election The object that holds all the election data.
-     * @param municipalityName The name of the municipality we are looking for.
-     * @return A list of results for that municipality, sorted by votes.
-     */
-    public List<KiesKring> getResultsForMunicipality(Election election, String municipalityName) {
-        // Create an empty list to hold our results
-        List<KiesKring> foundResults = new ArrayList<>();
 
-        // Loop through all municipality results in the election data
-        for (KiesKring result : election.getMunicipalityResults()) {
-            // Check if the municipality name is the one we want (ignoring case)
-            if (result.getMunicipalityName().equalsIgnoreCase(municipalityName)) {
-                // If it is, add it to our new list
-                foundResults.add(result);
-            }
-        }
+    public List<MunicipalityResult> getResultsForMunicipality(String electionId, String municipalityName) {
+        Election election = getElectionData(electionId);
 
-        // Sort the list of results based on the number of valid votes
-        foundResults.sort(Comparator.comparing(KiesKring::getValidVotes).reversed());
+        // 1. Filter for the requested municipality
+        List<MunicipalityResult> rawResults = election.getMunicipalityResults().stream()
+                .filter(r -> r.getMunicipalityName().equalsIgnoreCase(municipalityName))
+                .toList();
 
-        // Return the sorted list
-        return foundResults;
+        // 2. Aggregate the votes per party (Summing the integers)
+        Map<String, Integer> aggregatedData = rawResults.stream()
+                .collect(Collectors.groupingBy(
+                        MunicipalityResult::getPartyName,
+                        Collectors.summingInt(MunicipalityResult::getValidVotes)
+                ));
+
+        // 3. Convert back to list and sort by votes
+        return aggregatedData.entrySet().stream()
+                .map(entry -> new MunicipalityResult(municipalityName, entry.getKey(), entry.getValue()))
+                .sorted(Comparator.comparing(MunicipalityResult::getValidVotes).reversed())
+                .collect(Collectors.toList());
     }
 
     /**
-     * This function calculates seat distribution in an election using the D'Hondt method.
-     *
-     * @param results    A list of {@code NationalResult} objects, where each object contains
-     * the party's name and its total number of valid votes.
-     * @param totalSeats The total number of seats to be allocated.
-     * @return A {@code Map<String, Integer>} where the keys are the party names and the
-     * values are the number of seats allocated to each party.
+     * Calculates aggregation for Constituencies (Kieskringen).
      */
-    public Map<String, Integer> calculateSeats(List<NationalResult> results, int totalSeats) {
-        Map<String, Integer> seats = new HashMap<>();
-        Map<String, Integer> voteCounts = results.stream()
-                .collect(Collectors.toMap(NationalResult::getPartyName, NationalResult::getValidVotes));
+    public List<ConstituencyResultDto> getAggregatedConstituencyResults(String electionId) {
+        Election election = getElectionData(electionId);
+        List<Region> allRegions = election.getRegions();
+        List<MunicipalityResult> allVotes = election.getMunicipalityResults();
 
-        for (String party : voteCounts.keySet()) {
-            seats.put(party, 0); // initialize seats
-        }
+        // 1. Map Municipality Name -> Constituency Name (Parent)
+        Map<String, String> muniToConstituencyMap = new HashMap<>();
+        
+        // Find mapping: Municipality Region -> SuperiorRegionNumber -> Constituency Region -> Name
+        Map<String, Region> regionById = allRegions.stream()
+                .collect(Collectors.toMap(Region::getId, r -> r, (r1, r2) -> r1));
 
-        for (int i = 0; i < totalSeats; i++) {
-            String maxParty = null;
-            double maxValue = -1;
-            for (String party : voteCounts.keySet()) {
-                int votes = voteCounts.get(party);
-                int allocatedSeats = seats.get(party);
-                double value = votes / (allocatedSeats + 1.0); // D’Hondt formula
-                if (value > maxValue) {
-                    maxValue = value;
-                    maxParty = party;
+        for (Region r : allRegions) {
+            if ("GEMEENTE".equals(r.getCategory()) && r.getSuperiorRegionNumber() != null) {
+                Region parent = regionById.get(r.getSuperiorRegionNumber());
+                if (parent != null && "KIESKRING".equals(parent.getCategory())) {
+                    muniToConstituencyMap.put(r.getName(), parent.getName());
                 }
             }
-            if (maxParty != null) {
-                seats.put(maxParty, seats.get(maxParty) + 1);
-            }
         }
 
-        return seats;
+        // 2. Aggregate votes by Constituency -> Party
+        // Map<ConstituencyName, Map<PartyName, Votes>>
+        Map<String, Map<String, Integer>> constituencyTotals = new HashMap<>();
+
+        for (MunicipalityResult vote : allVotes) {
+            String constituencyName = muniToConstituencyMap.get(vote.getMunicipalityName());
+            if (constituencyName == null) continue; // Skip if no parent constituency found
+
+            constituencyTotals.putIfAbsent(constituencyName, new HashMap<>());
+            Map<String, Integer> partyMap = constituencyTotals.get(constituencyName);
+            partyMap.merge(vote.getPartyName(), vote.getValidVotes(), Integer::sum);
+        }
+
+        // 3. Convert to DTOs
+        List<ConstituencyResultDto> resultDtos = new ArrayList<>();
+        for (var entry : constituencyTotals.entrySet()) {
+            List<PartyResultDto> partyResults = entry.getValue().entrySet().stream()
+                    .map(e -> new PartyResultDto(e.getKey(), e.getValue()))
+                    .sorted(Comparator.comparingInt(PartyResultDto::validVotes).reversed())
+                    .toList();
+            
+            resultDtos.add(new ConstituencyResultDto(entry.getKey(), partyResults));
+        }
+        
+        // Sort constituencies alphabetically
+        resultDtos.sort(Comparator.comparing(ConstituencyResultDto::name));
+        return resultDtos;
     }
+    
+    // Simple DTO records for the service response
+    public record PartyResultDto(String partyName, int validVotes) {}
+    public record ConstituencyResultDto(String name, List<PartyResultDto> results) {}
 }
