@@ -15,7 +15,7 @@ import LevelSelector from '../components/LevelSelector.vue';
 import { getMunicipalityNames, getResultsForMunicipality } from '../service/MunicipalityElectionResults_api';
 import { getAllConstituencyResults, type ConstituencyDataDto } from '../service/ConstituencyDetails_api';
 
-// Extend PoliticalParty for sorting if needed (seats are dynamic)
+// Extend PoliticalParty for sorting
 interface SortableParty extends PoliticalParty {
   nationalSeats?: number;
 }
@@ -29,13 +29,13 @@ const error = ref(false);
 
 const selectedParties = ref<PoliticalParty[]>([]);
 const MAX_PARTIES = 5;
+const TOTAL_SEATS = 150; // Total seats in Dutch House of Representatives
 
 // --- Search & Sort State ---
 const searchQuery = ref('');
 const sortBy = ref('name-asc'); // Default sorting
 
-// --- New Level & Instance State ---
-// Removed 'Provincies' and 'Stembussen'
+// --- Level & Instance State ---
 const LEVELS = ['Nationaal', 'Kieskringen', 'Gemeentes'];
 const selectedLevel = ref(LEVELS[0]);
 
@@ -44,6 +44,9 @@ const subItems = ref<string[]>([]);
 const selectedSubItem = ref<string | null>(null);
 const subItemLoading = ref(false);
 const pendingSubItem = ref<string | null>(null); // Store the item we want to select after loading
+
+// --- Dynamic Seat Calculation State ---
+const calculatedSeats = ref<Record<string, number>>({});
 
 // --- Data Loading Logic ---
 
@@ -64,6 +67,7 @@ const prepareLevelData = async (level: string) => {
   subItems.value = [];
   selectedSubItem.value = null;
   currentResults.value = [];
+  calculatedSeats.value = {}; // Reset seats
 
   if (level === 'Nationaal') {
     await loadResultsForInstance(null);
@@ -111,6 +115,7 @@ const loadResultsForInstance = async (instanceName: string | null) => {
   currentResults.value = [];
 
   try {
+    // 1. Fetch Vote Results based on Level
     if (selectedLevel.value === 'Nationaal') {
       currentResults.value = await partyService.getNationalResults('TK2023');
     } else if (selectedLevel.value === 'Gemeentes' && instanceName) {
@@ -125,6 +130,14 @@ const loadResultsForInstance = async (instanceName: string | null) => {
         currentResults.value = match.results.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
       }
     }
+
+    // 2. Calculate Seats using the Service (D'Hondt)
+    if (currentResults.value.length > 0) {
+      calculatedSeats.value = partyService.calculateSeats(currentResults.value, TOTAL_SEATS);
+    } else {
+      calculatedSeats.value = {};
+    }
+
   } catch (err) {
     error.value = true;
     console.error('Error loading results data:', err);
@@ -166,8 +179,12 @@ const comparisonData = computed(() => {
   const selectedNames = selectedParties.value.map(p => p.name);
   return currentResults.value
     .filter(p => selectedNames.includes(p.name))
-    // Added explicit typing to resolve ESLint any error
-    .map((p: NationalResult) => ({ name: p.name, totalVotes: p.totalVotes }));
+    // Map to include calculated seats for the chart
+    .map((p: NationalResult) => ({
+      name: p.name,
+      totalVotes: p.totalVotes,
+      seats: calculatedSeats.value[p.name] || 0
+    }));
 });
 
 // --- Search & Sort Logic ---
@@ -186,8 +203,9 @@ const displayedParties = computed(() => {
     if (sortBy.value === 'name-asc') return a.name.localeCompare(b.name);
     if (sortBy.value === 'name-desc') return b.name.localeCompare(a.name);
 
-    const seatsA = a.nationalSeats || 0;
-    const seatsB = b.nationalSeats || 0;
+    // Sort by the dynamic calculated seats
+    const seatsA = calculatedSeats.value[a.name] || 0;
+    const seatsB = calculatedSeats.value[b.name] || 0;
 
     if (sortBy.value === 'seats-desc') return seatsB - seatsA;
     if (sortBy.value === 'seats-asc') return seatsA - seatsB;
@@ -344,8 +362,8 @@ const toggleParty = (party: PoliticalParty) => {
               <span class="text-sm font-medium text-gray-700 truncate group-hover:text-gray-900 transition-colors">
                 {{ party.name }}
               </span>
-              <span v-if="sortBy.includes('seats')" class="text-xs text-gray-500">
-                {{ (party as any).nationalSeats || 0 }} zetels
+              <span v-if="sortBy.includes('seats') || calculatedSeats[party.name] !== undefined" class="text-xs text-gray-500">
+                {{ calculatedSeats[party.name] || 0 }} zetels
               </span>
             </div>
 
