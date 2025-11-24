@@ -1,10 +1,10 @@
 package nl.hva.elections.controllers;
 
-import nl.hva.elections.persistence.model.Gemeente;
-import nl.hva.elections.persistence.model.Kieskring;
+import nl.hva.elections.models.Gemeente;
+import nl.hva.elections.models.Kieskring;
 import nl.hva.elections.repositories.GemeenteRepository;
 import nl.hva.elections.repositories.KieskringRepository;
-import nl.hva.elections.persistence.model.Region;
+import nl.hva.elections.models.Region;
 import nl.hva.elections.service.DutchElectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

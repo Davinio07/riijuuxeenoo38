@@ -1,4 +1,4 @@
-package nl.hva.elections.persistence.model;
+package nl.hva.elections.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;

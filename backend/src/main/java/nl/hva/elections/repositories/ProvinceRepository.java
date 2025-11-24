@@ -1,6 +1,6 @@
 package nl.hva.elections.repositories;
 
-import nl.hva.elections.persistence.model.Province;
+import nl.hva.elections.models.Province;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,10 +1,10 @@
 package nl.hva.elections.service;
 
 import jakarta.annotation.PostConstruct;
-import nl.hva.elections.persistence.model.Election;
-import nl.hva.elections.persistence.model.MunicipalityResult;
-import nl.hva.elections.persistence.model.PoliticalParty;
-import nl.hva.elections.persistence.model.Region;
+import nl.hva.elections.models.Election;
+import nl.hva.elections.models.MunicipalityResult;
+import nl.hva.elections.models.PoliticalParty;
+import nl.hva.elections.models.Region;
 import nl.hva.elections.xml.utils.PathUtils;
 import nl.hva.elections.xml.utils.xml.DutchElectionParser;
 import nl.hva.elections.xml.utils.xml.transformers.*;

@@ -1,13 +1,13 @@
 package nl.hva.elections.mover;
 
-import nl.hva.elections.persistence.model.Candidate;
-import nl.hva.elections.persistence.model.Gemeente;
-import nl.hva.elections.persistence.model.Kieskring;
+import nl.hva.elections.models.Candidate;
+import nl.hva.elections.models.Gemeente;
+import nl.hva.elections.models.Kieskring;
 import nl.hva.elections.repositories.*;
-import nl.hva.elections.persistence.model.Election;
-import nl.hva.elections.persistence.model.MunicipalityResult;
-import nl.hva.elections.persistence.model.Party;
-import nl.hva.elections.persistence.model.Region;
+import nl.hva.elections.models.Election;
+import nl.hva.elections.models.MunicipalityResult;
+import nl.hva.elections.models.Party;
+import nl.hva.elections.models.Region;
 import nl.hva.elections.service.DutchElectionService;
 import nl.hva.elections.service.NationalResultService;
 import org.springframework.boot.CommandLineRunner;

@@ -1,6 +1,6 @@
 package nl.hva.elections.repositories;
 
-import nl.hva.elections.persistence.model.Gemeente;
+import nl.hva.elections.models.Gemeente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query; // <--- Import this
 import org.springframework.stereotype.Repository;

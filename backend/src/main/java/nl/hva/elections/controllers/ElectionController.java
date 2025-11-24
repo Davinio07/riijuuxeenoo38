@@ -1,6 +1,6 @@
 package nl.hva.elections.controllers;
 
-import nl.hva.elections.persistence.model.*;
+import nl.hva.elections.models.*;
 import nl.hva.elections.repositories.CandidateRepository;
 import nl.hva.elections.repositories.PartyRepository;
 import nl.hva.elections.service.DutchElectionService;

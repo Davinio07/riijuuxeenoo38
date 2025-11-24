@@ -1,6 +1,6 @@
 package nl.hva.elections.xml.utils.xml.transformers;
 
-import nl.hva.elections.persistence.model.Party;
+import nl.hva.elections.models.Party;
 import nl.hva.elections.service.XmlPartyService.AffiliationIdentifier;
 import java.util.List;
 import java.util.stream.Collectors;

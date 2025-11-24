@@ -1,4 +1,4 @@
-package nl.hva.elections.persistence.model;
+package nl.hva.elections.models;
 
 import java.util.Objects;
 

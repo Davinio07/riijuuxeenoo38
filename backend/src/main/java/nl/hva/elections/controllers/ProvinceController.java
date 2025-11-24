@@ -1,7 +1,7 @@
 package nl.hva.elections.controllers;
 
-import nl.hva.elections.persistence.model.Kieskring;
-import nl.hva.elections.persistence.model.Province;
+import nl.hva.elections.models.Kieskring;
+import nl.hva.elections.models.Province;
 import nl.hva.elections.repositories.KieskringRepository; // Import needed
 import nl.hva.elections.repositories.ProvinceRepository;
 import org.slf4j.Logger;
