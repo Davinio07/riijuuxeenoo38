@@ -1,6 +1,27 @@
-variables:
-  DEPLOY_MKDOCS: "true"
-  DEPLOY_HIC: "false"
+# Use a Docker image that has Java 17 and Maven pre-installed
+image: maven:3.8.5-openjdk-17
 
-include:
-  - ".gitlab-ci.mkdocs.yml"
+# Define the stages of our pipeline
+stages:
+  - build
+  - test
+
+# Job 1: Build the JAR file
+build_app:
+  stage: build
+  script:
+    # We skip tests here to just check if it compiles
+    - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      # Save the JAR file so we can download it or use it later
+      - target/*.jar
+    expire_in: 1 week
+
+# Job 2: Run the Unit Tests
+test_app:
+  stage: test
+  script:
+    # We force the H2 database here using -D arguments. 
+    # This ensures tests pass even if application.properties is set to Postgres.
+    - mvn test -Dspring.datasource.url=jdbc:h2:mem:testdb -Dspring.datasource.driverClassName=org.h2.Driver -Dspring.datasource.username=sa -Dspring.datasource.password=
