@@ -9,17 +9,16 @@ build_app:
   tags:
     - hva
   script:
-    - cd elections                   # <--- Step 1: Go into the project folder
+    - cd backend                     # <--- CHANGED: Go into the 'backend' folder
     - mvn clean package -DskipTests
   artifacts:
     paths:
-      - elections/target/*.jar       # <--- Step 2: Tell GitLab where the JAR actually is
+      - backend/target/*.jar         # <--- CHANGED: Save the JAR from the correct folder
 
 test_app:
   stage: test
   tags:
     - hva
   script:
-    - cd elections                   # <--- Step 1: Go into the project folder
-    # Step 3: Run tests using H2 database settings
+    - cd backend                     # <--- CHANGED: Go into the 'backend' folder
     - mvn test -Dspring.datasource.url=jdbc:h2:mem:testdb -Dspring.datasource.driverClassName=org.h2.Driver -Dspring.datasource.username=sa -Dspring.datasource.password=
