@@ -1,15 +1,18 @@
 package nl.hva.elections.dtos;
 
-// A simple container. No @Entity, no @Table.
 public class KieskringDTO {
 
     private Integer id;
     private String name;
 
-    // Instead of the whole Province object, we just send the name!
     private String provinceName;
 
-    // Constructor to easily convert from Model -> DTO
+    /**
+     *
+     * @param id
+     * @param name
+     * @param provinceName
+     */
     public KieskringDTO(Integer id, String name, String provinceName) {
         this.id = id;
         this.name = name;

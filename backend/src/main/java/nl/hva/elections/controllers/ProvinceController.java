@@ -1,6 +1,6 @@
 package nl.hva.elections.controllers;
 
-import nl.hva.elections.dtos.KieskringDTO; // <--- 1. Import your DTO
+import nl.hva.elections.dtos.KieskringDTO;
 import nl.hva.elections.models.Kieskring;
 import nl.hva.elections.models.Province;
 import nl.hva.elections.repositories.KieskringRepository;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors; // <--- Import for stream()
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/provinces")
@@ -42,7 +42,6 @@ public class ProvinceController {
         }
     }
 
-    // --- UPDATED ENDPOINT ---
     @GetMapping("/{id}/kieskringen")
     public ResponseEntity<List<KieskringDTO>> getKieskringenByProvince(@PathVariable Integer id) {
         try {
@@ -52,10 +51,9 @@ public class ProvinceController {
                 return ResponseEntity.notFound().build();
             }
 
-            // 1. Get the Raw Entities
             List<Kieskring> entities = kieskringRepository.findByProvinceId(id);
 
-            // 2. Convert to DTOs (so the frontend gets "id" instead of "kieskring_id")
+            // Convert to DTOs (so the frontend gets "id" instead of "kieskring_id")
             List<KieskringDTO> dtos = entities.stream()
                     .map(k -> new KieskringDTO(
                             k.getKieskring_id(),    // Map kieskring_id -> id

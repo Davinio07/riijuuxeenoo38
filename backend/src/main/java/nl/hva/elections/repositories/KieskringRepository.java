@@ -6,14 +6,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional; // <--- Import this
+import java.util.Optional;
+
 
 @Repository
 public interface KieskringRepository extends JpaRepository<Kieskring, Integer> {
 
     boolean existsByName(String name);
 
-    // --- ADD THIS METHOD ---
     Optional<Kieskring> findByName(String name);
 
     List<Kieskring> findAllByOrderByNameAsc();

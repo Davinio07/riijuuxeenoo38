@@ -21,13 +21,12 @@ public class Kieskring {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
-    // --- RELATIONSHIP ---
+    // Relationship
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "province_id")
     @XmlTransient
-    @JsonBackReference // <--- ADD THIS ANNOTATION
+    @JsonBackReference
     private Province province;
-    // --- END RELATIONSHIP ---
 
     public Kieskring() {
     }
@@ -36,7 +35,7 @@ public class Kieskring {
         this.name = name;
     }
 
-    // ... Getters and Setters ...
+    // Getters and Setters
 
     public Integer getKieskring_id() { return kieskring_id; }
     public void setKieskring_id(Integer kieskring_id) { this.kieskring_id = kieskring_id; }

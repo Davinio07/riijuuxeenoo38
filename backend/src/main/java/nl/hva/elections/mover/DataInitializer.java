@@ -67,9 +67,9 @@ public class DataInitializer implements CommandLineRunner {
 
             System.out.println("Processing election: " + electionId);
 
-            // ------------------------------------------------------------------
+
+
             // 1. SYNC KIESKRINGEN (Constituencies)
-            // ------------------------------------------------------------------
             Map<String, String> kieskringXmlIdToNameMap = new HashMap<>();
             List<Region> regions = electionData.getRegions();
 
@@ -90,9 +90,7 @@ public class DataInitializer implements CommandLineRunner {
                 kieskringRepository.save(kieskring);
             }
 
-            // ------------------------------------------------------------------
-            // 2. SYNC GEMEENTEN (Municipalities)
-            // ------------------------------------------------------------------
+            // SYNC GEMEENTEN (Municipalities)
             if (gemeenteRepository.count() == 0) {
                 System.out.println("Syncing Gemeenten...");
                 List<Region> gemeenteRegions = regions.stream()
