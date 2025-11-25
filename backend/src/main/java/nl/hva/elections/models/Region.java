@@ -1,4 +1,4 @@
-package nl.hva.elections.xml.model;
+package nl.hva.elections.models;
 
 public class Region {
     private String id;

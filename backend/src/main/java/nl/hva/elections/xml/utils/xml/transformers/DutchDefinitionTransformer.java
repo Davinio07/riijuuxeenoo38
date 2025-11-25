@@ -1,7 +1,7 @@
 package nl.hva.elections.xml.utils.xml.transformers;
 
-import nl.hva.elections.xml.model.Election;
-import nl.hva.elections.xml.model.PoliticalParty;
+import nl.hva.elections.models.Election;
+import nl.hva.elections.models.PoliticalParty;
 import nl.hva.elections.xml.utils.xml.DefinitionTransformer;
 
 import java.util.Map;

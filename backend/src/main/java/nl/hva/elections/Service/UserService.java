@@ -1,4 +1,4 @@
-package nl.hva.elections.services;
+package nl.hva.elections.service;
 
 import nl.hva.elections.dtos.LoginResponse; // <-- 1. IMPORT
 import nl.hva.elections.models.User;

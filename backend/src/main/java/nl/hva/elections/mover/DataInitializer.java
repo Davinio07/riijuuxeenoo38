@@ -1,15 +1,15 @@
 package nl.hva.elections.mover;
 
-import nl.hva.elections.persistence.model.Candidate;
-import nl.hva.elections.persistence.model.Gemeente;
-import nl.hva.elections.persistence.model.Kieskring;
+import nl.hva.elections.models.Candidate;
+import nl.hva.elections.models.Gemeente;
+import nl.hva.elections.models.Kieskring;
 import nl.hva.elections.repositories.*;
-import nl.hva.elections.xml.model.Election;
-import nl.hva.elections.xml.model.KiesKring; // XML Model
-import nl.hva.elections.xml.model.Party;     // XML/JPA Model (Dual use)
-import nl.hva.elections.xml.model.Region;
-import nl.hva.elections.xml.service.DutchElectionService;
-import nl.hva.elections.xml.service.NationalResultService;
+import nl.hva.elections.models.Election;
+import nl.hva.elections.models.MunicipalityResult;
+import nl.hva.elections.models.Party;
+import nl.hva.elections.models.Region;
+import nl.hva.elections.service.DutchElectionService;
+import nl.hva.elections.service.NationalResultService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -67,9 +67,9 @@ public class DataInitializer implements CommandLineRunner {
 
             System.out.println("Processing election: " + electionId);
 
-            // ------------------------------------------------------------------
+
+
             // 1. SYNC KIESKRINGEN (Constituencies)
-            // ------------------------------------------------------------------
             Map<String, String> kieskringXmlIdToNameMap = new HashMap<>();
             List<Region> regions = electionData.getRegions();
 
@@ -90,9 +90,7 @@ public class DataInitializer implements CommandLineRunner {
                 kieskringRepository.save(kieskring);
             }
 
-            // ------------------------------------------------------------------
-            // 2. SYNC GEMEENTEN (Municipalities)
-            // ------------------------------------------------------------------
+            // SYNC GEMEENTEN (Municipalities)
             if (gemeenteRepository.count() == 0) {
                 System.out.println("Syncing Gemeenten...");
                 List<Region> gemeenteRegions = regions.stream()
@@ -123,10 +121,9 @@ public class DataInitializer implements CommandLineRunner {
                 System.out.println("Syncing Parties & Results for " + electionId + "...");
 
                 List<Party> nationalResults = electionData.getNationalResults();
-                List<KiesKring> municipalityResults = electionData.getKieskringResults();
+                List<MunicipalityResult> municipalityResults = electionData.getMunicipalityResults();
                 Map<String, Integer> aggregatedVotes = new HashMap<>();
 
-                // Determine best source for votes
                 boolean useNationalResultsDirectly = false;
                 if (nationalResults != null && !nationalResults.isEmpty()) {
                     long distinctNames = nationalResults.stream().map(Party::getName).distinct().count();
@@ -138,7 +135,7 @@ public class DataInitializer implements CommandLineRunner {
                             .collect(Collectors.toMap(Party::getName, Party::getVotes, Integer::sum));
                 } else if (municipalityResults != null && !municipalityResults.isEmpty()) {
                     aggregatedVotes = municipalityResults.stream()
-                            .collect(Collectors.toMap(KiesKring::getPartyName, KiesKring::getValidVotes, Integer::sum));
+                            .collect(Collectors.toMap(MunicipalityResult::getPartyName, MunicipalityResult::getValidVotes, Integer::sum));
                 } else {
                     aggregatedVotes = (nationalResults == null) ? new HashMap<>() :
                             nationalResults.stream().collect(Collectors.toMap(Party::getName, Party::getVotes, Integer::sum));
@@ -176,28 +173,37 @@ public class DataInitializer implements CommandLineRunner {
                 System.out.println("Parties already exist for " + electionId + ". Skipping.");
             }
 
-            // ------------------------------------------------------------------
+// ------------------------------------------------------------------
             // 4. SYNC CANDIDATES
             // ------------------------------------------------------------------
             if (candidateRepository.count() == 0) {
                 System.out.println("Syncing Candidates for " + electionId + "...");
                 AtomicInteger candidatesSaved = new AtomicInteger(0);
 
-                for (nl.hva.elections.xml.model.Candidate xmlCandidate : electionData.getCandidates()) {
-                    String partyName = xmlCandidate.getPartyName();
+                // FIX 1: Use 'Candidate', not the full 'xml.model...' path.
+                // This uses the import at the top of the file.
+                for (Candidate candidate : electionData.getCandidates()) {
+
+                    // Use the helper getter we added to the model earlier
+                    String partyName = candidate.getTempPartyName();
+
                     if (partyName == null || partyName.isBlank()) continue;
 
                     String cleanName = partyName.trim();
-                    String fullName = (xmlCandidate.getFirstName() + " " + xmlCandidate.getLastName()).trim();
 
+                    // We already have the candidate object with data!
+                    // We just need to attach the Party relationship and save it.
                     partyRepository.findByNameAndElectionId(cleanName, electionId).ifPresent(party -> {
-                        if (!candidateRepository.existsByNameAndPartyId(fullName, party.getId())) {
-                            Candidate c = new Candidate();
-                            c.setName(fullName);
-                            c.setResidence(xmlCandidate.getLocality());
-                            c.setGender(xmlCandidate.getGender());
-                            c.setParty(party);
-                            candidateRepository.save(c);
+
+                        // Check if this specific person + party combo exists in DB
+                        if (!candidateRepository.existsByNameAndPartyId(candidate.getName(), party.getId())) {
+
+                            // FIX 2: Do NOT create 'new Candidate()'.
+                            // The 'candidate' variable is already the object we created in the Transformer.
+                            // Just attach the party and save.
+                            candidate.setParty(party);
+
+                            candidateRepository.save(candidate);
                             candidatesSaved.incrementAndGet();
                         }
                     });

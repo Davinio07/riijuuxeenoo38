@@ -67,7 +67,7 @@
               <ul v-else-if="province.kieskringen && province.kieskringen.length > 0" class="space-y-3">
                 <li
                   v-for="kieskring in province.kieskringen"
-                  :key="kieskring.kieskring_id"
+                  :key="kieskring.id"
                   class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm transition-all"
                   :class="{ 'border-blue-300 ring-1 ring-blue-100': kieskring.isOpen }"
                 >
@@ -155,8 +155,8 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   getProvinces,
-  getKieskringenForProvince,
-  getGemeentesForKieskring,
+  getConstituenciesForProvince,
+  getMunicipalitiesForConstituency,
   type ProvinceDto,
   type KieskringDto,
   type GemeenteDto
@@ -213,7 +213,7 @@ async function toggleProvince(province: ProvinceUI) {
   if (province.isOpen && !province.kieskringen) {
     try {
       province.isLoadingChildren = true;
-      const results = await getKieskringenForProvince(province.province_id);
+      const results = await getConstituenciesForProvince(province.province_id);
       province.kieskringen = results.map(k => ({ ...k, isOpen: false }));
     } catch (err) {
       console.error(`Failed to load kieskringen for ${province.name}`, err);
@@ -228,7 +228,8 @@ async function toggleKieskring(kieskring: KieskringUI) {
   if (kieskring.isOpen && !kieskring.gemeentes) {
     try {
       kieskring.isLoadingGemeentes = true;
-      const results = await getGemeentesForKieskring(kieskring.kieskring_id);
+      // Update this line to use .id
+      const results = await getMunicipalitiesForConstituency(kieskring.id);
       kieskring.gemeentes = results;
     } catch (err) {
       console.error(`Failed to load gemeentes for ${kieskring.name}`, err);

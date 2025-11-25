@@ -1,7 +1,7 @@
 package nl.hva.elections.OnStartUp;
 
 import nl.hva.elections.repositories.ProvinceRepository;
-import nl.hva.elections.persistence.model.Province;
+import nl.hva.elections.models.Province;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@Order(1) // <--- ADD THIS: Forces this to run before DataInitializer
+@Order(1)
 public class DataSeeder implements ApplicationRunner {
 
     private final ProvinceRepository provinceRepository;
@@ -21,6 +21,11 @@ public class DataSeeder implements ApplicationRunner {
         this.provinceRepository = provinceRepository;
     }
 
+    /**
+     *
+     * @param args
+     * @throws Exception
+     */
     @Override
     public void run(ApplicationArguments args) throws Exception {
         if (provinceRepository.count() == 0) {

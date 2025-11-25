@@ -6,9 +6,8 @@ export interface GemeenteDto {
 }
 
 export interface KieskringDto {
-  kieskring_id: number;
+  id: number; // <--- Changed from kieskring_id
   name: string;
-  // We extend this to hold the children
   gemeentes?: GemeenteDto[];
 }
 
@@ -27,15 +26,15 @@ export async function getProvinces(): Promise<ProvinceDto[]> {
 }
 
 /**
- * Fetches the kieskringen for a specific province ID.
+ * Fetches the constituencies (kieskringen) for a specific province ID.
  */
-export async function getKieskringenForProvince(provinceId: number): Promise<KieskringDto[]> {
+export async function getConstituenciesForProvince(provinceId: number): Promise<KieskringDto[]> {
   return apiClient<KieskringDto[]>(`/provinces/${provinceId}/kieskringen`);
 }
 
 /**
- * Fetches the gemeentes for a specific kieskring ID.
+ * Fetches the municipalities (gemeentes) for a specific constituency ID.
  */
-export async function getGemeentesForKieskring(kieskringId: number): Promise<GemeenteDto[]> {
-  return apiClient<GemeenteDto[]>(`/kieskring/${kieskringId}/gemeentes`);
+export async function getMunicipalitiesForConstituency(constituencyId: number): Promise<GemeenteDto[]> {
+  return apiClient<GemeenteDto[]>(`/constituencies/${constituencyId}/municipalities`);
 }

@@ -1,4 +1,4 @@
-package nl.hva.elections.xml.model;
+package nl.hva.elections.models;
 
 import java.util.Objects;
 
