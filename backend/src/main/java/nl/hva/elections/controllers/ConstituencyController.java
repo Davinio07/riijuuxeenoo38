@@ -1,5 +1,6 @@
 package nl.hva.elections.controllers;
 
+import nl.hva.elections.dtos.KieskringDTO;
 import nl.hva.elections.models.Gemeente;
 import nl.hva.elections.models.Kieskring;
 import nl.hva.elections.repositories.GemeenteRepository;
@@ -33,8 +34,8 @@ public class ConstituencyController {
     private final GemeenteRepository gemeenteRepository;
     private final DutchElectionService electionService;
 
-    public ConstituencyController(KieskringRepository kieskringRepository, 
-                                  GemeenteRepository gemeenteRepository, 
+    public ConstituencyController(KieskringRepository kieskringRepository,
+                                  GemeenteRepository gemeenteRepository,
                                   DutchElectionService electionService) {
         this.kieskringRepository = kieskringRepository;
         this.gemeenteRepository = gemeenteRepository;
@@ -55,6 +56,33 @@ public class ConstituencyController {
             return ResponseEntity.ok(names);
         } catch (Exception e) {
             logger.error("Error fetching Constituency names: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    // --- NEW METHOD USING DTO ---
+    @GetMapping("/db")
+    public ResponseEntity<List<KieskringDTO>> getAllConstituenciesFromDB() {
+        try {
+            logger.info("Fetching all Constituencies as DTOs from database.");
+
+            // 1. Get the raw Entities (Models)
+            List<Kieskring> entities = kieskringRepository.findAllByOrderByNameAsc();
+
+            // 2. Convert Entities to DTOs
+            List<KieskringDTO> dtos = entities.stream()
+                    .map(k -> new KieskringDTO(
+                            k.getKieskring_id(),
+                            k.getName(),
+                            // Handle null province just in case
+                            k.getProvince() != null ? k.getProvince().getName() : "Unknown"
+                    ))
+                    .collect(Collectors.toList());
+
+            // 3. Send the DTOs to the frontend
+            return ResponseEntity.ok(dtos);
+
+        } catch (Exception e) {
+            logger.error("Error fetching Constituency DTOs: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

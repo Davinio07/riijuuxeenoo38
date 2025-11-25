@@ -67,7 +67,7 @@
               <ul v-else-if="province.kieskringen && province.kieskringen.length > 0" class="space-y-3">
                 <li
                   v-for="kieskring in province.kieskringen"
-                  :key="kieskring.kieskring_id"
+                  :key="kieskring.id"
                   class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm transition-all"
                   :class="{ 'border-blue-300 ring-1 ring-blue-100': kieskring.isOpen }"
                 >
@@ -228,7 +228,8 @@ async function toggleKieskring(kieskring: KieskringUI) {
   if (kieskring.isOpen && !kieskring.gemeentes) {
     try {
       kieskring.isLoadingGemeentes = true;
-      const results = await getMunicipalitiesForConstituency(kieskring.kieskring_id);
+      // Update this line to use .id
+      const results = await getMunicipalitiesForConstituency(kieskring.id);
       kieskring.gemeentes = results;
     } catch (err) {
       console.error(`Failed to load gemeentes for ${kieskring.name}`, err);

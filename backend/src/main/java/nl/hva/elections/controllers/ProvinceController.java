@@ -1,8 +1,9 @@
 package nl.hva.elections.controllers;
 
+import nl.hva.elections.dtos.KieskringDTO; // <--- 1. Import your DTO
 import nl.hva.elections.models.Kieskring;
 import nl.hva.elections.models.Province;
-import nl.hva.elections.repositories.KieskringRepository; // Import needed
+import nl.hva.elections.repositories.KieskringRepository;
 import nl.hva.elections.repositories.ProvinceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors; // <--- Import for stream()
 
 @RestController
 @RequestMapping("/api/provinces")
@@ -21,9 +23,8 @@ public class ProvinceController {
 
     private static final Logger logger = LoggerFactory.getLogger(ProvinceController.class);
     private final ProvinceRepository provinceRepository;
-    private final KieskringRepository kieskringRepository; // Inject this
+    private final KieskringRepository kieskringRepository;
 
-    // Update constructor to include KieskringRepository
     public ProvinceController(ProvinceRepository provinceRepository, KieskringRepository kieskringRepository) {
         this.provinceRepository = provinceRepository;
         this.kieskringRepository = kieskringRepository;
@@ -41,19 +42,29 @@ public class ProvinceController {
         }
     }
 
-    // --- NEW ENDPOINT ---
+    // --- UPDATED ENDPOINT ---
     @GetMapping("/{id}/kieskringen")
-    public ResponseEntity<List<Kieskring>> getKieskringenByProvince(@PathVariable Integer id) {
+    public ResponseEntity<List<KieskringDTO>> getKieskringenByProvince(@PathVariable Integer id) {
         try {
             logger.info("Fetching kieskringen for province ID: {}", id);
 
-            // Optional: Check if province exists first, but not strictly necessary for a simple fetch
             if (!provinceRepository.existsById(id)) {
                 return ResponseEntity.notFound().build();
             }
 
-            List<Kieskring> kieskringen = kieskringRepository.findByProvinceId(id);
-            return ResponseEntity.ok(kieskringen);
+            // 1. Get the Raw Entities
+            List<Kieskring> entities = kieskringRepository.findByProvinceId(id);
+
+            // 2. Convert to DTOs (so the frontend gets "id" instead of "kieskring_id")
+            List<KieskringDTO> dtos = entities.stream()
+                    .map(k -> new KieskringDTO(
+                            k.getKieskring_id(),    // Map kieskring_id -> id
+                            k.getName(),
+                            k.getProvince().getName()
+                    ))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(dtos);
         } catch (Exception e) {
             logger.error("Error fetching kieskringen for province {}: {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

@@ -6,9 +6,8 @@ export interface GemeenteDto {
 }
 
 export interface KieskringDto {
-  kieskring_id: number;
+  id: number; // <--- Changed from kieskring_id
   name: string;
-  // We extend this to hold the children
   gemeentes?: GemeenteDto[];
 }
 

@@ -1,6 +1,6 @@
 package nl.hva.elections.models;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference; // <--- Import this
+import com.fasterxml.jackson.annotation.JsonIgnore; // <--- Import this
 import jakarta.persistence.*;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -24,7 +24,7 @@ public class Province {
 
     // --- RELATIONSHIP ---
     @OneToMany(mappedBy = "province", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference // <--- ADD THIS ANNOTATION
+    @JsonIgnore  // <--- CHANGE THIS. Prevents the list from being sent automatically.
     private List<Kieskring> kieskringen = new ArrayList<>();
     // --- END RELATIONSHIP ---
 
@@ -37,7 +37,6 @@ public class Province {
     }
 
     // ... Getters and Setters ...
-
     public Integer getProvince_id() { return province_id; }
     public void setProvince_id(Integer province_id) { this.province_id = province_id; }
 
@@ -46,9 +45,4 @@ public class Province {
 
     public List<Kieskring> getKieskringen() { return kieskringen; }
     public void setKieskringen(List<Kieskring> kieskringen) { this.kieskringen = kieskringen; }
-
-    @Override
-    public String toString() {
-        return "Province{province_id=" + province_id + ", name='" + name + '\'' + '}';
-    }
 }
