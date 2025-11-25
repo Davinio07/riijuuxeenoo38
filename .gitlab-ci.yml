@@ -1,4 +1,5 @@
-image: maven:3.8.5-openjdk-17
+# CHANGED: We are now using a newer image that has Java 21
+image: maven:3.9.6-eclipse-temurin-21
 
 stages:
   - build
@@ -7,17 +8,19 @@ stages:
 build_app:
   stage: build
   tags:
-    - hva       # <--- The magic key your school requires!
+    - hva
   script:
+    - cd backend
     - mvn clean package -DskipTests
   artifacts:
     paths:
-      - target/*.jar
+      - backend/target/*.jar
 
 test_app:
   stage: test
   tags:
-    - hva       # <--- Must be added here too
+    - hva
   script:
-    # We force H2 memory database so tests pass without a real Postgres server
+    - cd backend
+    # H2 database settings are still good here
     - mvn test -Dspring.datasource.url=jdbc:h2:mem:testdb -Dspring.datasource.driverClassName=org.h2.Driver -Dspring.datasource.username=sa -Dspring.datasource.password=
