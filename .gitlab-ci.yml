@@ -1,4 +1,4 @@
-image: maven:3.9.6-openjdk-21
+image: maven:3.8.5-openjdk-17
 
 stages:
   - build
@@ -24,23 +24,21 @@ test_app:
     - cd backend
     - mvn test -Dspring.datasource.url=jdbc:h2:mem:testdb -Dspring.datasource.driverClassName=org.h2.Driver -Dspring.datasource.username=sa -Dspring.datasource.password=
 
-pages: # <--- NEW JOB for documentation deployment
+pages:
   stage: deploy
   tags:
     - hva
   script:
     - echo "Deploying pre-generated Javadoc from docs/javadoc..."
-    # 1. Create the required 'public' directory for GitLab Pages
     - mkdir -p public
-    # 2. Copy the content of the existing Javadoc folder into 'public'
-    #    The documentation files are already at the project root level.
-    - cp -r docs/javadoc/* public/ # <--- This line handles the copy
+    - cp -r docs/javadoc/* public/
 
   artifacts:
     paths:
-      - public # This folder contains the deployed Javadoc HTML files
+      - public
     expire_in: 1 week
 
-  # Only run this job when pushing to the main branch
+  # Change this rule to include your current branch for testing
   only:
-    - main # Or 'master', depending on your primary branch name
+    - main
+    - javadoc # <--- ADDED: Allow this job to run on the 'javadoc' branch for testing
