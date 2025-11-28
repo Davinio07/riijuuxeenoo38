@@ -67,19 +67,19 @@ title Storypoints Completed (Sprint 4)
 
 ## 1\. Optimize Code Review Speed
 
-**Specific:** No Merge Request (MR) should remain open/unreviewed for more than 24 hours.
-**Measurable:** GitLab logs show average time-to-merge is under 24 hours.
-**Achievable:** By prioritizing reviews explicitly during daily stand-ups.
-**Relevant:** Prevents the "bottleneck" issue identified in the retro.
-**Time-bound:** End of Sprint 5.
+**Specific:** No Merge Request (MR) should remain open/unreviewed for more than 24 hours. <br>
+**Measurable:** GitLab logs show average time-to-merge is under 24 hours. <br>
+**Achievable:** By prioritizing reviews explicitly during daily stand-ups. <br>
+**Relevant:** Prevents the "bottleneck" issue identified in the retro. <br>
+**Time-bound:** End of Sprint 5. <br>
 
 ## 2\. Increase Test Coverage
 
-**Specific:** Every new User Story must include at least one corresponding Unit Test or Integration Test.
-**Measurable:** Test coverage report shows an increase of at least 10% by end of sprint.
-**Achievable:** We have learned the basics of testing in Sprint 4.
-**Relevant:** Ensures stability before the final product delivery.
-**Time-bound:** Continuous throughout Sprint 5.
+**Specific:** Every new User Story must include at least one corresponding Unit Test or Integration Test. <br>
+**Measurable:** Test coverage report shows an increase of at least 10% by end of sprint. <br>
+**Achievable:** We have learned the basics of testing in Sprint 4. <br>
+**Relevant:** Ensures stability before the final product delivery. <br>
+**Time-bound:** Continuous throughout Sprint 5. <br>
 
 -----
 
@@ -155,15 +155,14 @@ I focused heavily on my goal: committing 5 times a day. I didn't always hit 5, b
 
 ## Baran's Reflection
 
-I stuck to my goal of prioritizing "Top 3 Tasks." This stopped me from context-switching too much. I finished my main feature (User Profile UI) fully before helping others. I also felt the communication with the PO went well, and I helped facilitate that meeting.
+I stuck to my goals of focusing on one task at a time and continously updating my team on my status. This improved my effiency. While I did not have time to finish the zipcode feature, I did add the seats feature to the different layers on the website. The reason for not being able to finish the zipcode feature was because I instead focused on improving our project's performance. Communication with the PO did not go well on my front, so I will need to work on that.
 
 **TOP**
-
 * Excellent prioritization; finished tasks fully before moving on.
-* Helped bridge the gap between the team and the Product Owner.
-* Improved work-life balance by sticking to the schedule.
+* Used merge requests more frequently.
+* Clear focus on performance improvements that benefitted the entire project.
 
 **TIP**
-
-* I can improve by taking on more "Infrastructure" tasks (like CI/CD) rather than just UI.
-* Ensure that when I finish a task, I immediately check the "Review" column to unblock others.
+* Improve by taking on more "Infrastructure" tasks (like CI/CD) rather than just UI and features.
+* Communicate more with Suleyman, who often works with the same data/files.
+* Improve communication with the PO.
