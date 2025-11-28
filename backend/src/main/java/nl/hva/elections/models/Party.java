@@ -1,8 +1,12 @@
 package nl.hva.elections.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.xml.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List; // Added import for List
 
 @Entity
 @XmlRootElement(name = "Party")
@@ -37,6 +41,11 @@ public class Party {
     @JsonProperty("votePercentage")
     private double percentage;
 
+
+    @OneToMany(mappedBy = "party", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore // Prevents infinite recursion (Party -> Candidate -> Party) in API serialization
+    private List<Candidate> candidates = new ArrayList<>();
+
     /** Default constructor for JPA and JAXB. */
     public Party() {}
 
@@ -64,6 +73,10 @@ public class Party {
 
     public double getPercentage() { return percentage; }
     public void setPercentage(double percentage) { this.percentage = percentage; }
+
+    // NEW: Getters and setters for candidates
+    public List<Candidate> getCandidates() { return candidates; }
+    public void setCandidates(List<Candidate> candidates) { this.candidates = candidates; }
 
     @Override
     public String toString() {

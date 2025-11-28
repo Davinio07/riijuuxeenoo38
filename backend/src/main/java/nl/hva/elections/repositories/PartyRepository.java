@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-
 public interface PartyRepository extends JpaRepository<Party, Long> {
     /**
      * Finds a party entity by its registered name and election identifier.
@@ -27,6 +26,5 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
      */
     List<Party> findByElectionId(String electionId);
 
-    Optional<Party> findById(int id);
-    
+
 }
