@@ -1,5 +1,5 @@
 // Bestand: elections/admin/AdminService.java
-package nl.hva.elections.service;
+package nl.hva.elections.Service;
 
 import nl.hva.elections.repositories.CandidateRepository;
 import nl.hva.elections.repositories.PartyRepository;

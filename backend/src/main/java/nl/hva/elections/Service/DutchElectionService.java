@@ -1,4 +1,4 @@
-package nl.hva.elections.service;
+package nl.hva.elections.Service;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;

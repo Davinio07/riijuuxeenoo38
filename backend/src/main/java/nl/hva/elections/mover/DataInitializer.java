@@ -8,7 +8,7 @@ import nl.hva.elections.models.Election;
 import nl.hva.elections.models.MunicipalityResult;
 import nl.hva.elections.models.Party;
 import nl.hva.elections.models.Region;
-import nl.hva.elections.service.DutchElectionService;
+import nl.hva.elections.Service.DutchElectionService;
 import nl.hva.elections.Service.NationalResultService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;

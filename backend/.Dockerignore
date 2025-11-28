@@ -1,0 +1,7 @@
+target/
+.git/
+.idea/
+**/*.xml  # Negeert XML bestanden (tenzij je ze echt nodig hebt voor config, wees hier voorzichtig mee)
+**/TK2023* # Negeert mappen die beginnen met TK2023
+**/TK2021* # Negeert mappen die beginnen met TK2021
+**/Verkiezingsuitslag*
