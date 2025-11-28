@@ -54,11 +54,11 @@ graph TD
 ```mermaid
 pie
 title Storypoints Completed (Sprint 4)
-"Zarko" : 20
-"Baran" : 20
-"Davinio" : 20
-"Matin" : 20
-"Suleyman" : 20
+"Zarko" : 22
+"Baran" : 10
+"Davinio" : 23
+"Matin" : 16
+"Suleyman" : 17
 ```
 
 -----
