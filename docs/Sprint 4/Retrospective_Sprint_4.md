@@ -3,7 +3,7 @@
 ## The "Sailboat" Retro Drawing
 
 ![ss](./images/retro-pic.jpg)
-![mermaid](./images/mermaid-sprint4.jpg)
+![mermaid](../Sprint%204/mermaid-sprint4.png)
 
 -----
 
