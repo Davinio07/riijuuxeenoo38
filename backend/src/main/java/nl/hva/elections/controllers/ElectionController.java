@@ -3,7 +3,7 @@ package nl.hva.elections.controllers;
 import nl.hva.elections.models.*;
 import nl.hva.elections.repositories.CandidateRepository;
 import nl.hva.elections.repositories.PartyRepository;
-import nl.hva.elections.service.DutchElectionService;
+import nl.hva.elections.Service.DutchElectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

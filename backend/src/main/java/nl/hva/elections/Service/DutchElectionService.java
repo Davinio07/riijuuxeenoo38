@@ -1,4 +1,4 @@
-package nl.hva.elections.service;
+package nl.hva.elections.Service;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -35,10 +35,10 @@ public class DutchElectionService {
     private static final Logger logger = LoggerFactory.getLogger(DutchElectionService.class);
 
     // List of elections to load at startup
-    private static final List<String> ELECTION_IDS_TO_LOAD = List.of("TK2023", "TK2021");
+    private static final List<String> ELECTION_IDS_TO_LOAD = List.of("TK2025", "TK2023", "TK2021");
 
     // The default ID
-    private static final String DEFAULT_ELECTION_ID = "TK2023";
+    private static final String DEFAULT_ELECTION_ID = "TK2025";
 
     // The cache for the parsed data
     private final Map<String, Election> electionCache = new ConcurrentHashMap<>();
