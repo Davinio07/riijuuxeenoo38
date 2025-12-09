@@ -2,39 +2,7 @@
 
 ## The "Sailboat" Retro Drawing
 
-```mermaid
-graph TD
-    subgraph " "
-    A((⛵ THE BOAT)) -->|Represents| B[The Team & Scope]
-    end
-    
-    subgraph " "
-    C((🌬️ WIND)) -->|Represents| D[What is pushing us forward?]
-    D -.-> D1[Better PO Contact]
-    D -.-> D2[Automated Testing]
-    end
-    
-    subgraph " "
-    E((⚓ ANCHORS)) -->|Represents| F[What is slowing us down?]
-    F -.-> F1[Waiting for Code Reviews]
-    F -.-> F2[Complex Docker Configs]
-    end
-    
-    subgraph " "
-    G((🏝️ ISLAND)) -->|Represents| H[The Goal / Definition of Done]
-    end
-    
-    subgraph " "
-    I((🪨 ROCKS)) -->|Represents| J[Risks / Future Obstacles]
-    J -.-> J1[Merge Conflicts near deadline]
-    end
-    
-    style A fill:#f9f,stroke:#333
-    style C fill:#ccf,stroke:#333
-    style E fill:#f99,stroke:#333
-    style G fill:#9f9,stroke:#333
-    style I fill:#ccc,stroke:#333
-```
+
 
 -----
 
