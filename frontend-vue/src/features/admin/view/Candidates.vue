@@ -8,7 +8,7 @@ import {
 } from '@/features/admin/service/ScaledElectionResults_api.ts';
 
 // --- EXISTING STATE ---
-const electionId = ref<'TK2023' | 'TK2024'>('TK2023');
+const electionId = ref<'TK2023' | 'TK2025'>('TK2025');
 const loading = ref(false);
 const error = ref('');
 const candidates = ref<CandidateData[]>([]);

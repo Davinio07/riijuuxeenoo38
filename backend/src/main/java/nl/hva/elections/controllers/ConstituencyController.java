@@ -6,7 +6,7 @@ import nl.hva.elections.models.Kieskring;
 import nl.hva.elections.repositories.GemeenteRepository;
 import nl.hva.elections.repositories.KieskringRepository;
 import nl.hva.elections.models.Region;
-import nl.hva.elections.service.DutchElectionService;
+import nl.hva.elections.Service.DutchElectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

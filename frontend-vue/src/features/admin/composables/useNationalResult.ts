@@ -6,7 +6,7 @@ import { getPartyColor } from '@/features/admin/service/partyService' // NEW IMP
 
 export function useNationalResult() {
   // --- State ---
-  const availableElections = ref(['TK2023', 'TK2021'])
+  const availableElections = ref(['TK2025', 'TK2023', 'TK2021'])
   const selectedElection = ref(availableElections.value[0])
   const nationalResults = ref<{ partyName: string; validVotes: number }[]>([])
   const nationalSeats = ref<Record<string, number>>({})

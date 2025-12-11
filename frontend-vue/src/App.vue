@@ -3,7 +3,7 @@
     <header class="app-header">
       <div class="header-content">
         <router-link to="/" class="logo-link">
-          <h1 class="app-title">Verkiezingen TK2023</h1>
+          <h1 class="app-title">Verkiezingen TK2025</h1>
         </router-link>
 
         <nav class="main-nav">
