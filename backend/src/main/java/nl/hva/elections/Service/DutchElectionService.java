@@ -8,7 +8,6 @@ import nl.hva.elections.models.Election;
 import nl.hva.elections.models.MunicipalityResult;
 import nl.hva.elections.models.PoliticalParty;
 import nl.hva.elections.models.Region;
-import nl.hva.elections.xml.utils.PathUtils;
 import nl.hva.elections.xml.utils.xml.DutchElectionParser;
 import nl.hva.elections.xml.utils.xml.transformers.*;
 import org.slf4j.Logger;
@@ -19,8 +18,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -63,9 +60,6 @@ public class DutchElectionService {
         logger.info("Finished caching all XML election data.");
     }
 
-    /**
-     * Parses the XML data using the DutchElectionParser.
-     */
     /**
      * Parses the XML data using the DutchElectionParser.
      */
