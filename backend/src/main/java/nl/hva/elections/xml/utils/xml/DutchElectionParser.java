@@ -3,7 +3,6 @@ package nl.hva.elections.xml.utils.xml;
 import nl.hva.elections.xml.utils.PathUtils;
 import nl.hva.elections.xml.utils.xml.transformers.CompositeVotesTransformer;
 import nl.hva.elections.xml.utils.xml.transformers.DutchRegionTransformer;
-import nl.hva.elections.xml.utils.xml.transformers.DutchMunicipalityTransformer; // Don't forget this import
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -18,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Processes the XML data files for the Dutch elections. It is completely model agnostic. This means that it
@@ -64,8 +64,7 @@ public class DutchElectionParser {
     // TODO See the DutchElectionService for some refactoring hints for this constructor.
     public DutchElectionParser(DefinitionTransformer definitionTransformer,
                                CandidateTransformer candidateTransformer,
-                               DutchRegionTransformer dutchRegionTransformer, 
-                               VotesTransformer resultTransformer,
+                               DutchRegionTransformer dutchRegionTransformer, VotesTransformer resultTransformer,
                                VotesTransformer nationalVotesTransformer,
                                VotesTransformer constituencyVotesTransformer,
                                VotesTransformer municipalityVotesTransformer) {
@@ -101,32 +100,29 @@ public class DutchElectionParser {
                         resultTransformer,
                         nationalVotesTransformer,
                         constituencyVotesTransformer,
-                        municipalityVotesTransformer 
+                        municipalityVotesTransformer
                 )
         );
 
-        // 2. Candidates
+        // These lines handle the remaining files and use the correct EMLHandler constructors.
         parseFiles(folderName, "Kandidatenlijsten_%s".formatted(electionId), new EMLHandler(candidateTransformer));
-        
-        // 3. Results (Seats)
         parseFiles(folderName, "Resultaat_%s".formatted(electionId), new EMLHandler(resultTransformer));
 
-        // 4. National Total 
-        // We use a Composite to send data to both National and Municipality transformers
-        VotesTransformer nationalComposite = new CompositeVotesTransformer(nationalVotesTransformer, municipalityVotesTransformer);
-        parseFiles(folderName, "Totaaltelling_%s".formatted(electionId), new EMLHandler(nationalComposite));
+        // Create a composite transformer that sends Totaaltelling data to BOTH national and municipality transformers.
+        VotesTransformer compositeTransformer = new CompositeVotesTransformer(nationalVotesTransformer, municipalityVotesTransformer);
+        parseFiles(folderName, "Totaaltelling_%s".formatted(electionId), new EMLHandler(compositeTransformer));
 
-        // 5. Constituency Files (Kieskringen)
-        // This file contains BOTH aggregated totals (constituency) AND detailed results (municipalities).
-        // We used the Composite transformer to send data to both.
-        VotesTransformer kieskringComposite = new CompositeVotesTransformer(constituencyVotesTransformer, municipalityVotesTransformer);
-        parseFiles(folderName, "Telling_%s_kieskring".formatted(electionId), new EMLHandler(kieskringComposite));
+        // Parse the kieskring files.
+        parseFiles(folderName, "Telling_%s_kieskring".formatted(electionId), new EMLHandler(constituencyVotesTransformer));
     }
 
     private void parseFiles(String folderName, String fileFilter, EMLHandler emlHandler) throws IOException, ParserConfigurationException, SAXException {
         List<Path> files = PathUtils.findFilesToScan(folderName, fileFilter);
         files.sort(Comparator.comparing(Path::getFileName));
         for (Path electionFile : files) {
+            // Replaced the System.out.printf with a logger.
+            // This is cleaner and gives us timestamps and log levels for free.
+            logger.info("Processing file: {}", electionFile);
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(electionFile.toString()), 64 * 1024)) {
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 factory.setNamespaceAware(true);
@@ -134,6 +130,7 @@ public class DutchElectionParser {
                 emlHandler.setFileName(electionFile.toString());
                 parser.parse(bis, emlHandler);
             }
+            logger.info("Successfully processed file: {}", electionFile);
         }
     }
 }
