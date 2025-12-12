@@ -5,14 +5,12 @@ public class Region {
     private String name;
     private String category;
     private String superiorCategory;
-    private String superiorRegionNumber; // <--- ADD THIS FIELD
 
-    public Region(String id, String name, String category, String superiorCategory, String superiorRegionNumber) {
+    public Region(String id, String name, String category, String superiorCategory) {
         this.id = id;
         this.name = name;
         this.category = category;
         this.superiorCategory = superiorCategory;
-        this.superiorRegionNumber = superiorRegionNumber;
     }
 
     // Getters & Setters
@@ -27,7 +25,4 @@ public class Region {
 
     public String getSuperiorCategory() { return superiorCategory; }
     public void setSuperiorCategory(String superiorCategory) { this.superiorCategory = superiorCategory; }
-
-    public String getSuperiorRegionNumber() { return superiorRegionNumber; } // <--- ADD GETTER
-    public void setSuperiorRegionNumber(String superiorRegionNumber) { this.superiorRegionNumber = superiorRegionNumber; }
 }

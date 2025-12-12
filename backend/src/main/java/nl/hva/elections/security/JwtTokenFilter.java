@@ -14,12 +14,23 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * @class JwtTokenFilter
+ * @description This is our custom filter.
+ * It extends OncePerRequestFilter, which means it runs once for every single
+ * request that comes into our application.
+ */
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
 
+    /**
+     * Constructor so Spring can give us the tools we need.
+     * @param jwtTokenProvider The helper class to read and check tokens.
+     * @param userDetailsService Our UserService, which Spring knows how to find.
+     */
     @Autowired
     public JwtTokenFilter(JwtTokenProvider jwtTokenProvider, UserDetailsService userDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
@@ -27,53 +38,34 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Dit is de hoofdfilterlogica die voor elke request wordt uitgevoerd.
-     * Het bevat nu robuuste logica om de token uit de Authorization header of de WebSocket query parameter te halen.
+     * This is the main method of the filter. All API requests go through here first.
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 1. Probeer de token uit de Authorization header te halen (standaard REST)
+        // 1. Try to get the token from the request's "Authorization" header.
         String token = jwtTokenProvider.resolveToken(request);
 
-        // 2. FIX: Probeer de token uit de query parameter te halen (gebruikt door STOMP/WebSocket)
-        if (token == null && request.getQueryString() != null) {
-            String queryString = request.getQueryString();
-            String tokenParam = "token=";
-
-            // Zoek naar "token=" in de query string
-            int tokenStartIndex = queryString.indexOf(tokenParam);
-            if (tokenStartIndex != -1) {
-                // Start index na "token="
-                String tokenSegment = queryString.substring(tokenStartIndex + tokenParam.length());
-
-                // Stop bij de volgende '&' of het einde van de string
-                int tokenEndIndex = tokenSegment.indexOf('&');
-                if (tokenEndIndex != -1) {
-                    token = tokenSegment.substring(0, tokenEndIndex);
-                } else {
-                    token = tokenSegment; // Token is het laatste item in de query
-                }
-            }
-        }
-
-        // 3. Controleer en authenticeer de gebruiker
+        // 2. Check if we found a token AND if it's valid.
         if (token != null && jwtTokenProvider.validateToken(token)) {
-
+            
+            // 3. If the token is valid, get the username from it.
             String username = jwtTokenProvider.getUsername(token);
 
-            // Laad de gebruiker uit de database (via UserService)
+            // 4. Load the user details from our database
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            // Maak een nieuw authenticatie object en stel deze in als de huidige geauthenticeerde gebruiker
+            // 5. Create an auth object for Spring Security
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
-
+            
+            // 6. Set this user as the currently authenticated user for this request.
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
-        // 4. Altijd doorgaan naar de volgende filter
+        // 7. Always pass the request to the next filter in the chain.
+        // If we forget this, the request stops here and our app will hang!
         filterChain.doFilter(request, response);
     }
 }

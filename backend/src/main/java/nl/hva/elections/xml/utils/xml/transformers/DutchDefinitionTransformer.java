@@ -34,6 +34,7 @@ public class DutchDefinitionTransformer implements DefinitionTransformer {
         if (appellation != null && !appellation.trim().isEmpty()) {
             PoliticalParty party = new PoliticalParty(appellation);
             election.addPoliticalParty(party);
+            System.out.println("Registered political party: " + appellation);
         } else {
             System.out.println("Party data (no appellation found): " + electionData);
         }

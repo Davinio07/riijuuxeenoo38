@@ -1,7 +1,7 @@
 package nl.hva.elections.xml.utils.xml.transformers;
 
 import nl.hva.elections.xml.model.Election;
-import nl.hva.elections.xml.model.Party;
+import nl.hva.elections.xml.model.NationalResult;
 import nl.hva.elections.xml.utils.xml.VotesTransformer;
 
 import java.util.Map;
@@ -35,13 +35,17 @@ public class DutchNationalVotesTransformer implements VotesTransformer {
     public void registerPartyVotes(boolean aggregated, Map<String, String> electionData) {
         String partyName = electionData.get("RegisteredName");
         String votesString = electionData.get("ValidVotes");
+        String seatsString = electionData.get("Seats");
+        String percentageString = electionData.get("VotePercentage");
 
         int totalVotes = votesString != null ? Integer.parseInt(votesString) : 0;
+        int seats = seatsString != null ? Integer.parseInt(seatsString) : 0;
+        double votePercentage = percentageString != null ? Double.parseDouble(percentageString) : 0.0;
 
-        Party result = new Party(partyName, totalVotes);
+        NationalResult result = new NationalResult(partyName, totalVotes, seats, votePercentage);
         election.addNationalResult(result);
 
-        // System.out.printf("%s party votes: %s%n", aggregated ? "National" : "Constituency", electionData);
+        System.out.printf("%s party votes: %s%n", aggregated ? "National" : "Constituency", electionData);
     }
 
     /**
@@ -54,7 +58,7 @@ public class DutchNationalVotesTransformer implements VotesTransformer {
      */
     @Override
     public void registerCandidateVotes(boolean aggregated, Map<String, String> electionData) {
-        // System.out.printf("%s candidate votes: %s%n", aggregated ? "National" : "Constituency", electionData);
+        System.out.printf("%s candidate votes: %s%n", aggregated ? "National" : "Constituency", electionData);
     }
 
     /**
@@ -67,6 +71,6 @@ public class DutchNationalVotesTransformer implements VotesTransformer {
      */
     @Override
     public void registerMetadata(boolean aggregated, Map<String, String> electionData) {
-        // System.out.printf("%s meta data: %s%n", aggregated ? "National" : "Constituency", electionData);
+        System.out.printf("%s meta data: %s%n", aggregated ? "National" : "Constituency", electionData);
     }
 }

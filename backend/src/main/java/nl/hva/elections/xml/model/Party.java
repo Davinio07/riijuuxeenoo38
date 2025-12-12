@@ -1,90 +1,47 @@
 package nl.hva.elections.xml.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
-import jakarta.xml.bind.annotation.*;
-import nl.hva.elections.persistence.model.Candidate;
-
-import java.util.List;
-
-@Entity
-@XmlRootElement(name = "Party")
-@XmlAccessorType(XmlAccessType.FIELD)
+/**
+ * Model class representing a political party, adapted to be more compatible
+ * with XML parsing frameworks (like JAXB) which typically require
+ * a default constructor and mutable fields (non-final).
+ */
 public class Party {
-
-    public Party(String id, String name) {
-        this.electionId = id;
-        this.name = name;
-    }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "party_id")
-    private Long id;
-
-    @XmlElement(name = "ElectionId")
-    private String electionId;
-
-    @XmlElement(name = "Name")
+    private String id;
     private String name;
 
-    @XmlElement(name = "TotalVotes")
-    @JsonProperty("totalVotes")
-    private int votes;
-
-    @XmlElement(name = "NationalSeats")
-    @JsonProperty("nationalSeats")
-    private int seats;
-
-    @XmlElement(name = "VotePercentage")
-    @JsonProperty("votePercentage")
-    private double percentage;
-
-    @OneToMany(mappedBy = "party", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<Candidate> candidates;
-
-    /** Default constructor for JPA and JAXB. */
-    public Party() {}
-
-    // Optionally keep a constructor for XML-based creation
-    public Party(String name, int votes) {
-        this.name = name;
-        this.votes = votes;
+    /**
+     * Default constructor required for many persistence/serialization frameworks.
+     */
+    public Party() {
+        // Initialize fields if necessary, or leave for setters
     }
 
-    // Getters and setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Party(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
-    public String getElectionId() { return electionId; }
-    public void setElectionId(String electionId) { this.electionId = electionId; }
+    public String getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public int getVotes() { return votes; }
-    public void setVotes(int votes) { this.votes = votes; }
+    public String getName() {
+        return name;
+    }
 
-    public int getSeats() { return seats; }
-    public void setSeats(int seats) { this.seats = seats; }
-
-    public double getPercentage() { return percentage; }
-    public void setPercentage(double percentage) { this.percentage = percentage; }
-
-    public List<Candidate> getCandidates() { return candidates; }
-    public void setCandidates(List<Candidate> candidates) { this.candidates = candidates; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
     @Override
     public String toString() {
         return "Party{" +
-                "id=" + id +
-                ", electionId='" + electionId + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", votes=" + votes +
-                ", seats=" + seats +
-                ", percentage=" + percentage +
                 '}';
     }
 }
