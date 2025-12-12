@@ -2,6 +2,7 @@ package nl.hva.elections.controllers;
 
 import nl.hva.elections.Service.dbPartyService;
 import nl.hva.elections.models.Party;
+import nl.hva.elections.dtos.NationalResultDto; // Import DTO
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors; // Unnecessary after Java 16, but safe to keep for consistency
 
 /**
  * Controller responsible for serving all data related to Political Parties.
@@ -37,10 +39,10 @@ public class PartyController {
      * Endpoint: {@code GET /api/parties/{electionId}}
      *
      * @param electionId The unique identifier for the election.
-     * @return A {@link ResponseEntity} containing a list of {@link Party} entities.
+     * @return A {@link ResponseEntity} containing a list of {@link NationalResultDto} DTOs.
      */
     @GetMapping("/{electionId}")
-    public ResponseEntity<List<Party>> getPoliticalParties(@PathVariable String electionId) {
+    public ResponseEntity<List<NationalResultDto>> getPoliticalParties(@PathVariable String electionId) { // Changed return type
         try {
             List<Party> parties = partyService.getPartiesByElection(electionId);
 
@@ -49,8 +51,13 @@ public class PartyController {
                 return ResponseEntity.notFound().build();
             }
 
+            // Map Party Entity to DTO
+            List<NationalResultDto> dtos = parties.stream()
+                    .map(PartyController::convertToDto)
+                    .toList();
+
             logger.debug("Total parties fetched from DB: {}\n", parties.size());
-            return ResponseEntity.ok(parties);
+            return ResponseEntity.ok(dtos); // Return DTOs
         } catch (Exception e) {
             logger.error("Internal server error fetching parties for electionId: {}. {}", electionId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -64,17 +71,19 @@ public class PartyController {
      *
      * @param electionId The unique identifier for the election.
      * @param partyName  The name of the party to find (passed as a request parameter).
-     * @return A {@link ResponseEntity} containing the matching {@link Party}.
+     * @return A {@link ResponseEntity} containing the matching {@link NationalResultDto}.
      */
     @GetMapping("/{electionId}/search")
-    public ResponseEntity<Party> findPartyByName(
-            @PathVariable String electionId,
-            @RequestParam String partyName) {
+    public ResponseEntity<NationalResultDto> findPartyByName( // Changed return type
+                                                              @PathVariable String electionId,
+                                                              @RequestParam String partyName) {
         try {
             return partyService.findPartyByName(electionId, partyName)
                     .map(party -> {
                         logger.info("Found party in DB: {}", party.getName());
-                        return ResponseEntity.ok(party);
+                        // Map Party Entity to DTO
+                        NationalResultDto dto = convertToDto(party);
+                        return ResponseEntity.ok(dto); // Return DTO
                     })
                     .orElseGet(() -> {
                         logger.warn("Party not found in DB: {}", partyName);
@@ -124,5 +133,17 @@ public class PartyController {
             logger.error("Error fetching party names for electionId: {}. {}", electionId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    // Private helper method to convert entity to DTO
+    private static NationalResultDto convertToDto(Party party) {
+        return new NationalResultDto(
+                party.getId(),
+                party.getElectionId(),
+                party.getName(),
+                party.getVotes(),
+                party.getSeats(),
+                party.getPercentage()
+        );
     }
 }
