@@ -1,19 +1,82 @@
-# NOTE: This job has to be called "pages" to be able to deploy to Gitlab Pages!
-pages:
+stages:
+  - build_java
+  - build_docs
+  - deploy
+
+# =========================================================
+# 1. BUILD JAVADOC (Java/Maven Stage)
+# =========================================================
+build_javadoc:
+  stage: build_java
+  image: maven:3-jdk-17 # Use a standard Java/Maven image (adjust JDK version as needed)
+  script:
+    # Use your build tool to generate the Javadoc
+    - echo "Generating Javadoc..."
+    - mvn clean site -DskipTests # Assuming Maven is used. This generates files in target/site/apidocs
+
+  artifacts:
+    # Save the generated Javadoc files with a unique name for the next stage
+    name: javadoc_artifact
+    paths:
+      - target/site/apidocs
+    expire_in: 1 hour
+
+# =========================================================
+# 2. BUILD MKDOCS (Python Stage - based on your original file)
+# =========================================================
+build_mkdocs:
+  stage: build_docs
   image: python:3.9-slim
   before_script:
     - time apt update && apt-get install -y git
+    # NOTE: The dependency installs should be faster if using a custom image
     - time pip install -r requirements.txt
     - time git clone https://uva-hva.gitlab.host/hbo-ict/mdocotion.git mdocotion
     - time cd mdocotion && python setup.py install && cd ..
-  stage: deploy
-  when: always
-  tags:
-    - hva
   script:
-    - time mkdocs build --site-dir public
+    # Build the MkDocs site into a dedicated, temporary folder
+    - time mkdocs build --site-dir mkdocs_site_output
+  artifacts:
+    # Save the generated MkDocs files
+    name: mkdocs_artifact
+    paths:
+      - mkdocs_site_output
+    expire_in: 1 hour
+  rules:
+    # You can keep your rules for deciding when to build the docs
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $DEPLOY_MKDOCS == "true"
+
+
+# =========================================================
+# 3. PAGES DEPLOY (The Combination Stage)
+# =========================================================
+# NOTE: This job has to be called "pages" to be able to deploy to Gitlab Pages!
+pages:
+  stage: deploy
+  image: alpine:latest # A lightweight image is fine for combining files
+  tags:
+    - hva # Keep your specific runner tag
+  dependencies:
+    - build_javadoc
+    - build_mkdocs # Ensure both artifacts are downloaded
+  script:
+    - echo "Combining Javadoc and MkDocs into public/ directory..."
+    
+    # 1. Create the mandatory deployment directory
+    - mkdir public
+    
+    # 2. Copy the MkDocs content to the root of the site
+    # The artifact 'mkdocs_site_output' is placed in the job's root directory.
+    - cp -r mkdocs_site_output/* public/
+    
+    # 3. Copy the Javadoc content into a subdirectory named 'api' or 'javadoc'
+    # This keeps it separate from the main MkDocs structure.
+    - mkdir public/api
+    - cp -r target/site/apidocs/* public/api/
+
   artifacts:
     paths:
       - public
   rules:
+    # Only run the final deployment if both antecedent jobs ran successfully
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $DEPLOY_MKDOCS == "true"
