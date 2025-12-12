@@ -1,24 +1,89 @@
-image: maven:3-openjdk-21
+# =========================================================
+# GLOBAL CONFIGURATION
+# FIX: Use a reliable Java 21 image
+# =========================================================
+image: eclipse-temurin:21-jdk-alpine
 
 stages:
   - build
   - test
+  - build_docs
+  - deploy
+
+# Global script to install Maven before any Java-related job runs
+before_script:
+  - apk update && apk add --no-cache maven # Install Maven using Alpine package manager
+
+# =========================================================
+# APPLICATION BUILD AND TEST STAGES (Your Original Jobs)
+# =========================================================
 
 build_app:
   stage: build
   tags:
     - hva
   script:
-    - cd backend                     # <--- CHANGED: Go into the 'backend' folder
+    - cd backend
     - mvn clean package -DskipTests
   artifacts:
     paths:
-      - backend/target/*.jar         # <--- CHANGED: Save the JAR from the correct folder
+      - backend/target/*.jar
 
 test_app:
   stage: test
   tags:
     - hva
   script:
-    - cd backend                     # <--- CHANGED: Go into the 'backend' folder
+    - cd backend
     - mvn test -Dspring.datasource.url=jdbc:h2:mem:testdb -Dspring.datasource.driverClassName=org.h2.Driver -Dspring.datasource.username=sa -Dspring.datasource.password=
+
+# =========================================================
+# DOCUMENTATION BUILD STAGE (Javadoc Only)
+# =========================================================
+
+build_javadoc:
+  stage: build_docs
+  tags:
+    - hva
+  script:
+    - echo "Generating Javadoc..."
+    - cd backend
+    # Generates Javadoc under backend/target/site/apidocs
+    - mvn site -DskipTests
+
+  artifacts:
+    name: javadoc_artifact
+    # Path is relative to the project root
+    paths:
+      - backend/target/site/apidocs
+    expire_in: 1 hour
+
+# =========================================================
+# DEPLOYMENT STAGE (GitLab Pages)
+# NOTE: This job MUST be named "pages"
+# =========================================================
+pages:
+  stage: deploy
+  image: alpine:latest # Use a lightweight image for file copying
+  tags:
+    - hva
+  dependencies:
+    - build_javadoc # Only depends on the Javadoc job
+  
+  script:
+    - echo "Deploying Javadoc to GitLab Pages public/ directory..."
+    
+    # 1. Create the mandatory 'public' directory
+    - mkdir public
+    
+    # 2. Copy the Javadoc content directly into the root of the site (public/)
+    # The Javadoc will be the primary content of your GitLab Pages site.
+    - cp -r backend/target/site/apidocs/* public/
+
+  artifacts:
+    paths:
+      - public
+
+  rules:
+    # Only deploy on the default branch (adjust if your branch is named differently)
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
