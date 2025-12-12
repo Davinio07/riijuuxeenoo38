@@ -1,6 +1,5 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { getPartiesFromDb } from '@/features/admin/service/NationalElectionResults_api'
-// PARTY_COLORS import removed to use partyService for consistent coloring
 import { getChartOptions } from '@/features/admin/components/NationalResultChart.ts'
 import { getPartyColor } from '@/features/admin/service/partyService' // NEW IMPORT
 
@@ -89,6 +88,8 @@ export function useNationalResult() {
   return {
     availableElections,
     selectedElection,
+    nationalResults,
+    nationalSeats,
     loading,
     error,
     totalSeats,
