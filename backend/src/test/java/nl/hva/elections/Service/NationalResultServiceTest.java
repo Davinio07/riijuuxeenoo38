@@ -1,7 +1,7 @@
 package nl.hva.elections.Service;
 
 import nl.hva.elections.models.Party;
-import nl.hva.elections.service.DutchElectionService;
+import nl.hva.elections.Service.DutchElectionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

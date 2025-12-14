@@ -1,12 +1,11 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { getPartiesFromDb } from '@/features/admin/service/NationalElectionResults_api'
-// PARTY_COLORS import removed to use partyService for consistent coloring
 import { getChartOptions } from '@/features/admin/components/NationalResultChart.ts'
 import { getPartyColor } from '@/features/admin/service/partyService' // NEW IMPORT
 
 export function useNationalResult() {
   // --- State ---
-  const availableElections = ref(['TK2023', 'TK2021'])
+  const availableElections = ref(['TK2025', 'TK2023', 'TK2021'])
   const selectedElection = ref(availableElections.value[0])
   const nationalResults = ref<{ partyName: string; validVotes: number }[]>([])
   const nationalSeats = ref<Record<string, number>>({})
@@ -89,6 +88,8 @@ export function useNationalResult() {
   return {
     availableElections,
     selectedElection,
+    nationalResults,
+    nationalSeats,
     loading,
     error,
     totalSeats,

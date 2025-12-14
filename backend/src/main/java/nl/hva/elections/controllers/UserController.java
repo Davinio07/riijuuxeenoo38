@@ -2,7 +2,7 @@ package nl.hva.elections.controllers;
 
 import nl.hva.elections.dtos.LoginResponse;
 import nl.hva.elections.models.User;
-import nl.hva.elections.service.UserService;
+import nl.hva.elections.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
