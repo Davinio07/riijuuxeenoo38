@@ -107,7 +107,21 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <release>21</release> <!-- FIX: Gebruik Java 21 -->
+                    <release>21</release> </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
+                <configuration>
+                    <release>21</release>
+
+                    <reportOutputDirectory>${project.basedir}/../docs/apidocs</reportOutputDirectory>
+                    <destDir>./</destDir>
+
+                    <doclint>none</doclint>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
         </plugins>
