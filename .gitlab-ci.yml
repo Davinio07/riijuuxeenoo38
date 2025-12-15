@@ -8,7 +8,7 @@ stages:
   - build
   - test
   - build_docs
-  - deploy
+  - deploy # CRITICAL: The deployment stage is defined
 
 # =========================================================
 # GLOBAL CACHING DEFINITION
@@ -16,7 +16,7 @@ stages:
 # =========================================================
 cache:
   paths:
-    # CRITICAL: This path tells GitLab to save and restore the Maven repository
+    # This caches the Maven dependencies/plugins to solve the 'Plugin not found' error.
     - /root/.m2/repository/
 
 # =========================================================
@@ -27,7 +27,6 @@ build_app:
   stage: build
   tags:
     - hva
-  # This job will download dependencies and populate the cache.
   script:
     - cd backend
     - mvn clean package -DskipTests
@@ -51,17 +50,16 @@ build_javadoc:
   stage: build_docs
   tags:
     - hva
-  # No 'dependencies' needed, as caching handles persistence
   script:
     - echo "Generating Javadoc with verbose errors into docs/apidocs..."
-    # The cache from 'build_app' is automatically used here.
+    # This command relies on the maven-javadoc-plugin configured in backend/pom.xml
     - cd backend
     - mvn javadoc:javadoc -e
 
   artifacts:
     name: javadoc_artifact
     paths:
-      # Requires pom.xml configured for this path
+      # This path is correct, assuming you configured backend/pom.xml to output here.
       - docs/apidocs
     expire_in: 1 day
 
@@ -69,12 +67,13 @@ build_javadoc:
 # =========================================================
 # DEPLOYMENT STAGE (GitLab Pages)
 # =========================================================
+# CRITICAL: This job MUST be named 'pages'
 pages:
   stage: deploy
   tags:
-    - hva # Ensure this matches the runner tag used by the other jobs
+    - hva
   dependencies:
-    - build_javadoc # Ensures the Javadoc artifact is fetched
+    - build_javadoc # Fetches the Javadoc artifact from the previous job
 
   script:
     - echo "Deploying Javadoc to GitLab Pages public/ directory..."
@@ -82,15 +81,14 @@ pages:
     # 1. Create the mandatory 'public' directory
     - mkdir public
 
-    # 2. Move the Javadoc content from the artifact (docs/apidocs) into public/
-    # The 'docs/apidocs' directory should be fetched from the artifact
+    # 2. Move the Javadoc artifact contents into the public folder
     - mv docs/apidocs/* public/
 
-  # This job MUST define 'public' as an artifact path
+  # CRITICAL: The Pages artifact MUST be the 'public' folder
   artifacts:
     paths:
       - public
 
   rules:
-    # Only run the deployment on the main/default branch
+    # This rule restricts deployment to the default branch (e.g., 'main' or 'master')
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
