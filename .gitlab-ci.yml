@@ -1,8 +1,8 @@
 # =========================================================
 # GLOBAL CONFIGURATION
-# FIX: Use a reliable Java 21 image
 # =========================================================
-image: eclipse-temurin:21-jdk-alpine
+# Use a reliable Java 21 image
+image: maven:3.9.6-eclipse-temurin-21 # Use a Maven-specific image to avoid manual setup
 
 stages:
   - build
@@ -10,12 +10,11 @@ stages:
   - build_docs
   - deploy
 
-# Global script to install Maven before any Java-related job runs
-before_script:
-  - apk update && apk add --no-cache maven # Install Maven using Alpine package manager
+# NOTE: Removed the before_script for Maven installation, as the 'maven' image
+# already includes Maven and Java.
 
 # =========================================================
-# APPLICATION BUILD AND TEST STAGES (Your Original Jobs)
+# APPLICATION BUILD AND TEST STAGES (Keep as is, adjusted image)
 # =========================================================
 
 build_app:
@@ -45,45 +44,54 @@ build_javadoc:
   stage: build_docs
   tags:
     - hva
+  # Use the default Java/Maven image
   script:
     - echo "Generating Javadoc..."
     - cd backend
-    # Generates Javadoc under backend/target/site/apidocs
-    - mvn site -DskipTests
+    # Recommended goal for generating Javadoc.
+    # The output is typically 'target/site/apidocs' relative to the pom.xml location.
+    - mvn javadoc:javadoc
 
   artifacts:
     name: javadoc_artifact
-    # Path is relative to the project root
+    # Path is relative to the *project root* (where .gitlab-ci.yml is).
+    # Since mvn was run inside 'backend/', the path is 'backend/target/site/apidocs'.
     paths:
       - backend/target/site/apidocs
-    expire_in: 1 hour
+    expire_in: 1 day # Reduced expiration for generated files
 
 # =========================================================
 # DEPLOYMENT STAGE (GitLab Pages)
-# NOTE: This job MUST be named "pages"
 # =========================================================
 pages:
   stage: deploy
-  image: alpine:latest # Use a lightweight image for file copying
+  # This job must use the same image as the job that created the artifacts,
+  # or an image that can correctly handle the files.
+  # Using the default image is safest here.
+  # The tags must also match if you are using specific runners.
   tags:
     - hva
+  # Dependencies are relative to the *CI job name*
   dependencies:
-    - build_javadoc # Only depends on the Javadoc job
-  
+    - build_javadoc
+
   script:
     - echo "Deploying Javadoc to GitLab Pages public/ directory..."
-    
-    # 1. Create the mandatory 'public' directory
-    - mkdir public
-    
-    # 2. Copy the Javadoc content directly into the root of the site (public/)
-    # The Javadoc will be the primary content of your GitLab Pages site.
-    - cp -r backend/target/site/apidocs/* public/
 
+    # 1. Ensure the mandatory 'public' directory is created at the CI root
+    - mkdir public
+
+    # 2. Find the Javadoc output directory created by the artifact.
+    # When artifacts are fetched, they are placed in their original paths relative
+    # to the CI root. The Javadoc is in 'backend/target/site/apidocs'.
+    # We must move the *contents* of that directory into the 'public' folder.
+    - mv backend/target/site/apidocs/* public/
+
+  # This job MUST define 'public' as an artifact path
   artifacts:
     paths:
       - public
 
+  # Rules for deployment
   rules:
-    # Only deploy on the default branch (adjust if your branch is named differently)
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
