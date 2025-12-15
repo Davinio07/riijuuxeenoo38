@@ -12,7 +12,6 @@ Thumbs.db
 *.iml
 *.ipr
 *.iws
-**/target/
 **/out/
 **/dist/
 *.lock
