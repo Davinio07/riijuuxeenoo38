@@ -1,7 +1,15 @@
 target/
 .git/
 .idea/
-**/*.xml  # Negeert XML bestanden (tenzij je ze echt nodig hebt voor config, wees hier voorzichtig mee)
-**/TK2023* # Negeert mappen die beginnen met TK2023
-**/TK2021* # Negeert mappen die beginnen met TK2021
-**/Verkiezingsuitslag*
+.mvn/
+mvnw
+mvnw.cmd
+*.iml
+
+src/main/resources/TK2021/
+src/main/resources/TK2023/
+src/main/resources/TK2025/
+src/main/resources/TK2023_HvA_UvA/
+src/main/resources/TK2023_HvA_UvA - Copy/
+src/main/resources/Verkiezingsuitslag*/
+src/main/resources/**/*.xml
