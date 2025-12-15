@@ -2,7 +2,7 @@
 # GLOBAL CONFIGURATION
 # =========================================================
 # Use a reliable Java 21 image
-image: maven:3.9.6-eclipse-temurin-21 # Use a Maven-specific image to avoid manual setup
+image: maven:3.9.6-eclipse-temurin-21
 
 stages:
   - build
@@ -10,17 +10,24 @@ stages:
   - build_docs
   - deploy
 
-# NOTE: Removed the before_script for Maven installation, as the 'maven' image
-# already includes Maven and Java.
+# =========================================================
+# GLOBAL CACHING DEFINITION
+# This caches the entire Maven local repository (.m2) across jobs and runs
+# =========================================================
+cache:
+  paths:
+    # CRITICAL: This path tells GitLab to save and restore the Maven repository
+    - /root/.m2/repository/
 
 # =========================================================
-# APPLICATION BUILD AND TEST STAGES (Keep as is, adjusted image)
+# APPLICATION BUILD AND TEST STAGES
 # =========================================================
 
 build_app:
   stage: build
   tags:
     - hva
+  # This job will download dependencies and populate the cache.
   script:
     - cd backend
     - mvn clean package -DskipTests
@@ -40,22 +47,22 @@ test_app:
 # DOCUMENTATION BUILD STAGE (Javadoc Only)
 # =========================================================
 
-# In .gitlab-ci.yml
-
 build_javadoc:
   stage: build_docs
   tags:
     - hva
+  # No 'dependencies' needed, as caching handles persistence
   script:
-    - echo "Generating Javadoc with verbose errors..."
+    - echo "Generating Javadoc with verbose errors into docs/apidocs..."
+    # The cache from 'build_app' is automatically used here.
     - cd backend
-    # *** CHANGE: Added -e flag here ***
     - mvn javadoc:javadoc -e
 
   artifacts:
     name: javadoc_artifact
     paths:
-      - backend/target/site/apidocs
+      # Requires pom.xml configured for this path
+      - docs/apidocs
     expire_in: 1 day
 
 
@@ -64,33 +71,24 @@ build_javadoc:
 # =========================================================
 pages:
   stage: deploy
-  # This job must use the same image as the job that created the artifacts,
-  # or an image that can correctly handle the files.
-  # Using the default image is safest here.
-  # The tags must also match if you are using specific runners.
   tags:
     - hva
-  # Dependencies are relative to the *CI job name*
   dependencies:
-    - build_javadoc
+    - build_javadoc # Fetch the Javadoc artifact
 
   script:
     - echo "Deploying Javadoc to GitLab Pages public/ directory..."
 
-    # 1. Ensure the mandatory 'public' directory is created at the CI root
+    # 1. Create the mandatory 'public' directory
     - mkdir public
 
-    # 2. Find the Javadoc output directory created by the artifact.
-    # When artifacts are fetched, they are placed in their original paths relative
-    # to the CI root. The Javadoc is in 'backend/target/site/apidocs'.
-    # We must move the *contents* of that directory into the 'public' folder.
-    - mv backend/target/site/apidocs/* public/
+    # 2. Move the Javadoc content from the artifact (docs/apidocs) into public/
+    - mv docs/apidocs/* public/
 
   # This job MUST define 'public' as an artifact path
   artifacts:
     paths:
       - public
 
-  # Rules for deployment
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
