@@ -175,144 +175,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import {
-  getProvinces,
-  getConstituenciesForProvince,
-  getMunicipalitiesForConstituency,
-  type ProvinceDto,
-  type KieskringDto,
-  type GemeenteDto
-} from "@/features/admin/service/ProvinceService";
+import { useProvince } from "@/features/admin/composables/useProvince.ts";
 
-const router = useRouter();
+const {
+  provinces,
+  isLoading,
+  error,
 
-interface KieskringUI extends KieskringDto {
-  isOpen: boolean;
-  isLoadingGemeentes?: boolean;
-  gemeentes?: GemeenteDto[];
-}
+  toggleProvince,
+  toggleKieskring,
 
-interface ProvinceUI extends Omit<ProvinceDto, 'kieskringen'> {
-  isOpen: boolean;
-  kieskringen?: KieskringUI[];
-}
+  goToResults,
+  goToParties,
+  goToMunicipalityParties,
 
-const provinces = ref<ProvinceUI[]>([]);
-const isLoading = ref<boolean>(true);
-const error = ref<Error | null>(null);
+  startTransition,
+  endTransition,
 
-function goToResults(kieskringName: string) {
-  router.push({ path: '/kieskring-details', query: { name: kieskringName } });
-}
-
-function goToParties(kieskringName: string) {
-  router.push({ path: '/parties', query: { level: 'Kieskringen', name: kieskringName } });
-}
-
-function goToMunicipalityParties(municipalityName: string) {
-  router.push({ path: '/parties', query: { level: 'Gemeentes', name: municipalityName } });
-}
-
-onMounted(async () => {
-  try {
-    isLoading.value = true;
-    const data = await getProvinces();
-    provinces.value = data.map(p => ({ ...p, isOpen: false }));
-  } catch (err) {
-    console.error('Failed to load provinces:', err);
-    error.value = err as Error;
-  } finally {
-    isLoading.value = false;
-  }
-});
-
-async function toggleProvince(province: ProvinceUI) {
-  province.isOpen = !province.isOpen;
-  if (province.isOpen && !province.kieskringen) {
-    try {
-      province.isLoadingChildren = true;
-      const results = await getConstituenciesForProvince(province.province_id);
-      province.kieskringen = results.map(k => ({ ...k, isOpen: false }));
-    } catch (err) {
-      console.error(`Failed to load kieskringen for ${province.name}`, err);
-    } finally {
-      province.isLoadingChildren = false;
-    }
-  }
-}
-
-async function toggleKieskring(kieskring: KieskringUI) {
-  kieskring.isOpen = !kieskring.isOpen;
-  if (kieskring.isOpen && !kieskring.gemeentes) {
-    try {
-      kieskring.isLoadingGemeentes = true;
-      const results = await getMunicipalitiesForConstituency(kieskring.id);
-      kieskring.gemeentes = results;
-    } catch (err) {
-      console.error(`Failed to load gemeentes for ${kieskring.name}`, err);
-    } finally {
-      kieskring.isLoadingGemeentes = false;
-    }
-  }
-}
-
-const startTransition = (el: Element) => {
-  const element = el as HTMLElement;
-  element.style.height = '0';
-  element.style.opacity = '0';
-};
-
-const endTransition = (el: Element) => {
-  const element = el as HTMLElement;
-  const height = element.scrollHeight;
-  element.style.height = `${height}px`;
-  element.style.opacity = '1';
-  element.addEventListener('transitionend', () => {
-    if (element.style.height !== '0px') element.style.height = 'auto';
-  }, { once: true });
-};
-
-// Colors for the vertical bar
-const getProvinceColor = (id: number) => {
-  const colors = [
-    'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
-    'bg-lime-500', 'bg-green-500', 'bg-emerald-500', 'bg-teal-500',
-    'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 'bg-indigo-500'
-  ];
-  return colors[id % colors.length] || 'bg-gray-500';
-};
-
-// Subtle background hover effect matching the bar color
-const getProvinceBg = (id: number) => {
-  const colors = [
-    'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
-    'bg-lime-500', 'bg-green-500', 'bg-emerald-500', 'bg-teal-500',
-    'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 'bg-indigo-500'
-  ];
-  return colors[id % colors.length] || 'bg-gray-500';
-};
+  getProvinceColor,
+  getProvinceBg
+} = useProvince()
 </script>
-
-<style scoped>
-.collapse-enter-active,
-.collapse-leave-active {
-  transition: height 0.3s ease-in-out, opacity 0.3s ease-in-out;
-  overflow: hidden;
-}
-.collapse-enter-from,
-.collapse-leave-to {
-  height: 0 !important;
-  opacity: 0;
-}
-
-/* Fade in animation for the badge */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(2px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-</style>
