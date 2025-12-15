@@ -1,5 +1,6 @@
 package nl.hva.elections.Service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import java.util.Arrays;
@@ -40,12 +41,18 @@ public class DutchElectionService {
     // The cache for the parsed data
     private final Map<String, Election> electionCache = new ConcurrentHashMap<>();
 
+    // Injecteer het pad naar de data (Lokaal of Oege/Docker)
+    @Value("${election.data.path}")
+    private String dataPath;
+
     /**
      * Loads the specified elections into the cache when the app starts.
      */
     @PostConstruct
     public void initializeElectionDataCache() {
         logger.info("Starting eager parsing of XML data for {} elections...", ELECTION_IDS_TO_LOAD.size());
+        logger.info("Reading election data from path: {}", dataPath); // Log het pad
+
         for (String electionId : ELECTION_IDS_TO_LOAD) {
             try {
                 // Use the private parse method
@@ -53,8 +60,8 @@ public class DutchElectionService {
                 this.electionCache.put(electionId, parsedElection);
                 logger.info("Successfully parsed and cached XML data for {}", electionId);
             } catch (Exception e) {
-                logger.error("CRITICAL STARTUP FAILURE: Failed to parse XML data for {}. Error: {}",
-                        electionId, e.getMessage(), e);
+                // We loggen error, maar laten de app niet crashen zodat hij wel online komt
+                logger.error("WARNING: Failed to parse XML data for {}. Error: {}", electionId, e.getMessage());
             }
         }
         logger.info("Finished caching all XML election data.");
@@ -78,23 +85,29 @@ public class DutchElectionService {
                 new DutchMunicipalityTransformer(election)
         );
 
-        // FIX: Use Spring's ResourceResolver to find files INSIDE the JAR
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
-        // The /**/ tells Spring to look recursively in all subfolders
-        String pattern = "classpath*:" + folderName + "/**/*.xml";
+        // Bepaal of we lokaal (classpath) of extern (file) moeten zoeken
+        // Als dataPath "classpath" bevat, gebruiken we dat. Anders "file:"
+        String protocol = dataPath.startsWith("classpath") ? "" : "file:";
+        
+        // Zorg dat er geen dubbele slash ontstaat
+        String cleanDataPath = dataPath.endsWith("/") ? dataPath.substring(0, dataPath.length() - 1) : dataPath;
+        String cleanFolder = folderName.startsWith("/") ? folderName.substring(1) : folderName;
+
+        // Het zoekpatroon: file:/app/data/TK2023/**/*.xml
+        String pattern = protocol + cleanDataPath + "/" + cleanFolder + "/**/*.xml";
 
         logger.info("Searching for XML files with pattern: {}", pattern);
         Resource[] resources = resolver.getResources(pattern);
 
         if (resources.length == 0) {
-            logger.error("No XML files found in classpath for folder: {}", folderName);
+            logger.error("No XML files found with pattern: {}", pattern);
         } else {
             logger.info("Found {} XML files. Starting parse...", resources.length);
         }
 
         // Pass the list of resources to the parser
-        // Note: You MUST have updated DutchElectionParser.parseResults to accept List<Resource>!
         electionParser.parseResults(electionId, Arrays.asList(resources));
 
         logger.debug("Finished parsing for {}", electionId);
