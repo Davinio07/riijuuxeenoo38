@@ -72,9 +72,9 @@ build_javadoc:
 pages:
   stage: deploy
   tags:
-    - hva
+    - hva # Ensure this matches the runner tag used by the other jobs
   dependencies:
-    - build_javadoc # Fetch the Javadoc artifact
+    - build_javadoc # Ensures the Javadoc artifact is fetched
 
   script:
     - echo "Deploying Javadoc to GitLab Pages public/ directory..."
@@ -83,6 +83,7 @@ pages:
     - mkdir public
 
     # 2. Move the Javadoc content from the artifact (docs/apidocs) into public/
+    # The 'docs/apidocs' directory should be fetched from the artifact
     - mv docs/apidocs/* public/
 
   # This job MUST define 'public' as an artifact path
@@ -91,4 +92,5 @@ pages:
       - public
 
   rules:
+    # Only run the deployment on the main/default branch
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
