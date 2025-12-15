@@ -9,7 +9,7 @@ import {
   type GemeenteDto
 } from '@/features/admin/service/ProvinceService'
 
-/* ---------- UI TYPES ---------- */
+//UI TYPES
 
 export interface KieskringUI extends KieskringDto {
   isOpen: boolean
@@ -23,8 +23,7 @@ export interface ProvinceUI extends Omit<ProvinceDto, 'kieskringen'> {
   kieskringen?: KieskringUI[]
 }
 
-/* ---------- COMPOSABLE ---------- */
-
+// COMPOSABLE
 export function useProvince() {
   const router = useRouter()
 
@@ -52,8 +51,7 @@ export function useProvince() {
     })
   }
 
-  /* ---------- DATA LOADING ---------- */
-
+  // DATA LOADING
   onMounted(async () => {
     try {
       isLoading.value = true
@@ -94,7 +92,7 @@ export function useProvince() {
     }
   }
 
-  /* ---------- TRANSITIONS ---------- */
+  //TRANSITIONS
 
   function startTransition(el: Element) {
     const element = el as HTMLElement
@@ -115,7 +113,7 @@ export function useProvince() {
     )
   }
 
-  /* ---------- COLORS ---------- */
+  //COLORS
 
   const colors = [
     'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
