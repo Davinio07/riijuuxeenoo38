@@ -40,25 +40,24 @@ test_app:
 # DOCUMENTATION BUILD STAGE (Javadoc Only)
 # =========================================================
 
+# In .gitlab-ci.yml
+
 build_javadoc:
   stage: build_docs
   tags:
     - hva
-  # Use the default Java/Maven image
   script:
-    - echo "Generating Javadoc..."
+    - echo "Generating Javadoc with verbose errors..."
     - cd backend
-    # Recommended goal for generating Javadoc.
-    # The output is typically 'target/site/apidocs' relative to the pom.xml location.
-    - mvn javadoc:javadoc
+    # *** CHANGE: Added -e flag here ***
+    - mvn javadoc:javadoc -e
 
   artifacts:
     name: javadoc_artifact
-    # Path is relative to the *project root* (where .gitlab-ci.yml is).
-    # Since mvn was run inside 'backend/', the path is 'backend/target/site/apidocs'.
     paths:
       - backend/target/site/apidocs
-    expire_in: 1 day # Reduced expiration for generated files
+    expire_in: 1 day
+
 
 # =========================================================
 # DEPLOYMENT STAGE (GitLab Pages)
