@@ -73,22 +73,16 @@ pages:
   tags:
     - hva
   dependencies:
-    - build_javadoc # Fetches the Javadoc artifact from the previous job
-
+    - build_javadoc
   script:
     - echo "Deploying Javadoc to GitLab Pages public/ directory..."
-
-    # 1. Create the mandatory 'public' directory
     - mkdir public
-
-    # 2. Move the Javadoc artifact contents into the public folder
     - mv docs/apidocs/* public/
 
-  # CRITICAL: The Pages artifact MUST be the 'public' folder
   artifacts:
     paths:
       - public
 
   rules:
-    # This rule restricts deployment to the default branch (e.g., 'main' or 'master')
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH
+      when: always
