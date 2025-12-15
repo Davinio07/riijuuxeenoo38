@@ -5,10 +5,9 @@ import nl.hva.elections.models.Gemeente;
 import nl.hva.elections.models.Kieskring;
 import nl.hva.elections.repositories.*;
 import nl.hva.elections.models.Election;
-import nl.hva.elections.models.MunicipalityResult;
 import nl.hva.elections.models.Party;
 import nl.hva.elections.models.Region;
-import nl.hva.elections.service.DutchElectionService;
+import nl.hva.elections.Service.DutchElectionService;
 import nl.hva.elections.Service.NationalResultService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -30,7 +29,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ProvinceRepository provinceRepository;
     private final GemeenteRepository gemeenteRepository;
 
-    private static final List<String> ELECTION_LIST = List.of("TK2023", "TK2021");
+    private static final List<String> ELECTION_LIST = List.of("TK2025", "TK2023", "TK2021");
     private static final int TOTAL_SEATS = 150;
 
     public DataInitializer(DutchElectionService xmlService,

@@ -3,13 +3,12 @@
     <header class="app-header">
       <div class="header-content">
         <router-link to="/" class="logo-link">
-          <h1 class="app-title">Verkiezingen TK2023</h1>
+          <h1 class="app-title">Verkiezingen TK2025</h1>
         </router-link>
 
         <nav class="main-nav">
           <router-link to="/admin">Admin</router-link>
           <router-link to="/municipality-results">Gemeenten</router-link>
-          <router-link to="/NationalElectionResults">Landelijk</router-link>
           <router-link to="/candidates">Kandidaten</router-link>
           <router-link to="/parties">Partijen</router-link>
           <router-link to="/kieskring-details">Kieskringen</router-link>

@@ -1,11 +1,13 @@
-package nl.hva.elections.service;
+package nl.hva.elections.Service;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import java.util.Arrays;
 import jakarta.annotation.PostConstruct;
 import nl.hva.elections.models.Election;
 import nl.hva.elections.models.MunicipalityResult;
 import nl.hva.elections.models.PoliticalParty;
 import nl.hva.elections.models.Region;
-import nl.hva.elections.xml.utils.PathUtils;
 import nl.hva.elections.xml.utils.xml.DutchElectionParser;
 import nl.hva.elections.xml.utils.xml.transformers.*;
 import org.slf4j.Logger;
@@ -16,8 +18,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -32,10 +32,10 @@ public class DutchElectionService {
     private static final Logger logger = LoggerFactory.getLogger(DutchElectionService.class);
 
     // List of elections to load at startup
-    private static final List<String> ELECTION_IDS_TO_LOAD = List.of("TK2023", "TK2021");
+    private static final List<String> ELECTION_IDS_TO_LOAD = List.of("TK2025", "TK2023", "TK2021");
 
     // The default ID
-    private static final String DEFAULT_ELECTION_ID = "TK2023";
+    private static final String DEFAULT_ELECTION_ID = "TK2025";
 
     // The cache for the parsed data
     private final Map<String, Election> electionCache = new ConcurrentHashMap<>();
@@ -67,8 +67,7 @@ public class DutchElectionService {
         logger.info("Parsing files for electionId: {} from folder: {}", electionId, folderName);
 
         Election election = new Election(electionId);
-        
-        // We instantiate the parser with all the necessary transformers
+
         DutchElectionParser electionParser = new DutchElectionParser(
                 new DutchDefinitionTransformer(election),
                 new DutchCandidateTransformer(election),
@@ -78,24 +77,26 @@ public class DutchElectionService {
                 new DutchConstituencyVotesTransformer(election),
                 new DutchMunicipalityTransformer(election)
         );
-            logger.debug("Parsing XML files for {}", electionId);
-        String resourcePath = PathUtils.getResourcePath("/%s".formatted(folderName));
-        if (resourcePath == null) {
-            logger.error("Resource folder not found in classpath: {}", folderName);
-            throw new IOException("Resource folder not found in classpath: " + folderName);
+
+        // FIX: Use Spring's ResourceResolver to find files INSIDE the JAR
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+
+        // The /**/ tells Spring to look recursively in all subfolders
+        String pattern = "classpath*:" + folderName + "/**/*.xml";
+
+        logger.info("Searching for XML files with pattern: {}", pattern);
+        Resource[] resources = resolver.getResources(pattern);
+
+        if (resources.length == 0) {
+            logger.error("No XML files found in classpath for folder: {}", folderName);
+        } else {
+            logger.info("Found {} XML files. Starting parse...", resources.length);
         }
 
-        Files.walk(Paths.get(resourcePath))
-                .filter(Files::isRegularFile)
-                .filter(p -> p.toString().endsWith(".xml"))
-                .forEach(p -> {
-                    try {
-                        electionParser.parseResults(electionId, p.toString());
-                    } catch (Exception e) {
-                        logger.warn("Failed to parse XML file {}: {}", p, e.getMessage());
-                    }
-                });
-        
+        // Pass the list of resources to the parser
+        // Note: You MUST have updated DutchElectionParser.parseResults to accept List<Resource>!
+        electionParser.parseResults(electionId, Arrays.asList(resources));
+
         logger.debug("Finished parsing for {}", electionId);
         return election;
     }
