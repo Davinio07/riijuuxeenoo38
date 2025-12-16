@@ -2,6 +2,7 @@
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-7xl mx-auto">
 
+      // Now with NationalResults
       <header class="mb-12 text-center">
         <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">
           Provincies & Kieskringen
