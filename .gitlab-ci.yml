@@ -1,14 +1,13 @@
 # =========================================================
 # GLOBAL CONFIGURATION
 # =========================================================
-# Use a reliable Java 21 image
 image: maven:3.9.6-eclipse-temurin-21
 
 stages:
   - build
   - test
   - build_docs
-  - deploy # CRITICAL: The deployment stage is defined
+  - deploy
 
 # =========================================================
 # GLOBAL CACHING DEFINITION
@@ -16,7 +15,6 @@ stages:
 # =========================================================
 cache:
   paths:
-    # This caches the Maven dependencies/plugins to solve the 'Plugin not found' error.
     - /root/.m2/repository/
 
 # =========================================================
@@ -52,7 +50,6 @@ build_javadoc:
     - hva
   script:
     - echo "Generating Javadoc with verbose errors into docs/apidocs..."
-    # This command relies on the maven-javadoc-plugin configured in backend/pom.xml
     - cd backend
     - mvn javadoc:javadoc -e
 
@@ -67,7 +64,6 @@ build_javadoc:
 # =========================================================
 # DEPLOYMENT STAGE (GitLab Pages)
 # =========================================================
-# CRITICAL: This job MUST be named 'pages'
 pages:
   stage: deploy
   tags:
