@@ -1,24 +1,84 @@
-image: maven:3.8.5-openjdk-17
+# =========================================================
+# GLOBAL CONFIGURATION
+# =========================================================
+image: maven:3.9.6-eclipse-temurin-21
 
 stages:
   - build
   - test
+  - build_docs
+  - deploy
+
+# =========================================================
+# GLOBAL CACHING DEFINITION
+# This caches the entire Maven local repository (.m2) across jobs and runs
+# =========================================================
+cache:
+  paths:
+    - /root/.m2/repository/
+
+# =========================================================
+# APPLICATION BUILD AND TEST STAGES
+# =========================================================
 
 build_app:
   stage: build
   tags:
     - hva
   script:
-    - cd backend                     # <--- CHANGED: Go into the 'backend' folder
+    - cd backend
     - mvn clean package -DskipTests
   artifacts:
     paths:
-      - backend/target/*.jar         # <--- CHANGED: Save the JAR from the correct folder
+      - backend/target/*.jar
 
 test_app:
   stage: test
   tags:
     - hva
   script:
-    - cd backend                     # <--- CHANGED: Go into the 'backend' folder
+    - cd backend
     - mvn test -Dspring.datasource.url=jdbc:h2:mem:testdb -Dspring.datasource.driverClassName=org.h2.Driver -Dspring.datasource.username=sa -Dspring.datasource.password=
+
+# =========================================================
+# DOCUMENTATION BUILD STAGE (Javadoc Only)
+# =========================================================
+
+build_javadoc:
+  stage: build_docs
+  tags:
+    - hva
+  script:
+    - echo "Generating Javadoc with verbose errors into docs/apidocs..."
+    - cd backend
+    - mvn javadoc:javadoc -e
+
+  artifacts:
+    name: javadoc_artifact
+    paths:
+      # This path is correct, assuming you configured backend/pom.xml to output here.
+      - docs/apidocs
+    expire_in: 1 day
+
+
+# =========================================================
+# DEPLOYMENT STAGE (GitLab Pages)
+# =========================================================
+pages:
+  stage: deploy
+  tags:
+    - hva
+  dependencies:
+    - build_javadoc
+  script:
+    - echo "Deploying Javadoc to GitLab Pages public/ directory..."
+    - mkdir public
+    - mv docs/apidocs/* public/
+
+  artifacts:
+    paths:
+      - public
+
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      when: always
