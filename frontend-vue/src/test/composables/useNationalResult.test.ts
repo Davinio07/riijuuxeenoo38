@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useNationalResult } from "@/features/admin/composables/useNationalResult.ts";
 import { mount } from '@vue/test-utils'
 
-// --- Mock Dependencies ---
+// Mock Dependencies
 
-// 1. Define all mock functions at the top level
+// Define all mock functions at the top level
 const {
   mockGetPartiesFromDb,
   mockGetChartOptions,
@@ -29,7 +29,7 @@ vi.mock('@/features/admin/service/partyService', () => ({
 
 
 
-// --- Test Helper ---
+// Test Helper
 
 // Mounts the composable in a test component to access its reactive state
 function mountComposable() {
@@ -47,8 +47,7 @@ function mountComposable() {
 }
 
 
-// --- Test Data ---
-
+// Test Data
 const MOCK_PARTY_DATA = [
   { id: 1, name: 'Partij A', totalVotes: 500000, nationalSeats: 90, votePercentage: 45.00 },
   { id: 2, name: 'Partij B', totalVotes: 300000, nationalSeats: 40, votePercentage: 27.00 },
@@ -57,8 +56,7 @@ const MOCK_PARTY_DATA = [
 ]
 
 
-// --- Tests for useNationalResult ---
-
+// Tests for useNationalResult
 describe('useNationalResult', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -197,7 +195,7 @@ describe('useNationalResult', () => {
     expect(result.chartData.value.datasets[0].data).toEqual([0, 0])
   })
 
-  // Test 10: Exposed Return values
+  // Test 9: Exposed Return values
   it('should expose all required properties and computed values', () => {
     const { result } = mountComposable()
     expect(Object.keys(result)).toEqual([
