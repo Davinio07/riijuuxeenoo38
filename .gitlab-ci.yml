@@ -66,3 +66,4 @@ deploy-to-oege:
           -e DB_PASSWORD=$DB_PASSWORD 
           -v /home/ivi/suham1/verkiezingsdata:/app/data 
           $DOCKER_IMAGE"
+    - echo "✅ Deployment voltooid!"
