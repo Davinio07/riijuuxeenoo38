@@ -3,8 +3,7 @@
  */
 export interface PoliticalParty {
   /** The officially registered name of the party. */
-  registeredAppellation: string;
-
+  name: string;
 }
 
 /**
@@ -12,14 +11,16 @@ export interface PoliticalParty {
  * This matches the Java model provided.
  */
 export interface NationalResult {
-  partyName: string;
-  validVotes: number;
+  name: string;
+  totalVotes: number;
 }
 
 /**
  * The base URL for the elections API.
+ * Uses the environment variable defined in .env
  */
-const API_BASE_URL = 'http://localhost:8080/api/elections';
+const BASE_API = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = `${BASE_API}/nationalResult`;
 
 /**
  * A mapping of official party names to their designated hex color codes.
@@ -55,14 +56,55 @@ export const partyColors: Record<string, string> = {
 };
 
 /**
+ * A mapping of official party names to their logo image URLs.
+ * Ensure these images exist in your public/logos folder.
+ */
+export const partyLogos: Record<string, string> = {
+  'VVD': '/logos/vvd.png',
+  'D66': '/logos/d66.png',
+  'PVV (Partij voor de Vrijheid)': '/logos/pvv.png',
+  'GROENLINKS / Partij van de Arbeid (PvdA)': '/logos/gl-pvda.png',
+  'CDA': '/logos/cda.png',
+  'SP (Socialistische Partij)': '/logos/sp.png',
+  'Forum voor Democratie': '/logos/fvd.png',
+  'Partij voor de Dieren': '/logos/pvdd.png',
+  'ChristenUnie': '/logos/cu.png',
+  'Volt': '/logos/volt.png',
+  'JA21': '/logos/ja21.png',
+  'Staatkundig Gereformeerde Partij (SGP)': '/logos/sgp.png',
+  'DENK': '/logos/denk.png',
+  '50PLUS': '/logos/50plus.png',
+  'BBB': '/logos/bbb.png',
+  'BIJ1': '/logos/bij1.png',
+  'Nieuw Sociaal Contract': '/logos/nsc.png',
+  'BVNL / Groep Van Haga': '/logos/bvnl.png',
+  'Piratenpartij - De Groenen': '/logos/piratenpartij.png',
+  'Splinter': '/logos/splinter.png',
+  'Samen voor Nederland': '/logos/samenvoornederland.png',
+  'LP (Libertaire Partij)': '/logos/lp.png',
+  'LEF - Voor de Nieuwe Generatie': '/logos/lef.png',
+  'Nederland met een PLAN': '/logos/plan.png',
+  'PartijvdSport': '/logos/pvds.png',
+  'Politieke Partij voor Basisinkomen': '/logos/basisinkomen.png',
+};
+
+/**
  * Retrieves the hex color code for a given party name.
  *
  * @param {string} partyName - The registered appellation of the party.
  * @returns {string} The corresponding hex color code or a default gray if not found.
  */
 export const getPartyColor = (partyName: string): string => {
-
   return partyColors[partyName] || '#6B7280'; // Default gray if not found
+};
+
+/**
+ * Retrieves the logo URL for a given party name.
+ * @param {string} partyName - The registered name of the party.
+ * @returns {string | null} The URL of the logo, or null if not found.
+ */
+export const getPartyLogo = (partyName: string): string | null => {
+  return partyLogos[partyName] || null;
 };
 
 /**
@@ -98,21 +140,56 @@ async function fetchFromAPI<T>(endpoint: string): Promise<T> {
   }
 }
 
+/**
+ * Helper to calculate D'Hondt distribution.
+ * This pure function contains the core mathematical logic.
+ */
+function calculateDHondt(results: NationalResult[], totalSeats: number): Record<string, number> {
+  const seatCounts: Record<string, number> = {};
+
+  // Initialize seat counts map with 0 for all parties
+  results.forEach(r => seatCounts[r.name] = 0);
+
+  // Initialize active parties (filter out 0 votes to optimize loop)
+  // We maintain a working object to track current seats for quotient calculation
+  const activeParties = results
+    .filter(r => r.totalVotes > 0)
+    .map(r => ({
+      name: r.name,
+      votes: r.totalVotes,
+      seats: 0
+    }));
+
+  // Distribute seats one by one
+  for (let i = 0; i < totalSeats; i++) {
+    let maxQuotient = -1;
+    let winnerIndex = -1;
+
+    for (let j = 0; j < activeParties.length; j++) {
+      const p = activeParties[j];
+      // D'Hondt formula: Votes / (Seats + 1)
+      const quotient = p.votes / (p.seats + 1);
+
+      if (quotient > maxQuotient) {
+        maxQuotient = quotient;
+        winnerIndex = j;
+      }
+    }
+
+    // Assign seat to winner
+    if (winnerIndex !== -1) {
+      activeParties[winnerIndex].seats++;
+      seatCounts[activeParties[winnerIndex].name]++;
+    }
+  }
+
+  return seatCounts;
+}
 
 /**
  * Service object for handling political party data.
  */
 export const partyService = {
-  /**
-   * Fetches a list of political parties for a specific election.
-   *
-   * @param {string} electionId - The unique identifier for the election.
-   * @returns {Promise<PoliticalParty[]>} A promise that resolves to an array of PoliticalParty objects.
-   */
-  async getParties(electionId: string): Promise<PoliticalParty[]> {
-    return fetchFromAPI<PoliticalParty[]>(`/${electionId}/parties`);
-  },
-
   /**
    * Fetches the national results (seats, votes, percentage) for all parties in an election.
    *
@@ -121,6 +198,17 @@ export const partyService = {
    */
   async getNationalResults(electionId: string): Promise<NationalResult[]> {
     return fetchFromAPI<NationalResult[]>(`/${electionId}/national`);
+  },
+
+  /**
+   * Calculates seat distribution based on vote results using the D'Hondt method.
+   * Can be used for National, Provincial, or Municipal levels.
+   *
+   * @param {NationalResult[]} results - The list of party results with vote counts.
+   * @param {number} totalSeats - The number of seats to distribute (default 150).
+   * @returns {Record<string, number>} A map of party names to their allocated seats.
+   */
+  calculateSeats(results: NationalResult[], totalSeats: number = 150): Record<string, number> {
+    return calculateDHondt(results, totalSeats);
   }
 };
-

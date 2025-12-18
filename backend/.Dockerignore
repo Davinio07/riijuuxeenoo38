@@ -1,0 +1,16 @@
+target/
+.git/
+.idea/
+.mvn/
+mvnw
+mvnw.cmd
+*.iml
+
+**/TK2021/
+**/TK2023/
+**/TK2025/
+**/TK2023_HvA_UvA*/
+**/Verkiezingsuitslag*/
+
+src/main/resources/**/*.xml
+!pom.xml

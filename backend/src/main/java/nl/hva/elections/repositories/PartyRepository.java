@@ -1,6 +1,6 @@
 package nl.hva.elections.repositories;
 
-import nl.hva.elections.persistence.model.Party;
+import nl.hva.elections.models.Party;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-
 public interface PartyRepository extends JpaRepository<Party, Long> {
     /**
      * Finds a party entity by its registered name and election identifier.
@@ -27,6 +26,5 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
      */
     List<Party> findByElectionId(String electionId);
 
-    Optional<Party> findById(int id);
-    
+
 }

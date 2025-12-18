@@ -1,7 +1,7 @@
 // src/main/java/nl/hva/elections/repositories/CandidateRepository.java
 package nl.hva.elections.repositories;
 
-import nl.hva.elections.persistence.model.Candidate;
+import nl.hva.elections.models.Candidate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
