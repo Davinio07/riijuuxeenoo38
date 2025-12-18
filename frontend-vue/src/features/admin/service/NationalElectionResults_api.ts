@@ -5,6 +5,9 @@ const logger = {
   debug: (message: string, context?: object) => console.debug(`[DEBUG] ${message}`, context || ''),
 };
 
+// Gebruik de .env variabele, of val terug op localhost als die niet bestaat
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+
 /**
  * Represents an HTTP-specific error.
  * @extends Error
@@ -48,7 +51,7 @@ export interface PartyDTO {
  * @throws {Error} When a network or unexpected fetch error occurs.
  */
 export async function getPartiesFromDb(electionId: string): Promise<PartyDTO[]> {
-  const url = `http://localhost:8080/api/nationalResult/${electionId}/national`;
+const url = `http://oege.ie.hva.nl:8400/api/nationalResult/${electionId}/national`;
   logger.info(`Fetching persisted party data for election ID: ${electionId}`);
   logger.debug(`Request URL: ${url}`);
 

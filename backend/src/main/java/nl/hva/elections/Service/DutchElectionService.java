@@ -36,7 +36,7 @@ public class DutchElectionService {
     private static final List<String> ELECTION_IDS_TO_LOAD = List.of("TK2025", "TK2023", "TK2021");
 
     // The default ID
-    private static final String DEFAULT_ELECTION_ID = "TK2025";
+    private static final String DEFAULT_ELECTION_ID = "TK2023";
 
     // The cache for the parsed data
     private final Map<String, Election> electionCache = new ConcurrentHashMap<>();

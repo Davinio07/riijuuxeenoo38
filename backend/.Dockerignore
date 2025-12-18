@@ -6,10 +6,11 @@ mvnw
 mvnw.cmd
 *.iml
 
-src/main/resources/TK2021/
-src/main/resources/TK2023/
-src/main/resources/TK2025/
-src/main/resources/TK2023_HvA_UvA/
-src/main/resources/TK2023_HvA_UvA - Copy/
-src/main/resources/Verkiezingsuitslag*/
+**/TK2021/
+**/TK2023/
+**/TK2025/
+**/TK2023_HvA_UvA*/
+**/Verkiezingsuitslag*/
+
 src/main/resources/**/*.xml
+!pom.xml

@@ -20,7 +20,9 @@ const error = ref<string | null>(null);
 const currentUsername = ref('Anonymous');
 const chatBoxRef = ref<HTMLElement | null>(null); // Ref voor de scrollpositie
 
-const API_HOST = 'http://localhost:8080';
+// Haal de API url op (bijv. ...:8400/api) en verwijder '/api' aan het einde voor de WebSocket base URL
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_HOST = apiUrl.replace(/\/api$/, '');
 const WS_ENDPOINT = `/ws`;
 const SUBSCRIPTION_TOPIC = '/topic/public';
 const SEND_ENDPOINT = '/app/chat.send';

@@ -17,8 +17,10 @@ export interface NationalResult {
 
 /**
  * The base URL for the elections API.
+ * Uses the environment variable defined in .env
  */
-const API_BASE_URL = 'http://localhost:8080/api/nationalResult';
+const BASE_API = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = `${BASE_API}/nationalResult`;
 
 /**
  * A mapping of official party names to their designated hex color codes.

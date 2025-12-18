@@ -1,6 +1,7 @@
 // src/services/api-client.ts
 
-const API_BASE_URL = 'http://localhost:8080/api';
+// Vite gebruikt import.meta.env om .env variabelen te lezen
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 /**
  * @interface ApiErrorResponse
