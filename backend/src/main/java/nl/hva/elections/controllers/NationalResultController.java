@@ -18,6 +18,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/nationalResult")
+@CrossOrigin(origins = "https://elections2-1391.onrender.com")
 public class NationalResultController {
 
     private static final Logger logger = LoggerFactory.getLogger(NationalResultController.class);
