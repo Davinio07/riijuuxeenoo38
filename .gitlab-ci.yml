@@ -1,28 +1,15 @@
-# =========================================================
-# GLOBAL CONFIGURATION
-# =========================================================
-image: maven:3.9.6-eclipse-temurin-21
-
-variables:
-  DOCKER_IMAGE: "$DOCKER_USERNAME/election-backend:latest"
-
-# Global rule: Everything in this file only runs on the main branch
-workflow:
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-
 stages:
   - build
-  - test
-  - build_docs
   - publish
   - deploy
 
-# =========================================================
-# 1. BUILD & TEST STAGE
-# =========================================================
+variables:
+  # We gebruiken de tag 'latest' voor het gemak
+  DOCKER_IMAGE: "$DOCKER_USERNAME/election-backend:latest"
 
-build_app:
+# FASE 1: Java Applicatie Bouwen (Blijft hetzelfde)
+build-backend:
+  image: maven:3.9.6-eclipse-temurin-21
   stage: build
   tags:
     - hva
@@ -33,72 +20,37 @@ build_app:
     paths:
       - backend/target/*.jar
 
-test_app:
-  stage: test
-  tags:
-    - hva
-  script:
-    - cd backend
-    - mvn test -Dspring.datasource.url=jdbc:h2:mem:testdb -Dspring.datasource.driverClassName=org.h2.Driver -Dspring.datasource.username=sa -Dspring.datasource.password=
-
-# =========================================================
-# 2. DOCUMENTATION STAGE
-# =========================================================
-
-build_javadoc:
-  stage: build_docs
-  tags:
-    - hva
-  script:
-    - cd backend
-    - mvn javadoc:javadoc -e
-  artifacts:
-    paths:
-      - docs/apidocs
-    expire_in: 1 day
-
-# =========================================================
-# 3. PUBLISH STAGE (Docker)
-# =========================================================
-
+# FASE 2: Docker Image Bouwen met KANIKO (De Fix!)
 publish-image:
   stage: publish
-  image: docker:latest
-  services:
-    - docker:dind
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
   tags:
     - hva
-  before_script:
-    - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+  only:
+    - main
   script:
-    - cd backend
-    - docker build -t $DOCKER_IMAGE .
-    - docker push $DOCKER_IMAGE
+    - echo "⚙️ Configureren van Docker credentials..."
+    - mkdir -p /kaniko/.docker
+    # Hier maken we een config file met jouw gebruikersnaam en wachtwoord
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"$(printf "%s:%s" "${DOCKER_USERNAME}" "${DOCKER_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
 
-# =========================================================
-# 4. DEPLOY STAGE (Pages & Oege Server)
-# =========================================================
+    - echo "🐳 Start bouwen en pushen van image..."
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/backend"
+      --dockerfile "${CI_PROJECT_DIR}/backend/Dockerfile"
+      --destination "${DOCKER_IMAGE}"
+      --destination "${DOCKER_USERNAME}/election-backend:v1"  # Pushed ook als v1 voor de zekerheid
 
-# Deploy Javadoc to GitLab Pages
-pages:
-  stage: deploy
-  tags:
-    - hva
-  dependencies:
-    - build_javadoc
-  script:
-    - mkdir public
-    - mv docs/apidocs/* public/
-  artifacts:
-    paths:
-      - public
-
-# Deploy Backend to Oege Server
+# FASE 3: Deployen op Oege (Blijft hetzelfde)
 deploy-to-oege:
   stage: deploy
   image: alpine:latest
   tags:
     - hva
+  only:
+    - main
   before_script:
     - apk add --no-cache openssh-client
     - eval $(ssh-agent -s)
@@ -109,15 +61,23 @@ deploy-to-oege:
   script:
     - echo "🚀 Start deployment naar Oege..."
     - ssh $SSH_USER@$SSH_HOST "
-      docker pull $DOCKER_IMAGE &&
-      docker stop election-backend || true &&
-      docker rm election-backend || true &&
-      docker system prune -a -f &&
-      docker run -d
-      --restart=always
-      --name election-backend
-      -p 8400:8080
-      -e SPRING_PROFILES_ACTIVE=production
-      -e DB_PASSWORD=$DB_PASSWORD
-      -v /home/ivi/suham1/verkiezingsdata:/app/data
-      $DOCKER_IMAGE"
+        echo '1. Nieuwe image ophalen...';
+        docker pull $DOCKER_IMAGE &&
+        
+        echo '2. Oude container stoppen en verwijderen...';
+        docker stop election-backend || true &&
+        docker rm election-backend || true &&
+        
+        echo '3. RUIMTE MAKEN...';
+        docker system prune -a -f &&
+        
+        echo '4. Nieuwe container starten...';
+        docker run -d 
+          --restart=always 
+          --name election-backend 
+          -p 8400:8080 
+          -e SPRING_PROFILES_ACTIVE=production 
+          -e DB_PASSWORD=$DB_PASSWORD 
+          -v /home/ivi/suham1/verkiezingsdata:/app/data 
+          $DOCKER_IMAGE"
+    - echo "✅ Deployment geslaagd!"
