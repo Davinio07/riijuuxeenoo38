@@ -2,27 +2,69 @@
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-7xl mx-auto">
 
+      <section class="mb-12 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">
+              Partij Vergelijking: <span class="text-blue-600">{{ activeContextName }}</span>
+            </h2>
+            <p class="text-sm text-gray-500">
+              Selecteer tot 5 partijen uit de lijst om de resultaten in {{ activeContextName }} te vergelijken.
+            </p>
+          </div>
+          <button
+            @click="resetComparison"
+            class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-md transition-colors"
+          >
+            Selectie wissen
+          </button>
+        </div>
+
+        <div v-if="selectedParties.length > 0" class="mb-8">
+          <ComparisonChart
+            :parties="comparisonData"
+            metric="totalVotes"
+            :title="`Stemmen in ${activeContextName}`"
+          />
+        </div>
+        <div v-else class="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 text-gray-500">
+          <p class="mb-2">Geen partijen geselecteerd.</p>
+          <p class="text-xs">Klik op partijen hieronder om de vergelijking voor {{ activeContextName }} te starten.</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-6 border-t pt-6">
+          <button
+            v-for="party in allParties"
+            :key="party.name"
+            @click="toggleParty(party)"
+            class="flex items-center p-2 border rounded-lg transition-all text-xs text-left"
+            :class="isSelected(party) ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500' : 'bg-white hover:bg-gray-50 border-gray-200'"
+          >
+            <div
+              class="w-3 h-3 rounded-full mr-2 flex-shrink-0"
+              :style="{ backgroundColor: getPartyColor(party.name) }"
+            ></div>
+            <span class="truncate font-medium text-gray-700">{{ party.name }}</span>
+          </button>
+        </div>
+      </section>
+
       <header class="mb-12 text-center">
         <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">
           Provincies & Kieskringen
         </h1>
         <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-500">
-          Selecteer een provincie om de onderliggende kieskringen en gemeenten te verkennen.
+          Selecteer een regio om de vergelijking hierboven bij te werken naar lokale resultaten.
         </p>
       </header>
 
       <div v-if="isLoading" class="flex flex-col items-center justify-center py-24">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
-        <span class="mt-4 text-gray-500 font-medium">Provincies ophalen...</span>
+        <span class="mt-4 text-gray-500 font-medium">Data ophalen...</span>
       </div>
 
       <div v-else-if="error" class="max-w-lg mx-auto bg-white border-l-4 border-red-500 rounded-lg shadow-sm p-6">
         <div class="flex items-center">
-          <div class="flex-shrink-0 text-red-500">
-            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-            </svg>
-          </div>
           <div class="ml-3">
             <h3 class="text-sm font-medium text-red-800">Fout bij laden</h3>
             <div class="mt-1 text-sm text-red-700">{{ error.message }}</div>
@@ -31,187 +73,87 @@
       </div>
 
       <div v-else>
-        <div
-          class="bg-white rounded-xl border shadow-sm"
-          :class="{ 'ring-2 ring-blue-600': national.isOpen }"
-        >
-          <div
-            @click="toggleNational"
-            class="p-6 cursor-pointer flex justify-between items-center"
-          >
+        <div class="bg-white rounded-xl border shadow-sm mb-6" :class="{ 'ring-2 ring-blue-600': national.isOpen }">
+          <div @click="toggleNational" class="p-6 cursor-pointer flex justify-between items-center">
             <h2 class="text-xl font-bold">Nederland</h2>
-
             <div class="flex gap-3 items-center">
               <button
-                @click.stop="goToNationalResults"
-                class="text-sm px-3 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100"
+                @click.stop="setContext('Nederland', 'national')"
+                class="text-xs px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
               >
-                Uitslag
+                Bekijk Data
               </button>
-
-              <svg
-                class="w-5 h-5 transition-transform"
-                :class="{ 'rotate-180': national.isOpen }"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
+              <svg class="w-5 h-5 transition-transform" :class="{ 'rotate-180': national.isOpen }" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </div>
           </div>
 
-          <transition
-            name="collapse"
-            @enter="startTransition"
-            @after-enter="endTransition"
-            @leave="startTransition"
-            @after-leave="endTransition"
-          >
+          <transition name="collapse" @enter="startTransition" @after-enter="endTransition" @leave="startTransition" @after-leave="endTransition">
             <div v-if="national.isOpen">
-              <div v-if="national.isLoadingChildren" class="p-6 text-center">
-                Provincies laden...
-              </div>
-
+              <div v-if="national.isLoadingChildren" class="p-6 text-center">Provincies laden...</div>
               <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
+
                 <div
                   v-for="province in national.provinces"
                   :key="province.province_id"
-                  class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out transform hover:-translate-y-1 flex flex-col overflow-hidden group"
+                  class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all group"
                   :class="{ 'ring-2 ring-blue-500 border-transparent': province.isOpen }"
                 >
-                  <div
-                    @click="toggleProvince(province)"
-                    class="p-6 cursor-pointer bg-white transition-colors flex items-center justify-between relative overflow-hidden"
-                  >
-                    <div class="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity" :class="getProvinceBg(province.province_id)"></div>
-
+                  <div @click="toggleProvince(province)" class="p-6 cursor-pointer flex items-center justify-between relative overflow-hidden">
                     <div class="flex items-center gap-4 relative z-10">
                       <div class="w-1.5 h-10 rounded-full" :class="getProvinceColor(province.province_id)"></div>
-
                       <div>
-                        <h2 class="text-lg font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
-                          {{ province.name }}
-                        </h2>
-
-                        <span
-                          v-if="province.isOpen && province.kieskringen"
-                          class="inline-flex items-center px-2 py-0.5 mt-1 rounded text-xs font-medium bg-blue-50 text-blue-700 animate-fade-in"
-                        >
-                          {{ province.kieskringen.length }} kieskringen
-                        </span>
-
-                        <span
-                          v-else
-                          class="text-xs text-gray-400 mt-1 block font-medium group-hover:text-blue-500 transition-colors"
-                        >
-                          {{ province.isOpen ? 'Laden...' : 'Klik om te bekijken' }}
-                        </span>
+                        <h2 class="text-lg font-bold text-gray-900 group-hover:text-blue-700">{{ province.name }}</h2>
+                        <span class="text-xs text-gray-400 font-medium">{{ province.isOpen ? 'Klik om te sluiten' : 'Klik voor kieskringen' }}</span>
                       </div>
                     </div>
-
-                    <div
-                      class="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200"
-                      :class="province.isOpen ? 'bg-blue-100 text-blue-600 rotate-180' : 'bg-gray-50 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500'"
-                    >
-                      <svg
-                        class="w-5 h-5 transition-transform duration-300"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                      >
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                      </svg>
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center transition-all" :class="province.isOpen ? 'bg-blue-100 text-blue-600 rotate-180' : 'bg-gray-50 text-gray-400'">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                     </div>
                   </div>
 
-                  <transition
-                    name="collapse"
-                    @enter="startTransition"
-                    @after-enter="endTransition"
-                    @leave="startTransition"
-                    @after-leave="endTransition"
-                  >
+                  <transition name="collapse" @enter="startTransition" @after-enter="endTransition" @leave="startTransition" @after-leave="endTransition">
                     <div v-if="province.isOpen" class="border-t border-gray-100 bg-gray-50/50">
+                      <ul v-if="province.kieskringen && province.kieskringen.length > 0" class="divide-y divide-gray-100">
 
-                      <div v-if="province.isLoadingChildren" class="py-10 flex justify-center">
-                        <div class="flex items-center space-x-3 text-gray-400">
-                          <div class="animate-spin rounded-full h-5 w-5 border-2 border-current border-t-transparent"></div>
-                          <span class="text-sm">Kieskringen ophalen...</span>
-                        </div>
-                      </div>
-
-                      <ul v-else-if="province.kieskringen && province.kieskringen.length > 0" class="divide-y divide-gray-100">
-                        <li
-                          v-for="kieskring in province.kieskringen"
-                          :key="kieskring.id"
-                          class="group/item"
-                        >
-                          <div
-                            class="px-6 py-4 hover:bg-white transition-colors bg-transparent"
-                          >
+                        <li v-for="kieskring in province.kieskringen" :key="kieskring.id" class="group/item">
+                          <div class="px-6 py-4 hover:bg-white transition-colors">
                             <div class="flex items-center justify-between cursor-pointer" @click.stop="toggleKieskring(kieskring)">
+                              <span class="text-sm font-semibold text-gray-700">{{ kieskring.name }}</span>
                               <div class="flex items-center gap-3">
-                                <div class="w-2 h-2 rounded-full bg-gray-300 group-hover/item:bg-blue-500 transition-colors shadow-sm"></div>
-                                <span class="text-sm font-semibold text-gray-700 group-hover/item:text-gray-900">
-                                  {{ kieskring.name }}
-                                </span>
-                              </div>
-
-                              <div class="flex items-center gap-3 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200">
                                 <button
-                                  @click.stop="goToResults(kieskring.name)"
-                                  class="text-xs font-medium text-gray-500 hover:text-blue-600 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                                  @click.stop="setContext(kieskring.name, 'kieskring')"
+                                  class="text-[10px] uppercase font-bold text-blue-600 hover:underline"
                                 >
-                                  Uitslag
+                                  Bekijk Data
                                 </button>
-                                <div class="h-3 w-px bg-gray-300"></div>
-                                <button
-                                  @click.stop="goToParties(kieskring.name)"
-                                  class="text-xs font-medium text-gray-500 hover:text-green-600 px-2 py-1 rounded hover:bg-green-50 transition-colors"
-                                >
-                                  Partijen
-                                </button>
+                                <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': kieskring.isOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                               </div>
                             </div>
 
-                            <transition
-                              name="collapse"
-                              @enter="startTransition"
-                              @after-enter="endTransition"
-                              @leave="startTransition"
-                              @after-leave="endTransition"
-                            >
+                            <transition name="collapse" @enter="startTransition" @after-enter="endTransition" @leave="startTransition" @after-leave="endTransition">
                               <div v-if="kieskring.isOpen" class="mt-3 ml-5 pl-4 border-l-2 border-gray-200">
-                                <div v-if="kieskring.isLoadingGemeentes" class="text-xs text-gray-400 py-2 italic pl-1">
-                                  Gemeenten laden...
+
+                                <div v-if="kieskring.gemeentes && kieskring.gemeentes.length > 0" class="flex flex-wrap gap-2 py-2">
+                                  <button
+                                    v-for="gm in kieskring.gemeentes"
+                                    :key="gm.id"
+                                    @click.stop="setContext(gm.name, 'municipality')"
+                                    class="px-3 py-1 bg-white border border-gray-200 text-gray-600 text-xs rounded-full shadow-sm hover:text-blue-600 hover:border-blue-200 transition-all"
+                                  >
+                                    {{ gm.name }}
+                                  </button>
                                 </div>
-                                <div v-else-if="kieskring.gemeentes && kieskring.gemeentes.length > 0" class="pt-1 pb-2">
-                                  <p class="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-2 pl-1">Gemeenten</p>
-                                  <div class="flex flex-wrap gap-2">
-                                    <button
-                                      v-for="gm in kieskring.gemeentes"
-                                      :key="gm.id"
-                                      @click.stop="goToMunicipalityParties(gm.name)"
-                                      class="px-3 py-1 bg-white border border-gray-200 text-gray-600 text-xs rounded-full shadow-sm hover:shadow hover:text-blue-600 hover:border-blue-200 transition-all active:scale-95"
-                                    >
-                                      {{ gm.name }}
-                                    </button>
-                                  </div>
-                                </div>
-                                <p v-else class="text-xs text-gray-400 italic py-2 pl-1">
-                                  Geen gemeenten gevonden.
-                                </p>
                               </div>
                             </transition>
                           </div>
                         </li>
                       </ul>
-
-                      <p v-else class="text-center text-gray-400 italic py-8 text-sm">
-                        Geen data beschikbaar.
-                      </p>
                     </div>
                   </transition>
                 </div>
+
               </div>
             </div>
           </transition>
@@ -222,30 +164,86 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import { useProvince } from "@/features/admin/composables/useProvince.ts";
-import { useNationalHierarchy} from "@/features/admin/composables/useNationalHierarchy.ts";
+import { useNationalHierarchy } from "@/features/admin/composables/useNationalHierarchy.ts";
+import ComparisonChart from '../components/ComparisonChart.vue';
+import { getPartyColor, partyService, type NationalResult } from '../service/partyService';
+import { getResultsForMunicipality } from '../service/MunicipalityElectionResults_api';
+import { getAllConstituencyResults, type ConstituencyDataDto } from '../service/ConstituencyDetails_api';
 
+// Existing Hierarchy Logic
 const {
-  isLoading,
-  error,
+  isLoading, error, toggleProvince, toggleKieskring,
+  startTransition, endTransition, getProvinceColor, getProvinceBg
+} = useProvince();
 
-  toggleProvince,
-  toggleKieskring,
+const { national, toggleNational } = useNationalHierarchy();
 
-  goToResults,
-  goToParties,
-  goToMunicipalityParties,
+// Party Comparison State
+const allParties = ref<NationalResult[]>([]);
+const selectedParties = ref<NationalResult[]>([]);
+const currentContextResults = ref<NationalResult[]>([]);
+const activeContextName = ref('Nederland');
 
-  startTransition,
-  endTransition,
+onMounted(async () => {
+  // Load National data by default
+  try {
+    const data = await partyService.getNationalResults('TK2023');
+    allParties.value = data;
+    currentContextResults.value = data;
+  } catch (err) {
+    console.error("Failed to load initial party data", err);
+  }
+});
 
-  getProvinceColor,
-  getProvinceBg
-} = useProvince()
+// Context Switching Logic
+async function setContext(name: string, type: 'national' | 'municipality' | 'kieskring') {
+  activeContextName.value = name;
+  try {
+    if (type === 'national') {
+      currentContextResults.value = await partyService.getNationalResults('TK2023');
+    } else if (type === 'municipality') {
+      const results = await getResultsForMunicipality(name);
+      currentContextResults.value = results.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
+    } else if (type === 'kieskring') {
+      const allKieskringen = await getAllConstituencyResults();
+      const match = allKieskringen.find((k: ConstituencyDataDto) => k.name === name);
+      if (match) {
+        currentContextResults.value = match.results.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
+      }
+    }
+    // Scroll to chart automatically for better UX
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (err) {
+    console.error(`Failed to update context for ${name}`, err);
+  }
+}
 
-const {
-  national,
-  toggleNational,
-  goToNationalResults
-} = useNationalHierarchy()
+const toggleParty = (party: NationalResult) => {
+  const idx = selectedParties.value.findIndex(p => p.name === party.name);
+  if (idx > -1) {
+    selectedParties.value.splice(idx, 1);
+  } else if (selectedParties.value.length < 5) {
+    selectedParties.value.push(party);
+  }
+};
+
+const isSelected = (party: NationalResult) => selectedParties.value.some(p => p.name === party.name);
+
+const resetComparison = () => {
+  selectedParties.value = [];
+};
+
+const comparisonData = computed(() => {
+  const names = selectedParties.value.map(p => p.name);
+  return currentContextResults.value.filter(r => names.includes(r.name));
+});
 </script>
+
+<style scoped>
+.collapse-enter-active, .collapse-leave-active {
+  transition: height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  overflow: hidden;
+}
+</style>
