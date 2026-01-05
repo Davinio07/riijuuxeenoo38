@@ -19,9 +19,7 @@ export function useNationalHierarchy() {
   })
 
   async function toggleNational() {
-    national.value.isOpen = !national.value.isOpen
-
-    if (national.value.isOpen && !national.value.provinces) {
+    if (!national.value.isOpen && !national.value.provinces) {
       try {
         national.value.isLoadingChildren = true
         const data = await getProvinces()
@@ -33,7 +31,10 @@ export function useNationalHierarchy() {
         national.value.isLoadingChildren = false
       }
     }
+
+    national.value.isOpen = !national.value.isOpen
   }
+
 
   function goToNationalResults() {
     router.push({ path: '/NationalElectionResults' })
