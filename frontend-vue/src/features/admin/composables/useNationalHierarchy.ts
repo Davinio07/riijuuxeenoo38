@@ -25,7 +25,11 @@ export function useNationalHierarchy() {
         const data = await getProvinces()
         national.value.provinces = data.map(p => ({
           ...p,
-          isOpen: false
+          isOpen: false,
+          kieskringen: p.kieskringen?.map(k => ({
+            ...k,
+            isOpen: false
+          }))
         }))
       } finally {
         national.value.isLoadingChildren = false

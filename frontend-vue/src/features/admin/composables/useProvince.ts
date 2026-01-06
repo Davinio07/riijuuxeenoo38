@@ -56,7 +56,15 @@ export function useProvince() {
     try {
       isLoading.value = true
       const data = await getProvinces()
-      provinces.value = data.map(p => ({ ...p, isOpen: false }))
+
+      provinces.value = data.map(p => ({
+        ...p,
+        isOpen: false,
+        kieskringen: p.kieskringen?.map(k => ({
+          ...k,
+          isOpen: false
+        }))
+      }))
     } catch (err) {
       error.value = err as Error
     } finally {

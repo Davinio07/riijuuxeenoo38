@@ -47,7 +47,7 @@ const {
 
       <span v-if="loading" class="text-indigo-600 ml-3 flex items-center">
         Bezig met laden...
-        <div class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-indigo-600 rounded-full ml-1" role="status"></div>
+        <div class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent text-indigo-600 rounded-full ml-1" role="status"></div>
       </span>
     </div>
 
