@@ -25,7 +25,7 @@ const {
 </script>
 
 <template>
-  <div class="p-6 bg-gray-200 rounded min-h-screen">
+  <div class="p-6 bg-gray-100 rounded min-h-screen">
     <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Nationale Verkiezingsresultaten</h1>
 
     <div class="mb-6 flex gap-3 items-center">
