@@ -10,7 +10,7 @@
           Vergelijk Partijen
         </span>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
         <div v-if="selectedParties.length > 0" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">
           {{ selectedParties.length }}
@@ -178,10 +178,16 @@
                             <span class="text-sm font-medium text-gray-700">{{ kieskring.name }}</span>
                             <div class="flex items-center gap-4">
                               <button
+                                @click.stop="goToResults(kieskring.name)"
+                                class="text-[10px] uppercase font-bold text-gray-500 hover:text-blue-600 transition-colors"
+                              >
+                                Uitslag
+                              </button>
+                              <button
                                 @click.stop="setContextAndOpen(kieskring.name, 'kieskring')"
                                 class="text-[10px] uppercase tracking-widest font-black text-blue-600 hover:text-blue-800 transition-colors"
                               >
-                                Bekijk Data
+                                Data Vergelijken
                               </button>
                               <button @click.stop="toggleKieskring(kieskring)" class="p-1">
                                 <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': kieskring.isOpen }" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -231,7 +237,7 @@ import { getAllConstituencyResults, type ConstituencyDataDto } from '../service/
 // Composable Logic
 const {
   isLoading, error, toggleProvince, toggleKieskring,
-  startTransition, endTransition, getProvinceColor
+  goToResults, startTransition, endTransition, getProvinceColor
 } = useProvince();
 
 const { national, toggleNational, goToNationalResults } = useNationalHierarchy();
