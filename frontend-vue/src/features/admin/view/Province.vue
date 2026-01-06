@@ -10,7 +10,7 @@
           Vergelijk Partijen
         </span>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
         <div v-if="selectedParties.length > 0" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">
           {{ selectedParties.length }}
@@ -131,6 +131,12 @@
             </div>
             <div class="flex gap-4 items-center">
               <button
+                @click.stop="goToNationalResults"
+                class="text-sm px-3 py-2 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium transition-colors"
+              >
+                Landelijke Uitslag
+              </button>
+              <button
                 @click.stop="setContextAndOpen('Nederland', 'national')"
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition-all active:scale-95"
               >
@@ -222,13 +228,13 @@ import { getPartyColor, getPartyLogo, partyService, type NationalResult } from '
 import { getResultsForMunicipality } from '../service/MunicipalityElectionResults_api';
 import { getAllConstituencyResults, type ConstituencyDataDto } from '../service/ConstituencyDetails_api';
 
-// Shared Hierarchy Logic
+// Composable Logic
 const {
   isLoading, error, toggleProvince, toggleKieskring,
   startTransition, endTransition, getProvinceColor
 } = useProvince();
 
-const { national, toggleNational } = useNationalHierarchy();
+const { national, toggleNational, goToNationalResults } = useNationalHierarchy();
 
 // Panel & Comparison State
 const isPanelOpen = ref(false);
