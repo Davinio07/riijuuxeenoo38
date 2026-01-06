@@ -79,9 +79,14 @@
                       :style="{ backgroundColor: getPartyColor(party.name) }"
                     ></div>
                   </div>
-                  <span class="text-xs font-semibold text-gray-700 truncate group-hover:text-black">
-                    {{ party.name }}
-                  </span>
+                  <div class="flex flex-col overflow-hidden">
+                    <span class="text-xs font-semibold text-gray-700 truncate group-hover:text-black">
+                      {{ party.name }}
+                    </span>
+                    <span v-if="calculatedSeats[party.name] !== undefined" class="text-[10px] text-gray-500">
+                      {{ calculatedSeats[party.name] }} zetels
+                    </span>
+                  </div>
                 </button>
               </div>
             </div>
@@ -96,26 +101,13 @@
       </Teleport>
 
       <header class="mb-12 text-center pt-8">
-        <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">
-          Provincies & Kieskringen
-        </h1>
-        <p class="mt-4 text-gray-500 text-lg">
-          Selecteer een regio om de vergelijking aan te passen aan lokale data.
-        </p>
+        <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Provincies & Kieskringen</h1>
+        <p class="mt-4 text-gray-500 text-lg">Selecteer een regio om de vergelijking aan te passen aan lokale data.</p>
       </header>
 
       <div v-if="isLoading" class="flex flex-col items-center justify-center py-24">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
         <span class="mt-4 text-gray-500 font-medium">Data laden...</span>
-      </div>
-
-      <div v-else-if="error" class="max-w-lg mx-auto bg-white border-l-4 border-red-500 rounded-lg shadow-sm p-6">
-        <div class="flex items-center">
-          <div class="ml-3">
-            <h3 class="text-sm font-medium text-red-800">Fout bij laden</h3>
-            <div class="mt-1 text-sm text-red-700">{{ error.message }}</div>
-          </div>
-        </div>
       </div>
 
       <div v-else>
@@ -152,13 +144,7 @@
             <div v-if="national.isOpen" class="bg-gray-50 p-6 border-t border-gray-100">
               <div v-if="national.isLoadingChildren" class="text-center py-10 text-gray-500">Provincies laden...</div>
               <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                <div
-                  v-for="province in national.provinces"
-                  :key="province.province_id"
-                  class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all group overflow-hidden"
-                  :class="{ 'ring-2 ring-blue-500 border-transparent': province.isOpen }"
-                >
+                <div v-for="province in national.provinces" :key="province.province_id" class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all group overflow-hidden">
                   <div @click="toggleProvince(province)" class="p-5 cursor-pointer flex items-center justify-between">
                     <div class="flex items-center gap-4">
                       <div class="w-1.5 h-10 rounded-full" :class="getProvinceColor(province.province_id)"></div>
@@ -168,25 +154,17 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
-
                   <transition name="collapse" @enter="startTransition" @after-enter="endTransition" @leave="startTransition" @after-leave="endTransition">
                     <div v-if="province.isOpen" class="bg-gray-50 border-t border-gray-100">
                       <ul v-if="province.kieskringen && province.kieskringen.length > 0" class="divide-y divide-gray-100">
-
                         <li v-for="kieskring in province.kieskringen" :key="kieskring.id">
                           <div class="px-6 py-4 flex items-center justify-between hover:bg-white transition-colors">
                             <span class="text-sm font-medium text-gray-700">{{ kieskring.name }}</span>
                             <div class="flex items-center gap-4">
-                              <button
-                                @click.stop="goToResults(kieskring.name)"
-                                class="text-[10px] uppercase font-bold text-gray-500 hover:text-blue-600 transition-colors"
-                              >
+                              <button @click.stop="goToResults(kieskring.name)" class="text-[10px] uppercase font-bold text-gray-500 hover:text-blue-600 transition-colors">
                                 Uitslag
                               </button>
-                              <button
-                                @click.stop="setContextAndOpen(kieskring.name, 'kieskring')"
-                                class="text-[10px] uppercase tracking-widest font-black text-blue-600 hover:text-blue-800 transition-colors"
-                              >
+                              <button @click.stop="setContextAndOpen(kieskring.name, 'kieskring')" class="text-[10px] uppercase tracking-widest font-black text-blue-600 hover:text-blue-800 transition-colors">
                                 Data Vergelijken
                               </button>
                               <button @click.stop="toggleKieskring(kieskring)" class="p-1">
@@ -196,16 +174,10 @@
                               </button>
                             </div>
                           </div>
-
                           <transition name="collapse" @enter="startTransition" @after-enter="endTransition" @leave="startTransition" @after-leave="endTransition">
                             <div v-if="kieskring.isOpen" class="px-8 pb-4 pt-2">
                               <div class="flex flex-wrap gap-2">
-                                <button
-                                  v-for="gm in kieskring.gemeentes"
-                                  :key="gm.id"
-                                  @click.stop="setContextAndOpen(gm.name, 'municipality')"
-                                  class="px-3 py-1 bg-white border border-gray-200 text-gray-600 text-xs rounded-full hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm active:scale-95"
-                                >
+                                <button v-for="gm in kieskring.gemeentes" :key="gm.id" @click.stop="setContextAndOpen(gm.name, 'municipality')" class="px-3 py-1 bg-white border border-gray-200 text-gray-600 text-xs rounded-full hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">
                                   {{ gm.name }}
                                 </button>
                               </div>
@@ -234,7 +206,6 @@ import { getPartyColor, getPartyLogo, partyService, type NationalResult } from '
 import { getResultsForMunicipality } from '../service/MunicipalityElectionResults_api';
 import { getAllConstituencyResults, type ConstituencyDataDto } from '../service/ConstituencyDetails_api';
 
-// Composable Logic
 const {
   isLoading, error, toggleProvince, toggleKieskring,
   goToResults, startTransition, endTransition, getProvinceColor
@@ -246,37 +217,39 @@ const { national, toggleNational, goToNationalResults } = useNationalHierarchy()
 const isPanelOpen = ref(false);
 const allParties = ref<NationalResult[]>([]);
 const selectedParties = ref<NationalResult[]>([]);
-const currentContextResults = ref<NationalResult[]>([]);
+const currentResults = ref<NationalResult[]>([]);
+const calculatedSeats = ref<Record<string, number>>({});
 const activeContextName = ref('Nederland');
+const TOTAL_SEATS = 150;
 
 onMounted(async () => {
   try {
     const data = await partyService.getNationalResults('TK2023');
     allParties.value = data;
-    currentContextResults.value = data;
+    currentResults.value = data;
+    calculatedSeats.value = partyService.calculateSeats(data, TOTAL_SEATS);
   } catch (err) {
     console.error("Fout bij laden nationale partijen:", err);
   }
 });
 
-// Update data context and open the slide-out panel
 async function setContextAndOpen(name: string, type: string) {
   activeContextName.value = name;
   isPanelOpen.value = true;
-
   try {
+    let results: NationalResult[] = [];
     if (type === 'national') {
-      currentContextResults.value = await partyService.getNationalResults('TK2023');
+      results = await partyService.getNationalResults('TK2023');
     } else if (type === 'municipality') {
-      const results = await getResultsForMunicipality(name);
-      currentContextResults.value = results.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
+      const apiResults = await getResultsForMunicipality(name);
+      results = apiResults.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
     } else if (type === 'kieskring') {
       const allKies = await getAllConstituencyResults();
       const match = allKies.find((k: ConstituencyDataDto) => k.name === name);
-      if (match) {
-        currentContextResults.value = match.results.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
-      }
+      if (match) results = match.results.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
     }
+    currentResults.value = results;
+    calculatedSeats.value = partyService.calculateSeats(results, TOTAL_SEATS);
   } catch (err) {
     console.error(`Fout bij ophalen contextdata voor ${name}:`, err);
   }
@@ -284,11 +257,8 @@ async function setContextAndOpen(name: string, type: string) {
 
 const toggleParty = (party: NationalResult) => {
   const idx = selectedParties.value.findIndex(p => p.name === party.name);
-  if (idx > -1) {
-    selectedParties.value.splice(idx, 1);
-  } else if (selectedParties.value.length < 5) {
-    selectedParties.value.push(party);
-  }
+  if (idx > -1) selectedParties.value.splice(idx, 1);
+  else if (selectedParties.value.length < 5) selectedParties.value.push(party);
 };
 
 const isSelected = (party: NationalResult) => selectedParties.value.some(p => p.name === party.name);
@@ -296,7 +266,13 @@ const resetComparison = () => selectedParties.value = [];
 
 const comparisonData = computed(() => {
   const selectedNames = selectedParties.value.map(p => p.name);
-  return currentContextResults.value.filter(r => selectedNames.includes(r.name));
+  return currentResults.value
+    .filter(r => selectedNames.includes(r.name))
+    .map(p => ({
+      name: p.name,
+      totalVotes: p.totalVotes,
+      seats: calculatedSeats.value[p.name] || 0
+    }));
 });
 </script>
 
