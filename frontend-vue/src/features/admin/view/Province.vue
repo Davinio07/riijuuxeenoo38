@@ -190,7 +190,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue'; // Added watch
 import { useProvince, type ProvinceUI } from "@/features/admin/composables/useProvince.ts";
 import { useNationalHierarchy } from "@/features/admin/composables/useNationalHierarchy.ts";
 import ComparisonChart from '../components/ComparisonChart.vue';
@@ -207,13 +207,14 @@ const {
 const { national, toggleNational, goToNationalResults } = useNationalHierarchy();
 
 // State
-const selectedElection = ref('TK2025');
+const selectedElection = ref('TK2025'); // Bound to the year-select in template
 const isPanelOpen = ref(false);
 const allParties = ref<NationalResult[]>([]);
 const selectedParties = ref<NationalResult[]>([]);
 const currentResults = ref<NationalResult[]>([]);
 const calculatedSeats = ref<Record<string, number>>({});
 const activeContextName = ref('Nederland');
+const activeContextType = ref('national'); // Track type for re-fetching
 const sortBy = ref('name-asc');
 const focusedProvinceId = ref<number | null>(null);
 const TOTAL_SEATS = 150;
@@ -231,38 +232,75 @@ const handleProvinceClick = async (province: ProvinceUI) => {
 
 const clearFocus = () => { focusedProvinceId.value = null; };
 
-onMounted(async () => {
+/**
+ * Fetch initial data and setup seats
+ */
+const loadInitialData = async () => {
   try {
-    const data = await partyService.getNationalResults('TK2023');
+    const data = await partyService.getNationalResults(selectedElection.value);
     allParties.value = data;
-    currentResults.value = data;
+    // Update seats based on the current context (default National)
     calculatedSeats.value = partyService.calculateSeats(data, TOTAL_SEATS);
   } catch (err) {
     console.error("Fout bij laden data:", err);
   }
-});
+};
 
+onMounted(loadInitialData);
+
+/**
+ * Update data context and open the slide-out panel
+ * Updated to store the type for year-switching
+ */
 async function setContextAndOpen(name: string, type: string) {
   activeContextName.value = name;
+  activeContextType.value = type;
   isPanelOpen.value = true;
+  await fetchContextResults();
+}
+
+/**
+ * Centralized fetch logic that respects the selectedElection
+ */
+async function fetchContextResults() {
   try {
     let results: NationalResult[] = [];
+    const type = activeContextType.value;
+    const name = activeContextName.value;
+
     if (type === 'national') {
-      results = await partyService.getNationalResults('TK2023');
+      results = await partyService.getNationalResults(selectedElection.value);
     } else if (type === 'municipality') {
+      // Note: If your backend supports year-specific municipality results,
+      // pass selectedElection.value to this API call.
       const apiResults = await getResultsForMunicipality(name);
       results = apiResults.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
     } else if (type === 'kieskring') {
+      // Pass selectedElection.value if the constituency API is updated to support it
       const allKies = await getAllConstituencyResults();
       const match = allKies.find((k: ConstituencyDataDto) => k.name === name);
       if (match) results = match.results.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
     }
+
     currentResults.value = results;
     calculatedSeats.value = partyService.calculateSeats(results, TOTAL_SEATS);
   } catch (err) {
-    console.error(`Fout context: ${name}`, err);
+    console.error(`Fout context: ${activeContextName.value}`, err);
   }
 }
+
+/**
+ * WATCHER: Automatically update the comparison data when the year changes
+ */
+watch(selectedElection, async () => {
+  // Update the master list of parties (for the selection grid)
+  await loadInitialData();
+
+  // Update the current comparison results (for the chart)
+  if (isPanelOpen.value || activeContextName.value) {
+    await fetchContextResults();
+  }
+});
 
 const toggleParty = (party: NationalResult) => {
   const idx = selectedParties.value.findIndex(p => p.name === party.name);
