@@ -18,7 +18,7 @@
           <header class="p-6 border-b flex justify-between items-center bg-gray-50">
             <div>
               <h2 class="text-xl font-bold text-gray-900">Partij Vergelijking</h2>
-              <p class="text-sm text-blue-600 font-medium">{{ activeContextName }}</p>
+              <p class="text-sm text-blue-600 font-medium">{{ activeContextName }} ({{ selectedElection }})</p>
             </div>
             <button @click="isPanelOpen = false" class="p-2 hover:bg-gray-200 rounded-full transition-colors">✕</button>
           </header>
@@ -52,7 +52,7 @@
                   </div>
                   <div class="flex flex-col overflow-hidden">
                     <span class="text-xs font-semibold text-gray-700 truncate group-hover:text-black">{{ party.name }}</span>
-                    <span v-if="calculatedSeats[party.name] !== undefined" class="text-[10px] text-gray-500">{{ calculatedSeats[party.name] }} zetels</span>
+                    <span class="text-[10px] text-gray-500">{{ calculatedSeats[party.name] || 0 }} zetels</span>
                   </div>
                 </button>
               </div>
@@ -190,7 +190,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'; // Added watch
+import { ref, computed, onMounted, watch } from 'vue';
 import { useProvince, type ProvinceUI } from "@/features/admin/composables/useProvince.ts";
 import { useNationalHierarchy } from "@/features/admin/composables/useNationalHierarchy.ts";
 import ComparisonChart from '../components/ComparisonChart.vue';
@@ -198,7 +198,6 @@ import { getPartyColor, getPartyLogo, partyService, type NationalResult } from '
 import { getResultsForMunicipality } from '../service/MunicipalityElectionResults_api';
 import { getAllConstituencyResults, type ConstituencyDataDto } from '../service/ConstituencyDetails_api';
 
-// Composable Hooks
 const {
   isLoading, error, toggleProvince, toggleKieskring,
   goToResults, startTransition, endTransition, getProvinceColor
@@ -207,19 +206,18 @@ const {
 const { national, toggleNational, goToNationalResults } = useNationalHierarchy();
 
 // State
-const selectedElection = ref('TK2025'); // Bound to the year-select in template
+const selectedElection = ref('TK2023'); // Default matches onMounted
 const isPanelOpen = ref(false);
 const allParties = ref<NationalResult[]>([]);
 const selectedParties = ref<NationalResult[]>([]);
 const currentResults = ref<NationalResult[]>([]);
 const calculatedSeats = ref<Record<string, number>>({});
 const activeContextName = ref('Nederland');
-const activeContextType = ref('national'); // Track type for re-fetching
+const activeContextType = ref('national');
 const sortBy = ref('name-asc');
 const focusedProvinceId = ref<number | null>(null);
 const TOTAL_SEATS = 150;
 
-// Logic
 const handleProvinceClick = async (province: ProvinceUI) => {
   if (focusedProvinceId.value === province.province_id) {
     clearFocus();
@@ -232,15 +230,14 @@ const handleProvinceClick = async (province: ProvinceUI) => {
 
 const clearFocus = () => { focusedProvinceId.value = null; };
 
-/**
- * Fetch initial data and setup seats
- */
 const loadInitialData = async () => {
   try {
     const data = await partyService.getNationalResults(selectedElection.value);
     allParties.value = data;
-    // Update seats based on the current context (default National)
-    calculatedSeats.value = partyService.calculateSeats(data, TOTAL_SEATS);
+    if (activeContextType.value === 'national') {
+      currentResults.value = data;
+      calculatedSeats.value = partyService.calculateSeats(data, TOTAL_SEATS);
+    }
   } catch (err) {
     console.error("Fout bij laden data:", err);
   }
@@ -248,59 +245,40 @@ const loadInitialData = async () => {
 
 onMounted(loadInitialData);
 
-/**
- * Update data context and open the slide-out panel
- * Updated to store the type for year-switching
- */
+// Watch for year changes to refresh current context
+watch(selectedElection, async () => {
+  await loadInitialData();
+  if (isPanelOpen.value || activeContextName.value) {
+    await fetchContextResults();
+  }
+});
+
+async function fetchContextResults() {
+  try {
+    let results: NationalResult[] = [];
+    if (activeContextType.value === 'national') {
+      results = await partyService.getNationalResults(selectedElection.value);
+    } else if (activeContextType.value === 'municipality') {
+      const apiResults = await getResultsForMunicipality(activeContextName.value);
+      results = apiResults.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
+    } else if (activeContextType.value === 'kieskring') {
+      const allKies = await getAllConstituencyResults();
+      const match = allKies.find((k: ConstituencyDataDto) => k.name === activeContextName.value);
+      if (match) results = match.results.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
+    }
+    currentResults.value = results;
+    calculatedSeats.value = partyService.calculateSeats(results, TOTAL_SEATS);
+  } catch (err) {
+    console.error(`Fout context fetch: ${activeContextName.value}`, err);
+  }
+}
+
 async function setContextAndOpen(name: string, type: string) {
   activeContextName.value = name;
   activeContextType.value = type;
   isPanelOpen.value = true;
   await fetchContextResults();
 }
-
-/**
- * Centralized fetch logic that respects the selectedElection
- */
-async function fetchContextResults() {
-  try {
-    let results: NationalResult[] = [];
-    const type = activeContextType.value;
-    const name = activeContextName.value;
-
-    if (type === 'national') {
-      results = await partyService.getNationalResults(selectedElection.value);
-    } else if (type === 'municipality') {
-      // Note: If your backend supports year-specific municipality results,
-      // pass selectedElection.value to this API call.
-      const apiResults = await getResultsForMunicipality(name);
-      results = apiResults.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
-    } else if (type === 'kieskring') {
-      // Pass selectedElection.value if the constituency API is updated to support it
-      const allKies = await getAllConstituencyResults();
-      const match = allKies.find((k: ConstituencyDataDto) => k.name === name);
-      if (match) results = match.results.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
-    }
-
-    currentResults.value = results;
-    calculatedSeats.value = partyService.calculateSeats(results, TOTAL_SEATS);
-  } catch (err) {
-    console.error(`Fout context: ${activeContextName.value}`, err);
-  }
-}
-
-/**
- * WATCHER: Automatically update the comparison data when the year changes
- */
-watch(selectedElection, async () => {
-  // Update the master list of parties (for the selection grid)
-  await loadInitialData();
-
-  // Update the current comparison results (for the chart)
-  if (isPanelOpen.value || activeContextName.value) {
-    await fetchContextResults();
-  }
-});
 
 const toggleParty = (party: NationalResult) => {
   const idx = selectedParties.value.findIndex(p => p.name === party.name);
@@ -312,21 +290,36 @@ const isSelected = (party: NationalResult) => selectedParties.value.some(p => p.
 const resetComparison = () => selectedParties.value = [];
 
 const sortedParties = computed(() => {
-  let list = [...allParties.value];
-  if (sortBy.value === 'name-asc') return list.sort((a, b) => a.name.localeCompare(b.name));
-  if (sortBy.value === 'seats-desc') return list.sort((a, b) => (calculatedSeats.value[b.name] || 0) - (calculatedSeats.value[a.name] || 0));
+  let list = allParties.value.filter(party => {
+    const result = currentResults.value.find(r => r.name === party.name);
+    return result && result.totalVotes > 0;
+  });
+
+  if (sortBy.value === 'name-asc') {
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  if (sortBy.value === 'seats-desc') {
+    return list.sort((a, b) => {
+      const seatsA = calculatedSeats.value[a.name] || 0;
+      const seatsB = calculatedSeats.value[b.name] || 0;
+      return seatsB - seatsA;
+    });
+  }
+
   return list;
 });
-
 const comparisonData = computed(() => {
   const selectedNames = selectedParties.value.map(p => p.name);
-  return currentResults.value
-    .filter(r => selectedNames.includes(r.name))
-    .map(p => ({
-      name: p.name,
-      totalVotes: p.totalVotes,
-      seats: calculatedSeats.value[p.name] || 0
-    }));
+  // Fix: Map through selected names to ensure a bar exists for every selection
+  return selectedNames.map(name => {
+    const result = currentResults.value.find(r => r.name === name);
+    return {
+      name: name,
+      totalVotes: result ? result.totalVotes : 0,
+      seats: calculatedSeats.value[name] || 0
+    };
+  });
 });
 </script>
 
