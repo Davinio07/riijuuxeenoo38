@@ -85,6 +85,7 @@ public class SecurityConfig {
                         .allowedOrigins(
                                 "http://localhost:5173",
                                 "http://localhost:5176",
+                                "https://elections-frontend-71p2.onrender.com", // <--- THIS IS YOUR NEW URL
                                 "https://riijuuxeenoo38.onrender.com", // <--- REPLACE WITH YOUR EXACT RENDER URL
                                 "http://oege.ie.hva.nl"
                         )
@@ -96,6 +97,7 @@ public class SecurityConfig {
                         .allowedOrigins(
                                 "http://localhost:5173",
                                 "http://localhost:5176",
+                                "https://elections-frontend-71p2.onrender.com", // <--- THIS IS YOUR NEW URL
                                 "https://riijuuxeenoo38.onrender.com", // <--- REPLACE WITH YOUR EXACT RENDER URL
                                 "http://oege.ie.hva.nl"
                         )
