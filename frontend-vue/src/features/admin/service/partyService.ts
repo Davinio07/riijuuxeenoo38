@@ -17,7 +17,7 @@ export interface NationalResult {
 /**
  * The base URL for the elections API.
  */
-// Uses the .env variable, then adds the specific endpoint path
+// Uses the .env variable, then adds the specific endpoint path test
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 const API_BASE_URL = `${API_URL}/nationalResult`;
 /**
