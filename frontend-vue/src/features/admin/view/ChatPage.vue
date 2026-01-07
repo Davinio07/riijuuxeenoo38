@@ -20,7 +20,12 @@ const error = ref<string | null>(null);
 const currentUsername = ref('Anonymous');
 const chatBoxRef = ref<HTMLElement | null>(null); // Ref voor de scrollpositie
 
-const API_HOST = 'http://localhost:8080';
+// 1. Get the API URL from .env (e.g. https://elections-h21b.onrender.com/api)
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+
+// 2. Remove the '/api' suffix to get the host (e.g. https://elections-h21b.onrender.com)
+const API_HOST = apiUrl.replace(/\/api$/, '');
+
 const WS_ENDPOINT = `/ws`;
 const SUBSCRIPTION_TOPIC = '/topic/public';
 const SEND_ENDPOINT = '/app/chat.send';

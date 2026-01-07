@@ -46,14 +46,9 @@ export async function getAllPartiesForFilters(electionId: string): Promise<Party
 
 export async function ScaledElectionResults(): Promise<string> {
   try {
-    const url = 'http://localhost:8080/api/ScaledElectionResults/Result'.trim();
-    const response = await fetch(url, {
-      credentials: "include"
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
+    // OLD (BAD): const url = 'http://localhost:8080/api/ScaledElectionResults/Result'.trim();
+    // NEW (GOOD):
+    const data = await apiClient<{ message: string }>('/ScaledElectionResults/Result');
     return data.message;
   } catch (error) {
     console.error("Fout bij het ophalen van de backend:", error);
@@ -64,12 +59,9 @@ export async function ScaledElectionResults(): Promise<string> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getProvinces(electionId: string): Promise<any[]> {
   try {
-    const url = `http://localhost:8080/api/elections/${electionId}/regions/kieskringen`;
-    const response = await fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-    return await response.json();
+    // OLD (BAD): const url = `http://localhost:8080/api/elections/${electionId}/regions/kieskringen`;
+    // NEW (GOOD):
+    return await apiClient<any[]>(`/elections/${electionId}/regions/kieskringen`);
   } catch (error) {
     console.error('Error fetching provinces:', error);
     return [];
