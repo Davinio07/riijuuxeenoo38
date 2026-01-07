@@ -94,6 +94,7 @@ public class ConstituencyController {
     public ResponseEntity<List<Region>> getConstituencies(@PathVariable String electionId) {
         try {
             logger.info("Fetching constituencies for election: {}", electionId);
+            // Note: electionService.getConstituencies needs to be updated or alias getKieskringen
             List<Region> constituencies = electionService.getConstituencies(electionId);
             return ResponseEntity.ok(constituencies);
         } catch (Exception e) {
@@ -126,21 +127,18 @@ public class ConstituencyController {
     /**
      * Returns the aggregated RESULTS for all constituencies.
      * This calculates the sum of all municipalities belonging to a constituency.
-     * UPDATED: Now accepts electionId to support switching between 2021, 2023, 2025.
      */
-    @GetMapping("/{electionId}/results")
-    public ResponseEntity<List<DutchElectionService.ConstituencyResultDto>> getAllConstituencyResults(
-            @PathVariable String electionId) {
+    @GetMapping("/results")
+    public ResponseEntity<List<DutchElectionService.ConstituencyResultDto>> getAllConstituencyResults() {
         try {
-            logger.info("Calculating and fetching aggregated constituency results for election: {}", electionId);
-
-            // Pass the dynamic electionId to the service instead of hardcoded "TK2023"
-            List<DutchElectionService.ConstituencyResultDto> results =
-                    electionService.getAggregatedConstituencyResults(electionId);
-
+            logger.info("Calculating and fetching aggregated constituency results.");
+            // We use the default election ID for now
+            List<DutchElectionService.ConstituencyResultDto> results = 
+                electionService.getAggregatedConstituencyResults("TK2023");
+            
             return ResponseEntity.ok(results);
         } catch (Exception e) {
-            logger.error("Error calculating constituency results for {}: {}", electionId, e.getMessage(), e);
+            logger.error("Error calculating constituency results: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

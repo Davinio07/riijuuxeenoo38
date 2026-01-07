@@ -18,18 +18,42 @@
           <header class="p-6 border-b flex justify-between items-center bg-gray-50">
             <div>
               <h2 class="text-xl font-bold text-gray-900">Partij Vergelijking</h2>
-              <p class="text-sm text-blue-600 font-medium">{{ activeContextName }}</p>
+              <p class="text-sm text-blue-600 font-medium">{{ activeContextName }} ({{ selectedElection }})</p>
             </div>
             <button @click="isPanelOpen = false" class="p-2 hover:bg-gray-200 rounded-full transition-colors">✕</button>
           </header>
+
           <div class="flex-1 overflow-y-auto p-6">
             <div v-if="selectedParties.length > 0" class="mb-8">
               <ComparisonChart :parties="comparisonData" metric="totalVotes" :title="`Stemmen in ${activeContextName}`" />
             </div>
+            <div v-else class="text-center py-20 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 text-gray-500 mb-8">
+              <p>Geen partijen geselecteerd.</p>
+              <p class="text-xs mt-2">Selecteer partijen hieronder om resultaten voor {{ activeContextName }} te zien.</p>
+            </div>
+
             <div class="border-t pt-6">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+                <h3 class="font-bold text-gray-800">Selecteer Partijen (max 5)</h3>
+                <div class="flex items-center gap-2">
+                  <select v-model="sortBy" class="text-xs border border-gray-300 rounded px-2 py-1 bg-white focus:ring-1 focus:ring-blue-500 outline-none">
+                    <option value="name-asc">Naam (A-Z)</option>
+                    <option value="seats-desc">Zetels (Hoog-Laag)</option>
+                  </select>
+                  <button @click="resetComparison" class="text-xs text-red-600 hover:underline">Wissen</button>
+                </div>
+              </div>
+
               <div class="grid grid-cols-2 gap-3">
-                <button v-for="party in allParties" :key="party.name" @click="toggleParty(party)" class="flex items-center p-3 border rounded-xl transition-all text-left group" :class="isSelected(party) ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500' : 'bg-white hover:border-gray-300 border-gray-100'">
-                  <span class="text-xs font-semibold text-gray-700 truncate group-hover:text-black">{{ party.name }}</span>
+                <button v-for="party in sortedParties" :key="party.name" @click="toggleParty(party)" class="flex items-center p-3 border rounded-xl transition-all text-left group" :class="isSelected(party) ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500' : 'bg-white hover:border-gray-300 border-gray-100'">
+                  <div class="mr-3 flex-shrink-0 w-8 h-8 flex items-center justify-center">
+                    <img v-if="getPartyLogo(party.name)" :src="getPartyLogo(party.name)!" :alt="party.name" class="w-full h-full object-contain" />
+                    <div v-else class="w-4 h-4 rounded-full" :style="{ backgroundColor: getPartyColor(party.name) }"></div>
+                  </div>
+                  <div class="flex flex-col overflow-hidden">
+                    <span class="text-xs font-semibold text-gray-700 truncate group-hover:text-black">{{ party.name }}</span>
+                    <span class="text-[10px] text-gray-500">{{ calculatedSeats[party.name] || 0 }} zetels</span>
+                  </div>
                 </button>
               </div>
             </div>
@@ -42,42 +66,30 @@
 
       <header
         class="mb-8 text-center pt-4 transition-all duration-700 ease-in-out origin-top"
-        :class="{
-          'opacity-0 h-0 overflow-hidden mb-0 scale-95': national.isOpen || focusedProvinceId
-        }"
+        :class="{ 'opacity-0 h-0 overflow-hidden mb-0 scale-95': national.isOpen || focusedProvinceId }"
       >
         <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Provincies & Kieskringen</h1>
         <p class="mt-4 text-gray-500 text-lg mb-6">Selecteer een regio om de vergelijking aan te passen aan lokale data.</p>
 
         <div class="flex justify-center items-center gap-3">
           <label for="year-select" class="font-bold text-gray-700">Verkiezingsjaar:</label>
-          <select
-            id="year-select"
-            v-model="selectedElection"
-            class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 bg-white font-medium text-gray-800 cursor-pointer"
-          >
+          <select id="year-select" v-model="selectedElection" class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 bg-white font-medium text-gray-800 cursor-pointer">
             <option value="TK2025">TK2025</option>
             <option value="TK2023">TK2023</option>
             <option value="TK2021">TK2021</option>
           </select>
+          <label for="year-select" class="font-bold text-gray-700">of</label>
+          <button @click="goToNationalResults" class="px-4 py-2 border border-blue-200 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold transition-colors shadow-sm">
+            Landelijke Uitslag
+          </button>
         </div>
       </header>
 
       <div v-if="national.isOpen || focusedProvinceId" class="mb-4 animate-fadeIn">
-
-        <button
-          v-if="focusedProvinceId"
-          @click="clearFocus"
-          class="flex items-center text-blue-600 font-semibold hover:text-blue-800 transition-colors bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200"
-        >
+        <button v-if="focusedProvinceId" @click="clearFocus" class="flex items-center text-blue-600 font-semibold hover:text-blue-800 transition-colors bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
           <span class="text-xl mr-2">←</span> Terug naar Nederland
         </button>
-
-        <button
-          v-else
-          @click="toggleNational"
-          class="flex items-center text-gray-600 font-semibold hover:text-gray-900 transition-colors bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200"
-        >
+        <button v-else @click="toggleNational" class="flex items-center text-gray-600 font-semibold hover:text-gray-900 transition-colors bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
           <span class="text-xl mr-2">←</span> Terug naar startscherm
         </button>
       </div>
@@ -95,18 +107,11 @@
             'ring-0 border-none shadow-none bg-transparent': !!focusedProvinceId
           }"
         >
-
-          <div
-            v-if="!focusedProvinceId"
-            @click="toggleNational"
-            class="p-6 cursor-pointer flex justify-between items-center hover:bg-gray-50 transition-colors"
-          >
+          <div v-if="!focusedProvinceId" @click="toggleNational" class="p-6 cursor-pointer flex justify-between items-center hover:bg-gray-50 transition-colors">
             <div class="flex items-center gap-4">
               <div class="p-3 bg-blue-100 text-blue-600 rounded-xl transition-transform duration-500" :class="{ 'scale-110': national.isOpen }">🇳🇱</div>
               <div class="flex flex-col">
-                <h2 class="text-xl font-bold text-gray-900 transition-all duration-300" :class="{ 'text-2xl text-blue-700': national.isOpen }">
-                  Nederland (Landelijk)
-                </h2>
+                <h2 class="text-xl font-bold text-gray-900 transition-all duration-300" :class="{ 'text-2xl text-blue-700': national.isOpen }">Nederland</h2>
                 <p v-if="national.isOpen" class="text-sm text-gray-500 animate-fadeIn">Klik om te sluiten</p>
               </div>
             </div>
@@ -114,12 +119,7 @@
             <div class="flex gap-4 items-center" @click.stop>
               <transition name="fade">
                 <div v-if="national.isOpen" class="flex gap-2">
-                  <button @click="goToNationalResults" class="text-sm px-3 py-2 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium transition-colors">
-                    Landelijke Uitslag
-                  </button>
-                  <button @click="setContextAndOpen('Nederland', 'national')" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition-all active:scale-95">
-                    Vergelijk
-                  </button>
+                  <button @click="setContextAndOpen('Nederland', 'national')" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition-all active:scale-95">Vergelijk</button>
                 </div>
               </transition>
               <div @click.stop="toggleNational" class="p-2 cursor-pointer">
@@ -130,15 +130,12 @@
 
           <transition name="collapse" @enter="startTransition" @after-enter="endTransition" @leave="startTransition" @after-leave="endTransition">
             <div v-if="national.isOpen || focusedProvinceId" class="bg-gray-50 p-6 border-t border-gray-100 relative min-h-[500px]">
-              <div v-if="national.isLoadingChildren" class="text-center py-10 text-gray-500">Provincies laden...</div>
-
               <TransitionGroup
                 name="list"
                 tag="div"
                 class="grid grid-cols-1 gap-6 transition-all duration-500 ease-in-out"
                 :class="focusedProvinceId ? 'grid-cols-1' : 'md:grid-cols-2 lg:grid-cols-3'"
               >
-
                 <div
                   v-for="province in national.provinces"
                   :key="province.province_id"
@@ -146,20 +143,12 @@
                   class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-500 group overflow-hidden list-item"
                   :class="{ 'ring-2 ring-blue-500 shadow-xl scale-[1.005]': focusedProvinceId === province.province_id }"
                 >
-
                   <div @click="handleProvinceClick(province)" class="p-5 cursor-pointer flex items-center justify-between">
                     <div class="flex items-center gap-4">
-                      <div class="w-1.5 h-10 rounded-full transition-all duration-500"
-                           :class="[getProvinceColor(province.province_id), focusedProvinceId === province.province_id ? 'h-16 w-2' : '']">
-                      </div>
+                      <div class="w-1.5 h-10 rounded-full transition-all duration-500" :class="[getProvinceColor(province.province_id), focusedProvinceId === province.province_id ? 'h-16 w-2' : '']"></div>
                       <div>
-                        <h2 class="font-bold text-gray-900 group-hover:text-blue-700 transition-colors"
-                            :class="focusedProvinceId === province.province_id ? 'text-2xl' : 'text-base'">
-                          {{ province.name }}
-                        </h2>
-                        <span v-if="focusedProvinceId === province.province_id" class="text-gray-500 text-sm">
-                          Klik om te sluiten
-                        </span>
+                        <h2 class="font-bold text-gray-900 group-hover:text-blue-700 transition-colors" :class="focusedProvinceId === province.province_id ? 'text-2xl' : 'text-base'">{{ province.name }}</h2>
+                        <span v-if="focusedProvinceId === province.province_id" class="text-gray-500 text-sm">Klik om te sluiten</span>
                       </div>
                     </div>
                     <svg class="w-5 h-5 text-gray-300 transition-transform duration-500" :class="{ 'rotate-180': province.isOpen }" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -167,27 +156,18 @@
 
                   <transition name="collapse" @enter="startTransition" @after-enter="endTransition" @leave="startTransition" @after-leave="endTransition">
                     <div v-if="province.isOpen" class="bg-gray-50 border-t border-gray-100">
-
                       <ul v-if="province.kieskringen && province.kieskringen.length > 0" class="divide-y divide-gray-100">
                         <li v-for="kieskring in province.kieskringen" :key="kieskring.id" class="transition-colors hover:bg-white">
                           <div class="px-6 py-4 flex items-center justify-between">
                             <span class="text-sm font-medium text-gray-700">{{ kieskring.name }}</span>
                             <div class="flex items-center gap-4">
-                              <button
-                                @click.stop="goToResults(kieskring.name, selectedElection)"
-                                class="text-[10px] uppercase font-bold text-gray-500 hover:text-blue-600 transition-colors"
-                              >
-                                Uitslag ({{ selectedElection }})
-                              </button>
-                              <button @click.stop="setContextAndOpen(kieskring.name, 'kieskring')" class="text-[10px] uppercase tracking-widest font-black text-blue-600 hover:text-blue-800 transition-colors">
-                                Vergelijk
-                              </button>
+                              <button @click.stop="goToResults(kieskring.name, selectedElection)" class="text-[10px] uppercase font-bold text-gray-500 hover:text-blue-600 transition-colors">Uitslag ({{ selectedElection }})</button>
+                              <button @click.stop="setContextAndOpen(kieskring.name, 'kieskring')" class="text-[10px] uppercase tracking-widest font-black text-blue-600 hover:text-blue-800 transition-colors">Vergelijk</button>
                               <button @click.stop="toggleKieskring(kieskring)" class="p-1">
                                 <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': kieskring.isOpen }" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                               </button>
                             </div>
                           </div>
-
                           <transition name="collapse" @enter="startTransition" @after-enter="endTransition" @leave="startTransition" @after-leave="endTransition">
                             <div v-if="kieskring.isOpen" class="px-8 pb-4 pt-2 bg-gray-50/50 shadow-inner">
                               <div class="flex flex-wrap gap-2">
@@ -199,13 +179,10 @@
                           </transition>
                         </li>
                       </ul>
-                      <div v-else-if="province.isLoadingChildren" class="p-4 text-center text-sm text-gray-400">
-                        Kieskringen laden...
-                      </div>
+                      <div v-else-if="province.isLoadingChildren" class="p-4 text-center text-sm text-gray-400">Kieskringen laden...</div>
                     </div>
                   </transition>
                 </div>
-
               </TransitionGroup>
             </div>
           </transition>
@@ -216,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useProvince, type ProvinceUI } from "@/features/admin/composables/useProvince.ts";
 import { useNationalHierarchy } from "@/features/admin/composables/useNationalHierarchy.ts";
 import ComparisonChart from '../components/ComparisonChart.vue';
@@ -225,23 +202,24 @@ import { getResultsForMunicipality } from '../service/MunicipalityElectionResult
 import { getAllConstituencyResults, type ConstituencyDataDto } from '../service/ConstituencyDetails_api';
 
 const {
-  isLoading, error, toggleProvince, toggleKieskring,
+  isLoading, toggleProvince, toggleKieskring,
   goToResults, startTransition, endTransition, getProvinceColor
 } = useProvince();
 
 const { national, toggleNational, goToNationalResults } = useNationalHierarchy();
 
-const selectedElection = ref('TK2025');
+// State
+const selectedElection = ref('TK2023'); // Default matches onMounted
 const isPanelOpen = ref(false);
 const allParties = ref<NationalResult[]>([]);
 const selectedParties = ref<NationalResult[]>([]);
 const currentResults = ref<NationalResult[]>([]);
 const calculatedSeats = ref<Record<string, number>>({});
 const activeContextName = ref('Nederland');
-const TOTAL_SEATS = 150;
-
-// --- FOCUS LOGIC ---
+const activeContextType = ref('national');
+const sortBy = ref('name-asc');
 const focusedProvinceId = ref<number | null>(null);
+const TOTAL_SEATS = 150;
 
 const handleProvinceClick = async (province: ProvinceUI) => {
   if (focusedProvinceId.value === province.province_id) {
@@ -253,42 +231,56 @@ const handleProvinceClick = async (province: ProvinceUI) => {
   }
 };
 
-const clearFocus = () => {
-  focusedProvinceId.value = null;
-};
+const clearFocus = () => { focusedProvinceId.value = null; };
 
-onMounted(async () => {
+const loadInitialData = async () => {
   try {
-    const data = await partyService.getNationalResults('TK2023');
+    const data = await partyService.getNationalResults(selectedElection.value);
     allParties.value = data;
-    currentResults.value = data;
-    calculatedSeats.value = partyService.calculateSeats(data, TOTAL_SEATS);
-    // REMOVED: Automatic opening of national level. User starts at "Start Screen" style.
+    if (activeContextType.value === 'national') {
+      currentResults.value = data;
+      calculatedSeats.value = partyService.calculateSeats(data, TOTAL_SEATS);
+    }
   } catch (err) {
     console.error("Fout bij laden data:", err);
   }
+};
+
+onMounted(loadInitialData);
+
+// Watch for year changes to refresh current context
+watch(selectedElection, async () => {
+  await loadInitialData();
+  if (isPanelOpen.value || activeContextName.value) {
+    await fetchContextResults();
+  }
 });
 
-async function setContextAndOpen(name: string, type: string) {
-  activeContextName.value = name;
-  isPanelOpen.value = true;
+async function fetchContextResults() {
   try {
     let results: NationalResult[] = [];
-    if (type === 'national') {
-      results = await partyService.getNationalResults('TK2023');
-    } else if (type === 'municipality') {
-      const apiResults = await getResultsForMunicipality(name);
+    if (activeContextType.value === 'national') {
+      results = await partyService.getNationalResults(selectedElection.value);
+    } else if (activeContextType.value === 'municipality') {
+      const apiResults = await getResultsForMunicipality(activeContextName.value);
       results = apiResults.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
-    } else if (type === 'kieskring') {
+    } else if (activeContextType.value === 'kieskring') {
       const allKies = await getAllConstituencyResults();
-      const match = allKies.find((k: ConstituencyDataDto) => k.name === name);
+      const match = allKies.find((k: ConstituencyDataDto) => k.name === activeContextName.value);
       if (match) results = match.results.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
     }
     currentResults.value = results;
     calculatedSeats.value = partyService.calculateSeats(results, TOTAL_SEATS);
   } catch (err) {
-    console.error(`Fout context: ${name}`, err);
+    console.error(`Fout context fetch: ${activeContextName.value}`, err);
   }
+}
+
+async function setContextAndOpen(name: string, type: string) {
+  activeContextName.value = name;
+  activeContextType.value = type;
+  isPanelOpen.value = true;
+  await fetchContextResults();
 }
 
 const toggleParty = (party: NationalResult) => {
@@ -298,16 +290,39 @@ const toggleParty = (party: NationalResult) => {
 };
 
 const isSelected = (party: NationalResult) => selectedParties.value.some(p => p.name === party.name);
+const resetComparison = () => selectedParties.value = [];
 
+const sortedParties = computed(() => {
+  const list = allParties.value.filter(party => {
+    const result = currentResults.value.find(r => r.name === party.name);
+    return result && result.totalVotes > 0;
+  });
+
+  if (sortBy.value === 'name-asc') {
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  if (sortBy.value === 'seats-desc') {
+    return list.sort((a, b) => {
+      const seatsA = calculatedSeats.value[a.name] || 0;
+      const seatsB = calculatedSeats.value[b.name] || 0;
+      return seatsB - seatsA;
+    });
+  }
+
+  return list;
+});
 const comparisonData = computed(() => {
   const selectedNames = selectedParties.value.map(p => p.name);
-  return currentResults.value
-    .filter(r => selectedNames.includes(r.name))
-    .map(p => ({
-      name: p.name,
-      totalVotes: p.totalVotes,
-      seats: calculatedSeats.value[p.name] || 0
-    }));
+  // Fix: Map through selected names to ensure a bar exists for every selection
+  return selectedNames.map(name => {
+    const result = currentResults.value.find(r => r.name === name);
+    return {
+      name: name,
+      totalVotes: result ? result.totalVotes : 0,
+      seats: calculatedSeats.value[name] || 0
+    };
+  });
 });
 </script>
 
@@ -317,38 +332,12 @@ const comparisonData = computed(() => {
   overflow: hidden;
 }
 
-/* FLIP LIST TRANSITIONS */
-.list-move,
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.5s ease;
-}
+.list-move, .list-enter-active, .list-leave-active { transition: all 0.5s ease; }
+.list-enter-from, .list-leave-to { opacity: 0; transform: scale(0.9); }
+.list-leave-active { position: absolute; width: 100%; z-index: 0; }
 
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: scale(0.9);
-}
-
-.list-leave-active {
-  position: absolute;
-  width: 100%;
-  z-index: 0;
-}
-
-/* Animations for Fade */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.animate-fadeIn {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>
