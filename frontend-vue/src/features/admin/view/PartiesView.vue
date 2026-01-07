@@ -208,18 +208,22 @@ const comparisonData = computed(() => {
 const displayedParties = computed(() => {
   let list = [...parties.value] as SortableParty[];
 
-  // 1. Filter
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase();
     list = list.filter(p => p.name.toLowerCase().includes(q));
   }
 
-  // 2. Sort
+
+  list = list.filter(party => {
+    const result = currentResults.value.find(r => r.name === party.name);
+    return result && result.totalVotes > 0;
+  });
+
+  // 3. Sort the filtered list
   return list.sort((a: SortableParty, b: SortableParty) => {
     if (sortBy.value === 'name-asc') return a.name.localeCompare(b.name);
     if (sortBy.value === 'name-desc') return b.name.localeCompare(a.name);
 
-    // Sort by the dynamic calculated seats
     const seatsA = calculatedSeats.value[a.name] || 0;
     const seatsB = calculatedSeats.value[b.name] || 0;
 
