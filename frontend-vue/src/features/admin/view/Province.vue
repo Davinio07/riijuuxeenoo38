@@ -78,6 +78,10 @@
             <option value="TK2023">TK2023</option>
             <option value="TK2021">TK2021</option>
           </select>
+          <label for="year-select" class="font-bold text-gray-700">of</label>
+          <button @click="goToNationalResults" class="px-4 py-2 border border-blue-200 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold transition-colors shadow-sm">
+            Landelijke Uitslag
+          </button>
         </div>
       </header>
 
@@ -115,7 +119,6 @@
             <div class="flex gap-4 items-center" @click.stop>
               <transition name="fade">
                 <div v-if="national.isOpen" class="flex gap-2">
-                  <button @click="goToNationalResults" class="text-sm px-3 py-2 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium transition-colors">Landelijke Uitslag</button>
                   <button @click="setContextAndOpen('Nederland', 'national')" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition-all active:scale-95">Vergelijk</button>
                 </div>
               </transition>
@@ -199,7 +202,7 @@ import { getResultsForMunicipality } from '../service/MunicipalityElectionResult
 import { getAllConstituencyResults, type ConstituencyDataDto } from '../service/ConstituencyDetails_api';
 
 const {
-  isLoading, error, toggleProvince, toggleKieskring,
+  isLoading, toggleProvince, toggleKieskring,
   goToResults, startTransition, endTransition, getProvinceColor
 } = useProvince();
 
@@ -290,7 +293,7 @@ const isSelected = (party: NationalResult) => selectedParties.value.some(p => p.
 const resetComparison = () => selectedParties.value = [];
 
 const sortedParties = computed(() => {
-  let list = allParties.value.filter(party => {
+  const list = allParties.value.filter(party => {
     const result = currentResults.value.find(r => r.name === party.name);
     return result && result.totalVotes > 0;
   });
