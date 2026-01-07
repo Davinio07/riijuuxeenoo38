@@ -1,6 +1,8 @@
 // src/services/api-client.ts
 
-const API_BASE_URL = 'http://localhost:8080/api';
+// FIX: This now checks your .env file (or Render settings) first.
+// If VITE_API_URL is missing, ONLY THEN does it fall back to localhost.
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 /**
  * @interface ApiErrorResponse
@@ -71,7 +73,10 @@ function isApiErrorResponse(obj: unknown): obj is ApiErrorResponse {
  * @throws {ApiError} Throws a custom ApiError if the server response is not OK.
  */
 async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  // Ensure we don't have double slashes (e.g., base/ + /endpoint)
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+  const response = await fetch(`${API_BASE_URL}${cleanEndpoint}`, {
     headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
   });
