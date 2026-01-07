@@ -23,6 +23,9 @@ export function useNationalHierarchy() {
       try {
         national.value.isLoadingChildren = true
         const data = await getProvinces()
+
+        // FIX: Map both the province and its nested kieskringen to UI types
+        // to prevent the "is not assignable to type ProvinceUI[]" error.
         national.value.provinces = data.map(p => ({
           ...p,
           isOpen: false,

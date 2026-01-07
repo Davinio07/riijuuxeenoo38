@@ -8,7 +8,6 @@ export interface PoliticalParty {
 
 /**
  * Interface representing a party's national result.
- * This matches the Java model provided.
  */
 export interface NationalResult {
   name: string;
@@ -22,27 +21,29 @@ const API_BASE_URL = 'http://localhost:8080/api/nationalResult';
 
 /**
  * A mapping of official party names to their designated hex color codes.
- * Based on common colors for Dutch political parties.
  */
 export const partyColors: Record<string, string> = {
+  // Grote & Bestaande Partijen
   'VVD': '#FF6600',
-  'D66': '#00A03E',
-  'GROENLINKS / Partij van de Arbeid (PvdA)': '#DC143C',
   'PVV (Partij voor de Vrijheid)': '#00529F',
   'CDA': '#00A54F',
+  'D66': '#00A03E',
+  'GROENLINKS': '#228B22',
+  'GROENLINKS / Partij van de Arbeid (PvdA)': '#DC143C',
   'SP (Socialistische Partij)': '#FF0000',
-  'Forum voor Democratie': '#800020',
-  'Partij voor de Dieren': '#006F3F',
+  'Partij van de Arbeid (P.v.d.A.)': '#DF111A',
   'ChristenUnie': '#00A7EB',
-  'Volt': '#502379',
-  'JA21': '#1C39BB',
+  'Partij voor de Dieren': '#006F3F',
+  '50PLUS': '#8B008B',
   'Staatkundig Gereformeerde Partij (SGP)': '#FE7D00',
   'DENK': '#00CCCC',
-  '50PLUS': '#8B008B',
-  'BBB': '#5BB12F',
+  'Forum voor Democratie': '#800020',
+  'Volt': '#502379',
+  'JA21': '#1C39BB',
   'BIJ1': '#FFED00',
-  'BVNL / Groep Van Haga': '#1E3A8A',
+  'BBB': '#5BB12F',
   'Nieuw Sociaal Contract': '#00A3E0',
+  'Nieuw Sociaal Contract (NSC)': '#00A3E0',
   'Piratenpartij - De Groenen': '#660099',
   'Splinter': '#FF6B35',
   'Samen voor Nederland': '#FF8C00',
@@ -51,11 +52,41 @@ export const partyColors: Record<string, string> = {
   'Nederland met een PLAN': '#4682B4',
   'PartijvdSport': '#32CD32',
   'Politieke Partij voor Basisinkomen': '#9370DB',
+  'BVNL / Groep Van Haga': '#1E3A8A',
+  'Belang Van Nederland (BVNL)': '#1E3A8A',
+
+  // 2021 Specifieke Partijen
+  'CODE ORANJE': '#FFA500',
+  'Piratenpartij': '#660099',
+  'NIDA': '#00ADAF',
+  'NLBeter': '#242B5C',
+  'OPRECHT': '#203E5F',
+  'JONG': '#2B2E83',
+  'Lijst Henk Krol': '#F0C300',
+  'JEZUS LEEFT': '#FF00FF',
+  'U-Buntu Connected Front': '#000000',
+  'Trots op Nederland (TROTS)': '#000080',
+  'Blanco (Zeven, A.J.L.B.)': '#A9A9A9',
+  'DE FEESTPARTIJ (DFP)': '#FF69B4',
+  'Partij van de Eenheid': '#006400',
+  'Vrij en Sociaal Nederland': '#008080',
+  'Wij zijn Nederland': '#1F2937',
+  'Modern Nederland': '#3B82F6',
+  'De Groenen': '#00FF00',
+  'Partij voor de Republiek': '#C0C0C0',
+
+  // 2025 Specifieke Partijen
+  'Vrede voor Dieren': '#228B22',
+  'FNP': '#FFD700',
+  'Vrij Verbond': '#87CEEB',
+  'DE LINIE': '#2F4F4F',
+  'NL PLAN': '#4682B4',
+  'ELLECT': '#DA70D6',
+  'Partij voor de Rechtsstaat': '#1B4D3E'
 };
 
 /**
  * A mapping of official party names to their logo image URLs.
- * Ensure these images exist in your public/logos folder.
  */
 export const partyLogos: Record<string, string> = {
   'VVD': '/logos/vvd.png',
@@ -75,137 +106,65 @@ export const partyLogos: Record<string, string> = {
   'BBB': '/logos/bbb.png',
   'BIJ1': '/logos/bij1.png',
   'Nieuw Sociaal Contract': '/logos/nsc.png',
+  'Nieuw Sociaal Contract (NSC)': '/logos/nsc.png',
   'BVNL / Groep Van Haga': '/logos/bvnl.png',
+  'Belang Van Nederland (BVNL)': '/logos/bvnl.png',
+  'Piratenpartij': '/logos/piratenpartij.png',
   'Piratenpartij - De Groenen': '/logos/piratenpartij.png',
   'Splinter': '/logos/splinter.png',
-  'Samen voor Nederland': '/logos/samenvoornederland.png',
   'LP (Libertaire Partij)': '/logos/lp.png',
   'LEF - Voor de Nieuwe Generatie': '/logos/lef.png',
-  'Nederland met een PLAN': '/logos/plan.png',
-  'PartijvdSport': '/logos/pvds.png',
-  'Politieke Partij voor Basisinkomen': '/logos/basisinkomen.png',
+  'NL PLAN': '/logos/plan.png'
 };
 
-/**
- * Retrieves the hex color code for a given party name.
- *
- * @param {string} partyName - The registered appellation of the party.
- * @returns {string} The corresponding hex color code or a default gray if not found.
- */
 export const getPartyColor = (partyName: string): string => {
-  return partyColors[partyName] || '#6B7280'; // Default gray if not found
+  return partyColors[partyName] || '#6B7280';
 };
 
-/**
- * Retrieves the logo URL for a given party name.
- * @param {string} partyName - The registered name of the party.
- * @returns {string | null} The URL of the logo, or null if not found.
- */
 export const getPartyLogo = (partyName: string): string | null => {
   return partyLogos[partyName] || null;
 };
 
-/**
- * Generic helper function for handling API requests.
- */
 async function fetchFromAPI<T>(endpoint: string): Promise<T> {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`);
-
     if (!response.ok) {
-      let errorBody = 'Unknown error';
-      try {
-        errorBody = await response.text();
-      } catch (textError) { /* ignore */ }
-      console.error(`API Error: ${response.status} ${response.statusText}`, errorBody);
-      throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to fetch: ${response.status}`);
     }
-
     return await response.json();
-
   } catch (error) {
-    console.error(`Error in fetchFromAPI (endpoint: ${endpoint}):`, error);
-    if (error instanceof SyntaxError) {
-      throw new Error('Failed to parse server response. Invalid JSON.');
-    }
-    if (error instanceof TypeError) {
-      throw new Error('Network error: Could not connect to the API.');
-    }
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('An unknown error occurred.');
+    console.error(`Error in fetchFromAPI:`, error);
+    throw error;
   }
 }
 
-/**
- * Helper to calculate D'Hondt distribution.
- * This pure function contains the core mathematical logic.
- */
 function calculateDHondt(results: NationalResult[], totalSeats: number): Record<string, number> {
   const seatCounts: Record<string, number> = {};
-
-  // Initialize seat counts map with 0 for all parties
   results.forEach(r => seatCounts[r.name] = 0);
-
-  // Initialize active parties (filter out 0 votes to optimize loop)
-  // We maintain a working object to track current seats for quotient calculation
-  const activeParties = results
-    .filter(r => r.totalVotes > 0)
-    .map(r => ({
-      name: r.name,
-      votes: r.totalVotes,
-      seats: 0
-    }));
-
-  // Distribute seats one by one
+  const activeParties = results.filter(r => r.totalVotes > 0).map(r => ({ name: r.name, votes: r.totalVotes, seats: 0 }));
   for (let i = 0; i < totalSeats; i++) {
     let maxQuotient = -1;
     let winnerIndex = -1;
-
     for (let j = 0; j < activeParties.length; j++) {
       const p = activeParties[j];
-      // D'Hondt formula: Votes / (Seats + 1)
       const quotient = p.votes / (p.seats + 1);
-
       if (quotient > maxQuotient) {
         maxQuotient = quotient;
         winnerIndex = j;
       }
     }
-
-    // Assign seat to winner
     if (winnerIndex !== -1) {
       activeParties[winnerIndex].seats++;
       seatCounts[activeParties[winnerIndex].name]++;
     }
   }
-
   return seatCounts;
 }
 
-/**
- * Service object for handling political party data.
- */
 export const partyService = {
-  /**
-   * Fetches the national results (seats, votes, percentage) for all parties in an election.
-   *
-   * @param {string} electionId - The unique identifier for the election.
-   * @returns {Promise<NationalResult[]>} A promise that resolves to an array of NationalResult objects.
-   */
   async getNationalResults(electionId: string): Promise<NationalResult[]> {
     return fetchFromAPI<NationalResult[]>(`/${electionId}/national`);
   },
-
-  /**
-   * Calculates seat distribution based on vote results using the D'Hondt method.
-   * Can be used for National, Provincial, or Municipal levels.
-   *
-   * @param {NationalResult[]} results - The list of party results with vote counts.
-   * @param {number} totalSeats - The number of seats to distribute (default 150).
-   * @returns {Record<string, number>} A map of party names to their allocated seats.
-   */
   calculateSeats(results: NationalResult[], totalSeats: number = 150): Record<string, number> {
     return calculateDHondt(results, totalSeats);
   }

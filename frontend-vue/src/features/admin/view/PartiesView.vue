@@ -31,6 +31,10 @@ const selectedParties = ref<PoliticalParty[]>([]);
 const MAX_PARTIES = 5;
 const TOTAL_SEATS = 150; // Total seats in Dutch House of Representatives
 
+// --- Election Year State ---
+const availableElections = ['TK2025', 'TK2023', 'TK2021'];
+const selectedElection = ref(availableElections[1]); // Default to TK2023
+
 // --- Search & Sort State ---
 const searchQuery = ref('');
 const sortBy = ref('name-asc'); // Default sorting
@@ -54,7 +58,8 @@ const loadParties = async () => {
   loading.value = true;
   error.value = false;
   try {
-    parties.value = await partyService.getNationalResults('TK2023');
+    // Dynamically fetch parties based on selected election year
+    parties.value = await partyService.getNationalResults(selectedElection.value);
   } catch (err) {
     error.value = true;
     console.error('Error loading parties:', err);
@@ -117,7 +122,8 @@ const loadResultsForInstance = async (instanceName: string | null) => {
   try {
     // 1. Fetch Vote Results based on Level
     if (selectedLevel.value === 'Nationaal') {
-      currentResults.value = await partyService.getNationalResults('TK2023');
+      // Use selectedElection for national results
+      currentResults.value = await partyService.getNationalResults(selectedElection.value);
     } else if (selectedLevel.value === 'Gemeentes' && instanceName) {
       const results = await getResultsForMunicipality(instanceName);
       currentResults.value = results.map(r => ({ name: r.partyName, totalVotes: r.validVotes }));
@@ -163,6 +169,16 @@ onMounted(() => {
   }
 });
 
+// Watch for election changes to reload data
+watch(selectedElection, () => {
+  loadParties();
+  if (selectedLevel.value === 'Nationaal') {
+    loadResultsForInstance(null);
+  } else if (selectedSubItem.value) {
+    loadResultsForInstance(selectedSubItem.value);
+  }
+});
+
 watch(selectedLevel, (newLevel) => {
   prepareLevelData(newLevel);
 }, { immediate: true });
@@ -192,18 +208,22 @@ const comparisonData = computed(() => {
 const displayedParties = computed(() => {
   let list = [...parties.value] as SortableParty[];
 
-  // 1. Filter
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase();
     list = list.filter(p => p.name.toLowerCase().includes(q));
   }
 
-  // 2. Sort
+
+  list = list.filter(party => {
+    const result = currentResults.value.find(r => r.name === party.name);
+    return result && result.totalVotes > 0;
+  });
+
+  // 3. Sort the filtered list
   return list.sort((a: SortableParty, b: SortableParty) => {
     if (sortBy.value === 'name-asc') return a.name.localeCompare(b.name);
     if (sortBy.value === 'name-desc') return b.name.localeCompare(a.name);
 
-    // Sort by the dynamic calculated seats
     const seatsA = calculatedSeats.value[a.name] || 0;
     const seatsB = calculatedSeats.value[b.name] || 0;
 
@@ -249,11 +269,26 @@ const toggleParty = (party: PoliticalParty) => {
     <div v-else>
       <div class="bg-white rounded-xl p-6 mb-8 shadow-md border border-gray-200 min-h-[200px]">
 
-        <div class="max-w-4xl mx-auto mb-6">
-          <LevelSelector
-            v-model="selectedLevel"
-            :options="LEVELS"
-          />
+        <div class="max-w-4xl mx-auto mb-6 flex flex-col sm:flex-row gap-4 items-center justify-center">
+          <div class="flex items-center gap-2">
+            <label for="election-year" class="text-sm font-bold text-gray-700">Verkiezingsjaar:</label>
+            <select
+              id="election-year"
+              v-model="selectedElection"
+              class="p-2 border border-gray-300 rounded shadow-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer text-sm font-medium"
+            >
+              <option v-for="year in availableElections" :key="year" :value="year">
+                {{ year }}
+              </option>
+            </select>
+          </div>
+
+          <div class="w-full sm:flex-1">
+            <LevelSelector
+              v-model="selectedLevel"
+              :options="LEVELS"
+            />
+          </div>
         </div>
 
         <div v-if="selectedLevel !== 'Nationaal'" class="flex justify-center mb-6">
@@ -274,7 +309,7 @@ const toggleParty = (party: PoliticalParty) => {
         </div>
 
         <p class="text-xl font-semibold text-gray-900 mb-6 border-b border-dashed border-gray-200 pb-4">
-          Vergelijking ({{ selectedPartyCount }} / {{ MAX_PARTIES }}) - {{ selectedSubItem || selectedLevel }}
+          Vergelijking ({{ selectedPartyCount }} / {{ MAX_PARTIES }}) - {{ selectedSubItem || selectedLevel }} ({{ selectedElection }})
         </p>
 
         <div v-if="loadingChart" class="text-center p-8 text-gray-600">
@@ -294,7 +329,7 @@ const toggleParty = (party: PoliticalParty) => {
           <ComparisonChart
             :parties="comparisonData"
             metric="totalVotes"
-            :title="selectedSubItem ? `Stemmen in ${selectedSubItem}` : 'Stemmen Landelijk'"
+            :title="selectedSubItem ? `Stemmen in ${selectedSubItem} (${selectedElection})` : `Stemmen Landelijk (${selectedElection})`"
           />
         </div>
       </div>
