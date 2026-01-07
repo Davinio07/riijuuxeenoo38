@@ -11,8 +11,16 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for DutchNationalVotesTransformer.
+ * Verifies correct Party creation, vote parsing, and ignored methods.
+ */
 class DutchNationalVotesTransformerTest {
 
+    /**
+     * Ensures registerPartyVotes() creates a Party with the correct values
+     * and passes it to the Election object.
+     */
     @Test
     void testRegisterPartyVotesCreatesCorrectParty() {
         Election election = mock(Election.class);
@@ -34,6 +42,10 @@ class DutchNationalVotesTransformerTest {
         assertEquals(25000, p.getVotes());
     }
 
+    /**
+     * Ensures registerPartyVotes() sets votes to 0 when "ValidVotes"
+     * is missing in the input data.
+     */
     @Test
     void testRegisterPartyVotesHandlesMissingVotes() {
         Election election = mock(Election.class);
@@ -41,7 +53,6 @@ class DutchNationalVotesTransformerTest {
 
         Map<String, String> data = Map.of(
                 "RegisteredName", "NoVotesParty"
-                // Missing "ValidVotes"
         );
 
         transformer.registerPartyVotes(true, data);
@@ -55,6 +66,9 @@ class DutchNationalVotesTransformerTest {
         assertEquals(0, p.getVotes());
     }
 
+    /**
+     * Ensures registerCandidateVotes() performs no action and does not throw.
+     */
     @Test
     void testRegisterCandidateVotesDoesNothing() {
         Election election = mock(Election.class);
@@ -65,6 +79,9 @@ class DutchNationalVotesTransformerTest {
         );
     }
 
+    /**
+     * Ensures registerMetadata() performs no action and does not throw.
+     */
     @Test
     void testRegisterMetadataDoesNothing() {
         Election election = mock(Election.class);

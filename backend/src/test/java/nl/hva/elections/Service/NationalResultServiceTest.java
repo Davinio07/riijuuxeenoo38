@@ -17,11 +17,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
- * **Unit tests for NationalResultService.**
+ * Unit tests for NationalResultService.
  *
  * This class tests the business logic within the NationalResultService,
- * primarily focusing on the seat distribution algorithm (likely D'Hondt or similar proportional representation method)
- * and data retrieval from the mocked DutchElectionService.
+ * primarily focusing on the seat distribution algorithm and data retrieval from the mocked DutchElectionService.
  */
 @ExtendWith(MockitoExtension.class)
 class NationalResultServiceTest {
@@ -38,7 +37,7 @@ class NationalResultServiceTest {
     private final String ELECTION_ID = "TK2023";
 
     /**
-     * **Set up method executed before each test.**
+     * Set up method executed before each test.
      *
      * In this setup, the MockitoExtension handles the initialization of
      * `@Mock` and injection into `@InjectMocks`.
@@ -48,13 +47,11 @@ class NationalResultServiceTest {
         // Setup is minimal as we focus on the calculation method
     }
 
-    // ---------------------------
-    // HAPPY PATH TESTS: Tests for successful/expected scenarios
-    // ---------------------------
+    // HAPPY PATH TESTS
     /**
-     * **Test case for correct seat distribution in a simple scenario.**
+     * Test case for correct seat distribution in a simple scenario.
      *
-     * **Goal:** Verify the proportional seat calculation logic for 3 parties
+     * Goal: Verify the proportional seat calculation logic for 3 parties
      * with distinct vote totals across 10 seats, ensuring the final seat count is correct.
      */
     @Test
@@ -83,9 +80,9 @@ class NationalResultServiceTest {
     }
 
     /**
-     * **Test case for the edge scenario where one party wins all seats.**
+     * Test case for the edge scenario where one party wins all seats.
      *
-     * **Goal:** Verify the calculation handles a dominant party receiving all votes,
+     * Goal: Verify the calculation handles a dominant party receiving all votes,
      * ensuring the total seat count is distributed correctly (100% to one party).
      */
     @Test
@@ -106,9 +103,9 @@ class NationalResultServiceTest {
     }
 
     /**
-     * **Test case for a tie-breaking scenario in seat allocation.**
+     * Test case for a tie-breaking scenario in seat allocation.
      *
-     * **Goal:** Verify the system's tie-breaking mechanism when two parties have
+     * Goal: Verify the system's tie-breaking mechanism when two parties have
      * exactly the same vote count and are competing for the final seat.
      */
     @Test
@@ -130,9 +127,9 @@ class NationalResultServiceTest {
     }
 
     /**
-     * **Test case for successful data retrieval from the external service.**
+     * Test case for successful data retrieval from the external service.
      *
-     * **Goal:** Verify that `getNationalResults` correctly calls the mocked
+     * Goal: Verify that `getNationalResults` correctly calls the mocked
      * `electionService` and returns the party list extracted from the Election object.
      */
     @Test
@@ -154,13 +151,11 @@ class NationalResultServiceTest {
         verify(electionService, times(1)).getElectionData(ELECTION_ID);
     }
 
-    // ---------------------------
-    // UNHAPPY PATH TESTS: Tests for error/edge-case scenarios
-    // ---------------------------
+    // UNHAPPY PATH TESTS
     /**
-     * **Test case for failure when the election data cannot be found.**
+     * Test case for failure when the election data cannot be found.
      *
-     * **Goal:** Verify that `getNationalResults` throws a **NullPointerException**
+     * Goal: Verify that `getNationalResults` throws a **NullPointerException**
      * if the underlying data service returns `null` for the requested election ID.
      */
     @Test
@@ -174,9 +169,9 @@ class NationalResultServiceTest {
     }
 
     /**
-     * **Test case for calculating seats with an empty list of results.**
+     * Test case for calculating seats with an empty list of results.
      *
-     * **Goal:** Verify that the calculation method returns an empty map when
+     * Goal: Verify that the calculation method returns an empty map when
      * provided with an empty list of results, preventing errors.
      */
     @Test
@@ -188,9 +183,9 @@ class NationalResultServiceTest {
     }
 
     /**
-     * **Test case for calculating seats with a null input list.**
+     * Test case for calculating seats with a null input list.
      *
-     * **Goal:** Verify that the calculation method correctly throws a **NullPointerException**
+     * Goal: Verify that the calculation method correctly throws a **NullPointerException**
      * when the input list of parties is null, enforcing data integrity.
      */
     @Test

@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * **Unit tests for the NationalResultController.**
+ * Unit tests for the NationalResultController.
  *
  * This class tests the HTTP endpoints exposed by the NationalResultController
  * using Spring's MockMvc for isolated testing of the controller layer.
@@ -35,11 +35,11 @@ class NationalResultControllerTest {
     @Mock
     private dbPartyService dbPartyService;
 
-    // Fixed ID representing a specific election (e.g., Dutch Tweede Kamer 2023)
+    // Fixed ID representing a specific election (e.g., 2023)
     private final String ELECTION_ID = "TK2023";
 
     /**
-     * **Set up method executed before each test.**
+     * Set up method executed before each test.
      *
      * 1. Initializes Mockito annotations (e.g., @Mock).
      * 2. Instantiates the NationalResultController with the mocked services.
@@ -55,13 +55,11 @@ class NationalResultControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
-    // -----------------------------------------------------------------------
     // HAPPY PATH TESTS
-    // -----------------------------------------------------------------------
     /**
-     * **Test case for successful retrieval of national results.**
+     * Test case for successful retrieval of national results.
      *
-     * **Goal:** Verify that the GET request to `/api/nationalResult/{ELECTION_ID}/national`
+     * Goal: Verify that the GET request to `/api/nationalResult/{ELECTION_ID}/national`
      * returns an HTTP **200 OK** status, **application/json** content type,
      * and a list of parties with their vote counts.
      *
@@ -87,9 +85,9 @@ class NationalResultControllerTest {
     }
 
     /**
-     * **Test case for successful seat calculation.**
+     * Test case for successful seat calculation.
      *
-     * **Goal:** Verify that the GET request to `/api/nationalResult/{ELECTION_ID}/seats`
+     * Goal: Verify that the GET request to `/api/nationalResult/{ELECTION_ID}/seats`
      * returns an HTTP **200 OK** status and a map containing the calculated seats per party.
      *
      * @throws Exception If MockMvc execution fails.
@@ -113,13 +111,11 @@ class NationalResultControllerTest {
                 .andExpect(jsonPath("$.A").value(150)); // Check if key "A" maps to value 150
     }
 
-    // -----------------------------------------------------------------------
     // UNHAPPY PATH TESTS
-    // -----------------------------------------------------------------------
     /**
-     * **Test case for retrieving national results when no parties are found.**
+     * Test case for retrieving national results when no parties are found.
      *
-     * **Goal:** Verify that the GET request returns an HTTP **204 No Content**
+     * Goal: Verify that the GET request returns an HTTP **204 No Content**
      * status when the underlying service returns an empty list of parties.
      *
      * @throws Exception If MockMvc execution fails.
@@ -136,9 +132,9 @@ class NationalResultControllerTest {
     }
 
     /**
-     * **Test case for seat calculation when the election ID is invalid or not found.**
+     * Test case for seat calculation when the election ID is invalid or not found.
      *
-     * **Goal:** Verify that the GET request returns an HTTP **404 Not Found**
+     * Goal: Verify that the GET request returns an HTTP **404 Not Found**
      * when the `getNationalResults` service method throws a RuntimeException,
      * simulating an election not being present in the data store.
      *
@@ -156,9 +152,9 @@ class NationalResultControllerTest {
     }
 
     /**
-     * **Test case for seat calculation failing due to invalid data/logic.**
+     * Test case for seat calculation failing due to invalid data/logic.
      *
-     * **Goal:** Verify that the GET request returns an HTTP **404 Not Found**
+     * Goal: Verify that the GET request returns an HTTP **404 Not Found**
      * when the `calculateSeats` service method throws an exception (e.g., IllegalArgumentException),
      * signaling a problem during the calculation process.
      *

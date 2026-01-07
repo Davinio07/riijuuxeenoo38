@@ -25,7 +25,7 @@ const {
 </script>
 
 <template>
-  <div class="p-6 bg-gray-200 rounded min-h-screen">
+  <div class="p-6 bg-gray-100 rounded min-h-screen">
     <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Nationale Verkiezingsresultaten</h1>
 
     <div class="mb-6 flex gap-3 items-center">
@@ -47,7 +47,7 @@ const {
 
       <span v-if="loading" class="text-indigo-600 ml-3 flex items-center">
         Bezig met laden...
-        <div class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-indigo-600 rounded-full ml-1" role="status"></div>
+        <div class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent text-indigo-600 rounded-full ml-1" role="status"></div>
       </span>
     </div>
 

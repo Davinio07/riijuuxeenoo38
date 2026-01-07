@@ -7,8 +7,16 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for the Party model.
+ * Verifies constructors, getters/setters, candidates list handling, and toString().
+ */
 class PartyTest {
 
+    /**
+     * Ensures the constructor that accepts electionId and name
+     * correctly initializes default values for all other fields.
+     */
     @Test
     void testConstructorWithElectionIdAndName() {
         Party p = new Party("1", "VVD");
@@ -20,6 +28,10 @@ class PartyTest {
         assertEquals(0.0, p.getPercentage());
     }
 
+    /**
+     * Ensures the constructor that accepts name and votes
+     * correctly stores both values.
+     */
     @Test
     void testConstructorWithNameAndVotes() {
         Party p = new Party("VVD", 12345);
@@ -28,6 +40,9 @@ class PartyTest {
         assertEquals(12345, p.getVotes());
     }
 
+    /**
+     * Ensures all getters and setters work correctly.
+     */
     @Test
     void testGettersAndSetters() {
         Party p = new Party();
@@ -46,12 +61,15 @@ class PartyTest {
         assertEquals(7.5, p.getPercentage());
     }
 
+    /**
+     * Ensures Party can store and retrieve a candidate list correctly.
+     */
     @Test
     void testCandidatesList() {
         Party p = new Party();
 
         List<Candidate> mockCandidates = new ArrayList<>();
-        mockCandidates.add(new Candidate()); // simple empty candidate
+        mockCandidates.add(new Candidate());
 
         p.setCandidates(mockCandidates);
 
@@ -59,6 +77,9 @@ class PartyTest {
         assertSame(mockCandidates, p.getCandidates());
     }
 
+    /**
+     * Ensures toString() output contains all key field values.
+     */
     @Test
     void testToStringContainsKeyFields() {
         Party p = new Party();

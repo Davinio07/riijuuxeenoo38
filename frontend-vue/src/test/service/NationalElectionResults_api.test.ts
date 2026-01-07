@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getPartiesFromDb, type PartyDTO } from "@/features/admin/service/NationalElectionResults_api.ts";
 import type { Mock } from 'vitest';
 
-// --- Typed Fetch Mock Setup ---
+// Typed Fetch Mock Setup
 
 // 1. Define the type for the fetch mock function explicitly
 // We use the imported Mock type from 'vitest' and the native 'typeof fetch'
@@ -18,27 +18,21 @@ const MOCK_PARTY_DATA: PartyDTO[] = [
 ]
 
 // Helper function for mock responses
-// We return a strongly-typed object asserted as a native Response to satisfy the mockResolvedValue requirement.
 const createMockResponse = (status: number, body: object = {}, ok: boolean = true): Response => {
   const jsonBody = JSON.stringify(body);
 
-  // Note: Using a type assertion to 'Response' is required here because the object
-  // literal does not fully satisfy the deep structure of the native 'Response' class,
-  // but it does provide the methods (json, text) and properties (status, ok) used by the API code.
   return {
     statusText: `Status ${status}`,
     ok,
     json: () => Promise.resolve(body),
     text: () => Promise.resolve(jsonBody),
-    // Add required properties that are not typically used by the code under test,
-    // but are part of the 'Response' interface to help satisfy the type system.
     headers: new Headers(),
     url: 'mock-url',
     redirected: false,
     status: status,
     type: 'default',
     clone: () => createMockResponse(status, body, ok) as Response,
-  } as Response; // Required Type Assertion to Response
+  } as Response;
 };
 
 describe('getPartiesFromDb', () => {
