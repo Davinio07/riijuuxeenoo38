@@ -58,7 +58,16 @@
               </div>
             </div>
           </div>
-          <footer class="p-6 border-t bg-gray-50">
+          <footer class="p-6 border-t bg-gray-50 flex flex-col gap-3">
+            <button
+              @click="goToFullPartiesPage"
+              class="w-full py-3 bg-white border border-blue-600 text-blue-600 rounded-xl font-bold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 shadow-sm"
+            >
+              <span>Gedetailleerd overzicht op Partijen pagina</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </button>
             <button @click="isPanelOpen = false" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">Sluiten</button>
           </footer>
         </aside>
@@ -194,6 +203,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router'; // Added router
 import { useProvince, type ProvinceUI } from "@/features/admin/composables/useProvince.ts";
 import { useNationalHierarchy } from "@/features/admin/composables/useNationalHierarchy.ts";
 import ComparisonChart from '../components/ComparisonChart.vue';
@@ -208,6 +218,9 @@ const {
 
 const { national, toggleNational, goToNationalResults } = useNationalHierarchy();
 
+// Navigation
+const router = useRouter(); //
+
 // State
 const selectedElection = ref('TK2023'); // Default matches onMounted
 const isPanelOpen = ref(false);
@@ -220,6 +233,21 @@ const activeContextType = ref('national');
 const sortBy = ref('name-asc');
 const focusedProvinceId = ref<number | null>(null);
 const TOTAL_SEATS = 150;
+
+// Logic for navigating to the full parties page
+function goToFullPartiesPage() {
+  let level = 'Nationaal';
+  if (activeContextType.value === 'kieskring') level = 'Kieskringen';
+  if (activeContextType.value === 'municipality') level = 'Gemeentes';
+
+  router.push({
+    path: '/parties',
+    query: {
+      level: level,
+      name: activeContextName.value !== 'Nederland' ? activeContextName.value : undefined
+    }
+  });
+}
 
 const handleProvinceClick = async (province: ProvinceUI) => {
   if (focusedProvinceId.value === province.province_id) {
