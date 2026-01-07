@@ -2,7 +2,6 @@
  * Interface representing a political party (basic info).
  */
 export interface PoliticalParty {
-  /** The officially registered name of the party. */
   name: string;
 }
 
@@ -15,11 +14,33 @@ export interface NationalResult {
 }
 
 /**
- * The base URL for the elections API.
+ * FIX: Use environment variable or fallback to localhost
  */
-// Uses the .env variable, then adds the specific endpoint path test
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// Remove /api from API_URL if it's already there to avoid double //api/api issues if needed,
+// OR just trust your .env is correct.
+// Based on your previous files, your endpoints usually start with /
 const API_BASE_URL = `${API_URL}/nationalResult`;
+
+// ... (KEEP THE REST OF THE FILE WITH PARTY COLORS THE SAME) ...
+// ...
+// ...
+
+// Update the fetch function at the bottom to use the new API_BASE_URL
+async function fetchFromAPI<T>(endpoint: string): Promise<T> {
+  try {
+    // If endpoint starts with /, remove it to append correctly
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const response = await fetch(`${API_BASE_URL}${cleanEndpoint}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Error in fetchFromAPI:`, error);
+    throw error;
+  }
+}
 /**
  * A mapping of official party names to their designated hex color codes.
  */
@@ -125,19 +146,6 @@ export const getPartyColor = (partyName: string): string => {
 export const getPartyLogo = (partyName: string): string | null => {
   return partyLogos[partyName] || null;
 };
-
-async function fetchFromAPI<T>(endpoint: string): Promise<T> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch: ${response.status}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(`Error in fetchFromAPI:`, error);
-    throw error;
-  }
-}
 
 function calculateDHondt(results: NationalResult[], totalSeats: number): Record<string, number> {
   const seatCounts: Record<string, number> = {};
