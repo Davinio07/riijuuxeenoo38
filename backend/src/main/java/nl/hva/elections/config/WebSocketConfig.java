@@ -29,7 +29,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // The endpoint clients will connect to. Must match your frontend ports.
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:5173", "http://localhost:5176")
+                .setAllowedOriginPatterns("http://localhost:5173", "http://localhost:5176", "https://elections-frontend-71p2.onrender.com")
                 .withSockJS(); // Enable SockJS for fallback options
     }
 }

@@ -25,6 +25,7 @@ public class SecurityConfig {
 
     /**
      * Constructor to inject our custom filter.
+     *
      * @param jwtTokenFilter Our custom filter that checks tokens.
      */
     @Autowired
@@ -36,6 +37,7 @@ public class SecurityConfig {
     /**
      * This is the main security filter
      * It checks every request and decides if it's allowed or not.
+     *
      * @param http The HttpSecurity object from Spring to configure the rules.
      * @return The configured security filter chain.
      */
@@ -46,7 +48,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 // We're using tokens, so we dont need the server to remember users in a session.
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                
+
                 .authorizeHttpRequests(auth -> auth
                         // 1. Specifiek de routes aanwijzen die beveiligd moeten zijn.
                         // Alleen ingelogde gebruikers mogen de userlijst zien.
@@ -61,7 +63,7 @@ public class SecurityConfig {
         // Required for the H2 console to work correctly with Spring Security.
         http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
 
-        // Add our custom JWT filter before the default Spring Security filter that handles username/password authentication. 
+        // Add our custom JWT filter before the default Spring Security filter that handles username/password authentication.
         http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -69,6 +71,7 @@ public class SecurityConfig {
 
     /**
      * This sets up the CORS rules.
+     *
      * @return A WebMvcConfigurer with our CORS rules.
      */
     @Bean
@@ -77,19 +80,31 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost:5173")
+                        // Add your Render URL here.
+                        // ALSO keep localhost so it works on your machine while developing.
+                        .allowedOrigins(
+                                "http://localhost:5173",
+                                "http://localhost:5176",
+                                "https://elections-frontend-71p2.onrender.com", // <--- THIS IS YOUR NEW URL
+                                "https://riijuuxeenoo38.onrender.com", // <--- REPLACE WITH YOUR EXACT RENDER URL
+                                "http://oege.ie.hva.nl"
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
 
                 registry.addMapping("/ws/**") // WebSocket endpoint
-                        .allowedOrigins("http://localhost:5173", "http://localhost:5176")
+                        .allowedOrigins(
+                                "http://localhost:5173",
+                                "http://localhost:5176",
+                                "https://elections-frontend-71p2.onrender.com", // <--- THIS IS YOUR NEW URL
+                                "https://riijuuxeenoo38.onrender.com", // <--- REPLACE WITH YOUR EXACT RENDER URL
+                                "http://oege.ie.hva.nl"
+                        )
                         .allowedMethods("*")
                         .allowedHeaders("*")
                         .allowCredentials(true);
             }
         };
     }
-}
-
-
+} // test 2
