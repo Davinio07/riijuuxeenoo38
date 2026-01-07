@@ -111,7 +111,7 @@
             <div class="flex items-center gap-4">
               <div class="p-3 bg-blue-100 text-blue-600 rounded-xl transition-transform duration-500" :class="{ 'scale-110': national.isOpen }">🇳🇱</div>
               <div class="flex flex-col">
-                <h2 class="text-xl font-bold text-gray-900 transition-all duration-300" :class="{ 'text-2xl text-blue-700': national.isOpen }">Nederland (Landelijk)</h2>
+                <h2 class="text-xl font-bold text-gray-900 transition-all duration-300" :class="{ 'text-2xl text-blue-700': national.isOpen }">Nederland</h2>
                 <p v-if="national.isOpen" class="text-sm text-gray-500 animate-fadeIn">Klik om te sluiten</p>
               </div>
             </div>
