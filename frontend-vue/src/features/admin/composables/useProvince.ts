@@ -10,7 +10,6 @@ import {
 } from '@/features/admin/service/ProvinceService'
 
 //UI TYPES
-
 export interface KieskringUI extends KieskringDto {
   isOpen: boolean
   isLoadingGemeentes?: boolean
@@ -33,8 +32,15 @@ export function useProvince() {
 
   /* ---------- NAVIGATION ---------- */
 
-  function goToResults(kieskringName: string) {
-    router.push({ path: '/kieskring-details', query: { name: kieskringName } })
+  // UPDATED: Now accepts electionId to pass to the details page
+  function goToResults(kieskringName: string, electionId: string) {
+    router.push({
+      path: '/kieskring-details',
+      query: {
+        name: kieskringName,
+        electionId: electionId // Pass the selected year
+      }
+    })
   }
 
   function goToParties(kieskringName: string) {
@@ -93,7 +99,6 @@ export function useProvince() {
   }
 
   //TRANSITIONS
-
   function startTransition(el: Element) {
     const element = el as HTMLElement
     element.style.height = '0'
@@ -114,7 +119,6 @@ export function useProvince() {
   }
 
   //COLORS
-
   const colors = [
     'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
     'bg-lime-500', 'bg-green-500', 'bg-emerald-500', 'bg-teal-500',
