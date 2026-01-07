@@ -13,14 +13,15 @@ export interface ConstituencyDataDto {
 
 /**
  * Fetches ALL constituency results (aggregated from municipalities).
- * We now point to the correct endpoint '/api/constituencies/results'.
+ * UPDATED: Now accepts an electionId (default TK2025) to fetch specific year data.
  */
-export async function getAllConstituencyResults(): Promise<ConstituencyDataDto[]> {
+export async function getAllConstituencyResults(electionId: string = 'TK2025'): Promise<ConstituencyDataDto[]> {
   try {
-    const endpoint = '/constituencies/results';
+    // We inject the electionId into the URL
+    const endpoint = `/constituencies/${electionId}/results`;
     return await apiClient<ConstituencyDataDto[]>(endpoint);
   } catch (error) {
-    console.error('API Error when fetching constituency results:', error);
+    console.error(`API Error when fetching constituency results for ${electionId}:`, error);
     throw error;
   }
 }

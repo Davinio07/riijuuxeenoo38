@@ -9,7 +9,7 @@ import {
   type GemeenteDto
 } from '@/features/admin/service/ProvinceService'
 
-// UI TYPES
+//UI TYPES
 export interface KieskringUI extends KieskringDto {
   isOpen: boolean
   isLoadingGemeentes?: boolean
@@ -32,13 +32,13 @@ export function useProvince() {
 
   /* ---------- NAVIGATION ---------- */
 
-  // FIX: Updated to accept 2 arguments to match the template call
-  function goToResults(kieskringName: string, election?: string) {
+  // UPDATED: Now accepts electionId to pass to the details page
+  function goToResults(kieskringName: string, electionId: string) {
     router.push({
       path: '/kieskring-details',
       query: {
         name: kieskringName,
-        election: election // Pass the election year to the details page
+        electionId: electionId // Pass the selected year
       }
     })
   }
@@ -62,15 +62,7 @@ export function useProvince() {
     try {
       isLoading.value = true
       const data = await getProvinces()
-
-      provinces.value = data.map(p => ({
-        ...p,
-        isOpen: false,
-        kieskringen: p.kieskringen?.map(k => ({
-          ...k,
-          isOpen: false
-        }))
-      }))
+      provinces.value = data.map(p => ({ ...p, isOpen: false }))
     } catch (err) {
       error.value = err as Error
     } finally {
@@ -98,14 +90,15 @@ export function useProvince() {
     if (kieskring.isOpen && !kieskring.gemeentes) {
       try {
         kieskring.isLoadingGemeentes = true
-        kieskring.gemeentes = await getMunicipalitiesForConstituency(kieskring.id)
+        kieskring.gemeentes =
+          await getMunicipalitiesForConstituency(kieskring.id)
       } finally {
         kieskring.isLoadingGemeentes = false
       }
     }
   }
 
-  // TRANSITIONS
+  //TRANSITIONS
   function startTransition(el: Element) {
     const element = el as HTMLElement
     element.style.height = '0'
@@ -125,26 +118,34 @@ export function useProvince() {
     )
   }
 
-  // COLORS
+  //COLORS
   const colors = [
     'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
     'bg-lime-500', 'bg-green-500', 'bg-emerald-500', 'bg-teal-500',
     'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 'bg-indigo-500'
   ]
 
-  const getProvinceColor = (id: number) => colors[id % colors.length] ?? 'bg-gray-500'
+  const getProvinceColor = (id: number) =>
+    colors[id % colors.length] ?? 'bg-gray-500'
+
+  const getProvinceBg = getProvinceColor
 
   return {
     provinces,
     isLoading,
     error,
+
     toggleProvince,
     toggleKieskring,
+
     goToResults,
     goToParties,
     goToMunicipalityParties,
+
     startTransition,
     endTransition,
-    getProvinceColor
+
+    getProvinceColor,
+    getProvinceBg
   }
 }
