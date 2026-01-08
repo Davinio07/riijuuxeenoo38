@@ -74,21 +74,26 @@ public class ElectionController {
     @GetMapping("/candidates/db")
     public ResponseEntity<List<Candidate>> getAllCandidatesFromDb(
             @RequestParam(required = false) Long partyId,
-            @RequestParam(required =false) String gender) {
+            @RequestParam(required = false) String gender,
+            @RequestParam(required = false) String electionId) {
         try {
             List<Candidate> candidates;
-            if (partyId != null && gender != null) {
-                candidates = candidateRepository.findByPartyIdAndGender(partyId, gender);
-            } else if (partyId != null) {
-                candidates = candidateRepository.findByPartyId(partyId);
-            } else if (gender != null) {
-                candidates = candidateRepository.findByGender(gender);
+            if (electionId != null) {
+                if (partyId != null && gender != null) {
+                    candidates = candidateRepository.findByPartyIdAndGenderAndPartyElectionId(partyId, gender, electionId);
+                } else if (partyId != null) {
+                    candidates = candidateRepository.findByPartyIdAndPartyElectionId(partyId, electionId);
+                } else if (gender != null) {
+                    candidates = candidateRepository.findByGenderAndPartyElectionId(gender, electionId);
+                } else {
+                    candidates = candidateRepository.findByPartyElectionId(electionId);
+                }
             } else {
-                candidates = candidateRepository.findAll();
+                // Fallback voor oude aanroepen zonder jaar
+                candidates = candidateRepository.findAll(); // of bestaande logica
             }
             return ResponseEntity.ok(candidates);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

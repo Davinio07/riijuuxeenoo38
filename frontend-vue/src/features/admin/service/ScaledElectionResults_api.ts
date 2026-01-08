@@ -75,29 +75,20 @@ export async function getProvinces(electionId: string): Promise<any[]> {
 
 // FIX: Updated function to use DB endpoint and map JPA fields to Vue fields
 // --- UPDATED FUNCTION: getCandidates with filters ---
-export async function getCandidates(partyId?: number | null, gender?: string | null): Promise<CandidateData[]> {
+export async function getCandidates(
+  electionId: string, // Nieuwe parameter toegevoegd
+  partyId?: number | null,
+  gender?: string | null
+): Promise<CandidateData[]> {
   try {
-    let url = `/elections/candidates/db`;
-    const params = new URLSearchParams();
+    let url = `/elections/candidates/db?electionId=${electionId}`;
 
-    // Add filters to URL parameters if they exist
-    if (partyId) {
-      params.append('partyId', partyId.toString());
-    }
-    if (gender) {
-      params.append('gender', gender);
-    }
+    if (partyId) url += `&partyId=${partyId}`;
+    if (gender) url += `&gender=${gender}`;
 
-    if (params.toString()) {
-      url += '?' + params.toString();
-    }
-
-    // Fetch with the constructed URL
     const rawCandidates = await apiClient<JpaCandidate[]>(url, { method: 'GET' });
 
-    // ... (rest of the mapping logic remains the same) ...
     return rawCandidates.map(c => {
-      // ... mapping logic ...
       const parts = c.name.split(' ');
       const lastName = parts.length > 1 ? parts[parts.length - 1] : c.name;
       const firstName = parts.length > 1 ? parts.slice(0, parts.length - 1).join(' ') : '';
@@ -109,14 +100,8 @@ export async function getCandidates(partyId?: number | null, gender?: string | n
         locality: c.residence,
         gender: c.gender,
         listName: c.partyNameForJson,
-        listId: c.partyIdForJson,
-        initials: null,
-        prefix: null,
-        listNumber: null,
-        numberOnList: null,
       } as CandidateData;
     });
-
   } catch (error) {
     console.error('Error fetching candidates:', error);
     return [];

@@ -165,7 +165,7 @@ public class DataInitializer implements CommandLineRunner {
 // ------------------------------------------------------------------
             // 4. SYNC CANDIDATES
             // ------------------------------------------------------------------
-            if (candidateRepository.count() == 0) {
+            if (candidateRepository.findByPartyElectionId(electionId).isEmpty()) {
                 System.out.println("Syncing Candidates for " + electionId + "...");
                 AtomicInteger candidatesSaved = new AtomicInteger(0);
 

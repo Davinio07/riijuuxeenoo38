@@ -1,239 +1,194 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import {
-  getCandidates,
-  getAllPartiesForFilters, // <-- NEW IMPORT
-  type CandidateData,
-  type PartyFilterData // <-- NEW TYPE IMPORT
-} from '@/features/admin/service/ScaledElectionResults_api.ts';
+import { ref, onMounted, computed, watch } from 'vue';
+import { getCandidates, getAllPartiesForFilters } from '@/features/admin/service/ScaledElectionResults_api.ts';
 
-// --- EXISTING STATE ---
-const electionId = ref<'TK2023' | 'TK2025'>('TK2025');
-const loading = ref(false);
-const error = ref('');
+interface CandidateData {
+  id: number;
+  firstName: string;
+  lastName: string;
+  locality: string;
+  gender: string;
+  listName: string;
+}
+
+interface PartyFilter {
+  id: number;
+  name: string;
+}
+
+// --- State ---
+const electionId = ref('TK2023'); // Standaard geselecteerd jaar
 const candidates = ref<CandidateData[]>([]);
+const parties = ref<PartyFilter[]>([]);
+const loading = ref(false);
+const error = ref<string | null>(null);
 
-// --- NEW FILTER STATE ---
-const parties = ref<PartyFilterData[]>([]); // To hold all parties for buttons
+// Filters
 const selectedPartyId = ref<number | null>(null);
 const selectedGender = ref<string | null>(null);
+const searchQuery = ref('');
 
-const availableGenders = ['male', 'female'];
-
-// --- EXISTING MODAL STATE ---
-const showModal = ref(false);
-const activeCandidate = ref<CandidateData | null>(null);
-
-function selectGender(gender: string | null) {
-  selectedGender.value = gender;
-}
-
-function openCandidate(c: CandidateData) {
-  activeCandidate.value = c;
-  showModal.value = true;
-}
-
-function closeModal() {
-  showModal.value = false;
-  activeCandidate.value = null;
-}
-
-function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape' && showModal.value) {
-    e.preventDefault();
-    closeModal();
-  }
-}
-
-function displayName(c: CandidateData): number | string {
-  const firstOrInitials = (c.firstName?.trim() || c.initials?.trim() || '').trim();
-  const prefix = c.prefix && c.prefix.trim() ? ` ${c.prefix.trim()}` : '';
-  const last = c.lastName?.trim() || '';
-  const name = `${firstOrInitials}${prefix} ${last}`.trim();
-  return name || c.id || 'Onbekende kandidaat';
-}
-
-function candidateKey(c: CandidateData, i: number): string {
-  const parts = [
-    c.id ?? '',
-    c.listNumber ?? '',
-    c.numberOnList ?? '',
-    c.lastName ?? '',
-    c.firstName ?? ''
-  ].filter(Boolean);
-  return parts.length ? parts.join('|') : `idx-${i}`;
-}
-
-// --- DATA LOADING ---
-
+// --- Data laden ---
 async function loadParties() {
   try {
-    // Fetches parties from the new /national endpoint for use in filters
+    // Haal partijen op specifiek voor het gekozen jaar
     parties.value = await getAllPartiesForFilters(electionId.value);
-    console.log("✅ Loaded parties:", parties.value);
-  } catch (e) {
-    console.error("❌ Could not load parties for filters", e);
+  } catch (err) {
+    console.error('Fout bij laden partijen:', err);
   }
 }
 
-async function load() {
+async function loadCandidates() {
   loading.value = true;
-  error.value = '';
-  candidates.value = [];
+  error.value = null;
   try {
-    // Pass the current filter state (partyId and gender) to the API call.
-    // The backend handles which candidates to return.
-    candidates.value = await getCandidates(selectedPartyId.value, selectedGender.value);
-
-    if (!candidates.value.length) error.value = 'Geen kandidaten gevonden.';
-  } catch {
-    error.value = 'Fout bij het ophalen van kandidaten.';
+    // Geef electionId mee aan de API service
+    candidates.value = await getCandidates(
+      electionId.value,
+      selectedPartyId.value,
+      selectedGender.value
+    );
+  } catch (err) {
+    error.value = 'Kon kandidaten niet ophalen.';
+    console.error(err);
   } finally {
     loading.value = false;
   }
 }
 
-function onElectionChange() {
-  // If election changes, we just reload all data.
-  load();
-}
+// --- Watchers ---
+// Als het jaartal verandert: reset filters en laad alles opnieuw
+watch(electionId, async () => {
+  selectedPartyId.value = null;
+  searchQuery.value = '';
+  await loadParties();
+  await loadCandidates();
+});
 
-// --- LIFECYCLE HOOKS ---
-
-// Watch filters and reload data whenever they change
+// Als filters veranderen: herlaad de kandidatenlijst
 watch([selectedPartyId, selectedGender], () => {
-  load();
+  loadCandidates();
 });
 
-onMounted(() => {
-  loadParties(); // Load parties once for the filter buttons
-  load();       // Initial data load
-  window.addEventListener('keydown', onKeydown);
+// --- Computed ---
+// Zoekfilter (client-side bovenop de API filters)
+const filteredCandidates = computed(() => {
+  if (!searchQuery.value) return candidates.value;
+  const q = searchQuery.value.toLowerCase();
+  return candidates.value.filter(c =>
+    c.firstName.toLowerCase().includes(q) ||
+    c.lastName.toLowerCase().includes(q) ||
+    c.locality.toLowerCase().includes(q)
+  );
 });
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', onKeydown);
+
+const totalCandidates = computed(() => filteredCandidates.value.length);
+
+onMounted(async () => {
+  await loadParties();
+  await loadCandidates();
 });
 </script>
 
 <template>
-  <section class="page">
-    <header class="bar">
-      <h1>Kandidaten</h1>
-      <div class="controls">
-        <label>
-          Verkiezing:
-          <select v-model="electionId" @change="onElectionChange">
-            <option value="TK2023">TK2023</option>
-            <option value="TK2024">TK2024</option>
-          </select>
-        </label>
-        <button @click="load" :disabled="loading">Ophalen</button>
+  <div class="p-6 max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Kandidatenoverzicht</h1>
+        <p class="text-gray-600">Beheer en bekijk kandidaten per verkiezingsjaar</p>
       </div>
 
-      <div class="filters">
-        <h2 class="filter-title">Filter op:</h2>
-
-        <div class="filter-group party-filters">
-          <label for="party-selector" class="sr-only">Kies Partij</label>
-          <select
-            id="party-selector"
-            v-model="selectedPartyId"
-            class="filter-select"
-          >
-            <option :value="null">Alle Partijen</option>
-
-            <option
-              v-for="party in parties"
-              :key="party.id"
-              :value="party.id"
-            >
-              {{ party.name }}
-            </option>
-          </select>
-        </div>
-
-        <div class="filter-group gender-filters">
-          <button
-            @click="selectGender(null)"
-            :class="{ 'active-filter': selectedGender === null }"
-          >Alle Geslachten</button>
-
-          <button
-            v-for="gender in availableGenders"
-            :key="gender"
-            @click="selectGender(gender)"
-            :class="{ 'active-filter': selectedGender === gender }"
-          >
-            {{ gender.charAt(0).toUpperCase() + gender.slice(1) }}
-          </button>
-        </div>
+      <div class="flex items-center gap-3 bg-white p-2 rounded-xl shadow-sm border">
+        <span class="text-sm font-semibold text-gray-500 ml-2">VERKIEZING:</span>
+        <select
+          v-model="electionId"
+          class="bg-gray-50 border-none text-blue-600 font-bold py-2 px-4 rounded-lg focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="TK2025">Tweede Kamer 2025</option>
+          <option value="TK2023">Tweede Kamer 2023</option>
+          <option value="TK2021">Tweede Kamer 2021</option>
+        </select>
       </div>
-    </header>
-
-    <div v-if="loading" class="state">Bezig met laden…</div>
-    <div v-else-if="error" class="state error">{{ error }}</div>
-
-    <div v-else class="grid">
-      <article v-for="(c, i) in candidates" :key="candidateKey(c, i)" class="card">
-        <div class="avatar" aria-hidden="true">
-          {{ (displayName(c).charAt(0) || '?').toUpperCase() }}
-        </div>
-
-        <h2 class="name">{{ displayName(c) }}</h2>
-
-        <ul class="meta">
-          <li v-if="c.listName"><strong>Lijst:</strong> {{ c.listName }}</li>
-          <li v-if="c.numberOnList"><strong>Plaats op lijst:</strong> {{ c.numberOnList }}</li>
-          <li v-if="c.listNumber"><strong>Lijstnummer:</strong> {{ c.listNumber }}</li>
-          <li v-if="c.locality"><strong>Woonplaats:</strong> {{ c.locality }}</li>
-          <li v-if="c.gender"><strong>Geslacht:</strong> {{ c.gender }}</li>
-          <li v-if="c.id"><strong>ID:</strong> {{ c.id }}</li>
-        </ul>
-
-        <div class="actions">
-          <button class="linklike" @click="openCandidate(c)" aria-haspopup="dialog">
-            Meer info
-          </button>
-        </div>
-      </article>
     </div>
-  </section>
 
-  <Teleport to="body">
-    <div
-      v-if="showModal"
-      class="modal-backdrop"
-      @click.self="closeModal"
-    >
+    <div class="bg-white p-4 rounded-xl shadow-sm border mb-6 flex flex-wrap gap-4 items-center">
+      <div class="flex-1 min-w-[200px]">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Zoek op naam of woonplaats..."
+          class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <select v-model="selectedPartyId" class="border rounded-lg px-4 py-2 bg-white">
+        <option :value="null">Alle Partijen</option>
+        <option v-for="party in parties" :key="party.id" :value="party.id">
+          {{ party.name }}
+        </option>
+      </select>
+
+      <select v-model="selectedGender" class="border rounded-lg px-4 py-2 bg-white">
+        <option :value="null">Alle Geslachten</option>
+        <option value="male">Man</option>
+        <option value="female">Vrouw</option>
+      </select>
+
+      <div class="text-sm font-medium text-gray-500">
+        {{ totalCandidates }} kandidaten gevonden
+      </div>
+    </div>
+
+    <div v-if="loading" class="flex justify-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+
+    <div v-else-if="error" class="bg-red-50 text-red-600 p-4 rounded-lg border border-red-200">
+      {{ error }}
+    </div>
+
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
-        class="modal"
-        role="dialog"
-        aria-modal="true"
-        :aria-labelledby="activeCandidate ? 'dlg-title' : undefined"
+        v-for="candidate in filteredCandidates"
+        :key="candidate.id"
+        class="bg-white border rounded-xl p-5 hover:shadow-md transition-shadow relative overflow-hidden"
       >
-        <header class="modal-header">
-          <h3 id="dlg-title" class="modal-title">
-            {{ activeCandidate ? displayName(activeCandidate) : '' }}
-          </h3>
-          <button class="icon-btn" @click="closeModal" aria-label="Sluiten">✕</button>
-        </header>
-
-        <div class="modal-body">
-          <ul class="details">
-            <li v-if="activeCandidate?.listName"><strong>Lijst:</strong> {{ activeCandidate?.listName }}</li>
-            <li v-if="activeCandidate?.listNumber"><strong>Lijstnummer:</strong> {{ activeCandidate?.listNumber }}</li>
-            <li v-if="activeCandidate?.numberOnList"><strong>Plaats op lijst:</strong> {{ activeCandidate?.numberOnList }}</li>
-            <li v-if="activeCandidate?.locality"><strong>Woonplaats:</strong> {{ activeCandidate?.locality }}</li>
-            <li v-if="activeCandidate?.gender"><strong>Geslacht:</strong> {{ activeCandidate?.gender }}</li>
-          </ul>
+        <div class="absolute top-0 right-0 p-3">
+    <span
+      :class="{
+        'bg-blue-100 text-blue-700': candidate.gender === 'male',
+        'bg-pink-100 text-pink-700': candidate.gender === 'female',
+        'bg-gray-100 text-gray-700': !candidate.gender || (candidate.gender !== 'male' && candidate.gender !== 'female')
+      }"
+      class="text-[10px] uppercase font-bold px-2 py-1 rounded"
+    >
+      {{
+        candidate.gender === 'male' ? 'Man' :
+          candidate.gender === 'female' ? 'Vrouw' : 'Niet bekend'
+      }}
+    </span>
         </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-1">
+          {{ candidate.firstName }} {{ candidate.lastName }}
+        </h3>
 
-        <footer class="modal-footer">
-          <button class="primary" @click="closeModal">Sluiten</button>
-        </footer>
+        <div class="space-y-1 text-sm">
+          <p class="flex items-center text-gray-600 spacing_can">
+            <span class="font-semibold w-20">Partij:</span>
+            <span class="text-blue-600 font-medium">{{ candidate.listName || 'Onbekend' }}</span>
+          </p>
+          <p class="flex items-center text-gray-600 spacing_can">
+            <span class="font-semibold w-20">Woonplaats:</span>
+            <span>{{ candidate.locality }}</span>
+          </p>
+        </div>
       </div>
     </div>
-  </Teleport>
+
+    <div v-if="!loading && filteredCandidates.length === 0" class="text-center py-20 text-gray-500">
+      Geen kandidaten gevonden voor deze selectie.
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -334,4 +289,7 @@ onBeforeUnmount(() => {
 }
 .details { list-style: none; padding: 0; margin: 0; display: grid; gap: .4rem; color: #334155; }
 .details strong { color: #0f172a; }
+.spacing_can{
+  justify-content: space-between;
+}
 </style>
