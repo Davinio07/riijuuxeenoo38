@@ -76,19 +76,25 @@ export async function getProvinces(electionId: string): Promise<any[]> {
 // FIX: Updated function to use DB endpoint and map JPA fields to Vue fields
 // --- UPDATED FUNCTION: getCandidates with filters ---
 export async function getCandidates(
-  electionId: string, // Nieuwe parameter toegevoegd
+  electionId: string,
   partyId?: number | null,
   gender?: string | null
 ): Promise<CandidateData[]> {
   try {
+    // Bouw de URL op met het jaartal
     let url = `/elections/candidates/db?electionId=${electionId}`;
 
-    if (partyId) url += `&partyId=${partyId}`;
-    if (gender) url += `&gender=${gender}`;
+    if (partyId) {
+      url += `&partyId=${partyId}`;
+    }
+    if (gender) {
+      url += `&gender=${gender}`;
+    }
 
     const rawCandidates = await apiClient<JpaCandidate[]>(url, { method: 'GET' });
 
     return rawCandidates.map(c => {
+      // Splits de volledige naam in voor- en achternaam
       const parts = c.name.split(' ');
       const lastName = parts.length > 1 ? parts[parts.length - 1] : c.name;
       const firstName = parts.length > 1 ? parts.slice(0, parts.length - 1).join(' ') : '';
@@ -99,7 +105,8 @@ export async function getCandidates(
         lastName: lastName,
         locality: c.residence,
         gender: c.gender,
-        listName: c.partyNameForJson,
+        // Gebruikt de nieuwe helper uit de backend voor de partijnaam
+        listName: (c as any).partyNameForJson || 'Onbekend',
       } as CandidateData;
     });
   } catch (error) {

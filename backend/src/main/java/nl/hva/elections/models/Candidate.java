@@ -1,6 +1,7 @@
 package nl.hva.elections.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty; // Import toegevoegd
 import jakarta.persistence.*;
 
 @Entity
@@ -41,6 +42,18 @@ public class Candidate {
         this.tempPartyName = partyName;
     }
 
+    // --- NIEUWE HELPER VOOR FRONTEND ---
+
+    @JsonProperty("partyNameForJson") // Dit veld wordt naar de Vue frontend gestuurd
+    public String getPartyNameForJson() {
+        return (party != null) ? party.getName() : "Onbekend";
+    }
+
+    @JsonProperty("partyIdForJson") // Optioneel: handig voor filtering in frontend
+    public Long getPartyIdForJson() {
+        return (party != null) ? party.getId() : null;
+    }
+
     // --- GETTERS & SETTERS ---
 
     public Integer getId() { return id; }
@@ -61,7 +74,6 @@ public class Candidate {
     public Party getParty() { return party; }
     public void setParty(Party party) { this.party = party; }
 
-    // Helper getter for the parser to use later
     public String getTempPartyName() { return tempPartyName; }
     public void setTempPartyName(String tempPartyName) { this.tempPartyName = tempPartyName; }
 }
