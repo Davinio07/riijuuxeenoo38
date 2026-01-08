@@ -151,7 +151,7 @@ onMounted(async () => {
       <div
         v-for="candidate in filteredCandidates"
         :key="candidate.id"
-        class="bg-white border rounded-xl p-5 hover:shadow-md transition-shadow relative overflow-hidden"
+        class="bg-white p-5 hover:shadow-md relative rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition-all duration-500 ease-in-out"
       >
         <div class="absolute top-0 right-0 p-3">
     <span
